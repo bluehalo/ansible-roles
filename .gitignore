@@ -1,0 +1,13 @@
+# Ansible
+*.retry
+ssh_config/
+
+# MacOS
+.DS_Store
+
+# General
+*~
+
+# Intellij
+.idea/
+
