@@ -1,0 +1,16 @@
+---
+# tasks file for bastion
+
+- name: Install nc package in RedHat derivatives
+  yum:
+    name: nc
+    state: latest
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'
+
+- name: Install nc package in Debian derivatives
+  apt:
+    name: nc
+    state: latest
+    update_cache: yes
+  when: ansible_os_family == 'Debian'
