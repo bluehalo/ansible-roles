@@ -1,0 +1,27 @@
+---
+# tasks to delete user accounts
+
+- name: delete users
+  user: name="{{ item }}" state=absent remove=yes
+  with_items: "{{ accounts_delete_users }}"
+  register: user_deleted
+
+- name: remove deleted user from sudoers
+  file: path=/etc/sudoers.d/{{ item.name }} state=absent
+  when: "{{ item.changed }}"
+  with_items: "{{ user_deleted.results }}"
+
+- name: remove user from sshd_config AllowUsers if configured
+  replace:
+    backup: no
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowUsers.*)\b{{ item }}\b(.*)$'
+    replace: '\1\2'
+  with_items: "{{ accounts_delete_users }}"
+  notify:
+    - restart sshd
+
+- name: per-user group deletion
+  group: name="{{ item.name }}" state=absent
+  when: "{{ item.changed }}"
+  with_items: "{{ user_deleted.results }}"

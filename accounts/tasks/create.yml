@@ -1,0 +1,84 @@
+---
+# tasks to create user accounts
+
+- name: create group for user
+  group: name="{{ item.username }}"
+  with_items: "{{ accounts_create_users }}"
+
+- name: create users
+  user: name="{{ item.username }}"
+        group="{{ item.username }}"
+        groups="{{ item.groups | join(',') }}"
+        shell="{{ item.shell if item.shell is defined else accounts_shell }}"
+        password="{{ item.password if item.password is defined else '!' }}"
+        comment="{{ item.name }}"
+        home="{{item.home if item.home is defined else accounts_home_root+item.username}}"
+        createhome=yes
+  with_items: "{{ accounts_create_users }}"
+
+- name: set user ssh key
+  authorized_key: user="{{ item.0.username }}" key="{{ item.1 }}"
+  when: "{{item.1 is defined}}"
+  with_subelements:
+    - "{{ accounts_create_users }}"
+    - ssh_key
+
+- name: add user to sudoers 
+  template: src=sudo_nopasswd dest="/etc/sudoers.d/{{ item.username }}" owner=root group=root mode=0644
+  when: "{{ item.admin == True }}"
+  with_items: "{{ accounts_create_users }}"
+
+- name: remove user from sudoers
+  file: path="/etc/sudoers.d/{{ item.username }}" state=absent
+  when: "{{ item.admin == False }}"
+  with_items: "{{ accounts_create_users }}"
+
+- name: add user to sshd_config AllowUsers if configured
+  replace:
+    backup: no
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowUsers(?!.*\b{{ item.username }}\b).*)$'
+    replace: '\1 {{ item.username }}'
+  with_items: "{{ accounts_create_users }}"
+  notify:
+    - restart sshd
+
+- name: set user profile
+  template: src=profile dest="{{item.home if item.home is defined else accounts_home_root+item.username}}/.profile" owner="{{ item.username }}" group="{{ item.username }}"
+  with_items: "{{ accounts_create_users }}"
+  
+- name: set root profile
+  template: src=profile dest="/root/.profile"
+  with_items:
+    - root
+  tags: [root]
+
+- name: set user bashrc
+  template: src=bashrc dest="{{item.home if item.home is defined else accounts_home_root+item.username}}/.bashrc" owner="{{ item.username }}" group="{{ item.username }}"
+  with_items: "{{ accounts_create_users }}"
+  
+- name: set root bashrc
+  template: src=bashrc dest="/root/.bashrc"
+  with_items:
+    - root
+  tags: [root]
+
+- name: set user home permissions
+  file: path="{{item.home if item.home is defined else accounts_home_root+item.username}}" state=directory mode=0700 owner="{{ item.username }}" group="{{ item.username }}"
+  with_items: "{{ accounts_create_users }}"
+
+- name: set user ssh directory permissions
+  file: path="{{item.home if item.home is defined else accounts_home_root+item.username}}/.ssh" state=directory mode=0700 owner="{{ item.username }}" group="{{ item.username }}"
+  with_items: "{{ accounts_create_users }}"
+
+- name: Restore default SELinux security contexts on user home dir
+  shell: "restorecon -r {{ item.home if item.home is defined else accounts_home_root+item.username}}"
+  with_items: "{{ accounts_create_users }}"
+  tags: [ selinux ]
+  
+- name: Reset password-changed date to today
+  shell: "chage -d {{ (ansible_date_time.epoch|int / 86400)|int }} {{ item.username }}"
+  with_items: "{{ accounts_create_users }}"
+  tags: [ resetpassword ]
+  
+

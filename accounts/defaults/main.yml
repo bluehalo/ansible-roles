@@ -1,0 +1,24 @@
+---
+# defaults file for accounts
+
+# users to create and delete, empty by default; see README.md for details
+accounts_create_users: []
+accounts_delete_users: []
+
+# base directory for all users' home directories
+accounts_home_root: /home/
+# default shell for all users
+accounts_shell: /bin/bash
+# default umask
+accounts_umask: 022
+
+# Password aging controls set in /etc/login.defs:
+
+# Maximum number of days a password may be used.
+accounts_pass_max_days: 99999
+# Minimum number of days allowed between password changes.
+accounts_pass_min_days: 1
+# Minimum acceptable password length.
+accounts_pass_min_len: 14
+# Number of days warning given before a password expires.
+accounts_pass_warn_age: 14
