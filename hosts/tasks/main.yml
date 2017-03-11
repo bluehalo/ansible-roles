@@ -1,0 +1,14 @@
+---
+# tasks file for hosts
+
+- name: set hostname
+  hostname: name="{{ hosts_hostname }}"
+
+- name: update hosts file
+  template:
+    src: hosts.j2
+    dest: "{{ hosts_dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: "{{ hosts_backup }}"

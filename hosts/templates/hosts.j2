@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+127.0.0.1	localhost	localhost.localdomain localhost4 localhost4.localdomain4
+::1			localhost	localhost.localdomain localhost6 localhost6.localdomain6
+
+{# Example: (Add to relevant group_vars) #}
+{#  hosts_extra_entries: #}
+{#    - { ip: '127.0.0.1', hosts: [ 'hostname1', 'hostname2' ] } #}
+{#    - { ip: '127.0.0.2', hosts: [ 'hostname3', 'hostname4' ] } #}
+{% if hosts_extra_entries is defined %}
+{% for entry in hosts_extra_entries %}
+{{ entry.ip }}   {% for host in entry.hosts %}{{ host }} {% endfor %}
+
+{% endfor %}
+
+{% endif %}
+{% for host in groups['tag_env_' + (env | replace('-','_'))] | sort %}
+{% if host != 'localhost' %}
+{% set h = hostvars[host] %}
+{{ h.ec2_private_ip_address }}   {{ h.ec2_private_dns_name }}  {{ h.ec2_tag_Name }}
+{% endif %}
+{% endfor %}
