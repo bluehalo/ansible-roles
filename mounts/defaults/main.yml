@@ -1,0 +1,18 @@
+---
+# defaults file for mounts
+
+# devices to mount, empty by default; see README.md for details
+mounts_devices: []
+
+# previously-mounted devices, empty by default; this will skip creation of
+# the filesystem for the named devices
+mounts_mounted: []
+
+mounts_log_directory: /var/log
+
+# these defaults are used if not specified in mounts_devices
+mounts_default_opts: defaults
+mounts_default_state: mounted
+mounts_default_dump: 0
+mounts_default_passno: 0
+mounts_default_fstab: /etc/fstab

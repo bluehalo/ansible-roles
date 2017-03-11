@@ -1,0 +1,37 @@
+---
+# tasks file for mounts
+
+- name: make file system on block device
+  filesystem:
+    fstype: "{{ item.fstype }}"
+    dev: "{{ item.src }}"
+    force: no
+  when: "{{ item.src not in mounts_mounted }}"
+  with_items: "{{ mounts_devices }}"
+
+- name: ensure devices mounted
+  mount:
+    name: "{{ item.name }}"
+    src: "{{ item.src }}"
+    fstype: "{{ item.fstype }}"
+    opts: "{{ item.opts if item.opts is defined else mounts_default_opts }}"
+    state: "{{ item.state if item.state is defined else mounts_default_state  }}"
+    dump: "{{ item.dump if item.dump is defined else mounts_default_dump }}"
+    passno: "{{ item.passno if item.passno is defined else mounts_default_passno }}"
+    fstab: "{{ item.fstab if item.fstab is defined else mounts_default_fstab }}"
+  with_items: "{{ mounts_devices }}"
+  register: mounted_result
+
+- name: restore /var/log
+  command: "/sbin/restorecon {{ item.name }}"
+  when:
+    - mounted_result.changed
+    - "{{ item.name == mounts_log_directory }}"
+  with_items: "{{ mounts_devices }}"
+
+- name: restart rsyslog
+  command: "/sbin/service rsyslog restart"
+  when:
+    - mounted_result.changed
+    - "{{ item.name == mounts_log_directory }}"
+  with_items: "{{ mounts_devices }}"
