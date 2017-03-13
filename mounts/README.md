@@ -40,7 +40,7 @@ Example Playbook
 ----------------
 
     - name: Configure System Mounts
-      hosts: "tag_type_webserver:&tag_env_{{ env | replace('-','_') }}"
+      hosts: servers
       become: yes
       become_method: sudo
       roles:

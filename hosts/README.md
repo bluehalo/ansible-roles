@@ -13,7 +13,6 @@ Requirements
   extra-var must be used when running.
 - Role assumes EC2 inventory variables, and will use the private IP address, private DNS name, and 'Name' tag in the hosts file. For example:
 
-
     10.0.0.0   ip-10-0-0-0.ec2.internal  host1
     10.0.0.1   ip-10-0-0-1.ec2.internal  host2
     10.0.0.2   ip-10-0-0-2.ec2.internal  host3
@@ -47,7 +46,7 @@ This example sets the hostname to the EC2 private DNS name:
       become: yes
       become_method: sudo
       remote_user: "{{ remote_user | default(omit) }}"
-      hosts: "tag_env_{{ env | replace('-','_') }}"
+      hosts: servers
       roles:
         - name: Configure Hostnames
           role: hosts

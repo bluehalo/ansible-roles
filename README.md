@@ -32,7 +32,7 @@ $ ansible-galaxy init rolename
 
 This creates a directory structure like:
 
-    acme/
+    rolename/
         .travis.yml
         README.md
         defaults/
