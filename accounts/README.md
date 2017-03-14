@@ -49,6 +49,8 @@ them are as follows.
     accounts_shell: /bin/bash
     # default umask
     accounts_umask: 022
+    # optional: override to add a prefix to users' prompts (enclosed square brackets and followed by a space)
+    #accounts_prompt_prefix: 
 
     # Password aging controls set in /etc/login.defs:
 

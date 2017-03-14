@@ -68,10 +68,12 @@ unset color_prompt force_color_prompt
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm*|rxvt*)
-{% if item != 'root' %}
-    PS1="[{{ ec2_tag_type }}] \[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-{% else %}
-    PS1="[{{ ec2_tag_type }}] [\u@\h \W]\$ "
+{% if accounts_prompt_prefix is defined %}
+  {% if item != 'root' %}
+    PS1="[{{ accounts_prompt_prefix }}] \[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+  {% else %}
+    PS1="[{{ accounts_prompt_prefix }}] [\u@\h \W]\$ "
+  {% endif %}
 {% endif %}
     ;;
 *)
