@@ -1,31 +1,67 @@
-Role Name
+mongo
 =========
 
-A brief description of the role goes here.
+Use this role to install, configure, and manage MongoDB
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Assumes a Unix/Linux OS, and has only been tested on the RedHat OS family
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The most commonly modified variables are listed below:
 
-Dependencies
-------------
+    # The name of the mongo process
+    mongo_process_name: mongod
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+    # The location of the database files
+    mongo_db_dir: /data/db
+
+
+    # The location of the configuration file
+    mongo_conf_file: "/etc/mongod.conf"
+
+    # The location of the pid file
+    mongo_pid_file: "/var/run/mongodb/mongod.pid"
+    
+    # The location of the log file
+    mongo_log_path: "/var/log/mongodb/mongod.log"
+    
+    # Mongo port
+    mongo_port: 27017
+    
+    # Mongo logging properties
+    mongo_log_append: true
+    mongo_log_rotate: reopen
+    mongo_log_verbosity: 0
+    
+    # Determines whether the process should be forked
+    mongo_fork_process: true
+    
+    mongo_slow_op_threshold_ms: 1000
+    mongo_operation_profiling_mode: slowOp
+    mongo_cluster_role: shardsvr
+    
+    # WiredTiger configurations
+    mongo_wt_cache_gb: 0
+    mongo_wt_directory_for_indexes: false
+    mongo_authorization: disabled
+
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Install and configure mongo
 
-    - hosts: servers
+    - name: dataflow webapp
+      hosts: "tag_webapp:&tag_dataflow:&tag_env_green"
+      become: yes
+      become_method: sudo
       roles:
-         - { role: username.rolename, x: 42 }
+        - role: mongo
+      tags: [ webapp ]
 
 License
 -------
@@ -35,4 +71,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+[Asymmetrik, Ltd.](https://www.asymmetrik.com/)

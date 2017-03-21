@@ -1,7 +1,7 @@
 galaxy_info:
-  author: your name
-  description: your description
-  company: your company (optional)
+  author: Richard St. John
+  description: MongoDB
+  company: Asymmetrik, Ltd.
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
@@ -16,7 +16,7 @@ galaxy_info:
   # - CC-BY
   license: license (GPLv2, CC-BY, etc)
 
-  min_ansible_version: 1.2
+  min_ansible_version: 2.1
 
   # Optionally specify the branch Galaxy will use when accessing the GitHub
   # repo for this role. During role install, if no tags are available,
