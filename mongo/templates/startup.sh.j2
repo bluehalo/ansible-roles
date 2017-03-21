@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# mongo - Startup script for mongo (mongod or mongos)
+
+# chkconfig: 35 85 15
+# description: Mongo is a scalable, document-oriented database.
+# processname: {{ mongo_process_name }}
+# config: {{ mongo_conf_file }}
+# pidfile: {{ mongo_pid_file }}
+
+. /etc/rc.d/init.d/functions
+
+# things from configuration get there by mongo reading it
+MONGOHOME="{{ mongo_home }}"
+PROCESS="{{ mongo_process_name }}"
+COMMAND="$MONGOHOME/bin/$PROCESS"
+
+# NOTE: if you change any OPTIONS here, you get what you pay for:
+# this script assumes all options are in the config file.
+CONFIGFILE="{{ mongo_conf_file }}"
+OPTIONS=" -f $CONFIGFILE"
+
+PIDFILEPATH=`awk -F'[:=]' -v IGNORECASE=1 '/^[[:blank:]]*(processManagement\.)?pidFilePath[[:blank:]]*[:=][[:blank:]]*/{print $2}' "$CONFIGFILE" | tr -d '[:blank:]'`
+
+MONGO_USER={{ mongo_user }}
+MONGO_GROUP={{ mongo_user }}
+
+PIDDIR=`dirname $PIDFILEPATH`
+
+# Handle NUMA access to CPUs (SERVER-3574)
+# This verifies the existence of numactl as well as testing that the command works
+NUMACTL_ARGS="--interleave=all"
+if which numactl >/dev/null 2>/dev/null && numactl $NUMACTL_ARGS ls / >/dev/null 2>/dev/null
+then
+    NUMACTL="numactl $NUMACTL_ARGS"
+else
+    NUMACTL=""
+fi
+
+start()
+{
+  # Make sure the default pidfile directory exists
+  if [ ! -d $PIDDIR ]; then
+    install -d -m 0755 -o $MONGO_USER -g $MONGO_GROUP $PIDDIR
+  fi
+
+  # Recommended ulimit values for mongod or mongos
+  # See http://docs.mongodb.org/manual/reference/ulimit/#recommended-settings
+  #
+  ulimit -f unlimited
+  ulimit -t unlimited
+  ulimit -v unlimited
+  ulimit -n 64000
+  ulimit -m unlimited
+  ulimit -u 32000
+
+  echo -n $"Starting $PROCESS: "
+  daemon --user "$MONGO_USER" --check $COMMAND "$NUMACTL $COMMAND $OPTIONS >/dev/null 2>&1"
+  RETVAL=$?
+  echo
+  [ $RETVAL -eq 0 ] && touch /var/lock/subsys/"$PROCESS"
+}
+
+stop()
+{
+  echo -n $"Stopping $PROCESS: "
+  if [ "$PROCESS" == mongod ]; then
+  	daemon --user "$MONGO_USER" --check $COMMAND "$NUMACTL $COMMAND $OPTIONS --shutdown >/dev/null 2>&1"
+  	RETVAL=$?
+  else
+  	PID=`cat $PIDFILEPATH`
+  	kill -15 $PID
+  	RETVAL=$?
+  fi
+  echo
+  if [ $RETVAL -eq 0 ]; then
+  	echo "Shutdown successful"
+  	rm -f /var/lock/subsys/"$PROCESS"
+  fi
+}
+
+restart () {
+	stop
+	start
+}
+
+RETVAL=0
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|reload|force-reload)
+    restart
+    ;;
+  condrestart)
+    [ -f /var/lock/subsys/"$PROCESS" ] && restart || :
+    ;;
+  status)
+    status $COMMAND
+    RETVAL=$?
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
+    RETVAL=1
+esac
+
+exit $RETVAL

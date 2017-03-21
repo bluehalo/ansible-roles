@@ -1,5 +1,6 @@
 # Ansible
 *.retry
+.travis.yml
 ssh_config/
 
 # MacOS
@@ -10,4 +11,7 @@ ssh_config/
 
 # Intellij
 .idea/
+
+*.swp
+
 

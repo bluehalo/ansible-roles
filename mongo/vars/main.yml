@@ -1,0 +1,7 @@
+---
+# vars file for mongo
+
+mongo_user: mongod
+mongo_conf_dir: /etc
+mongo_pid_dir: /var/run/mongodb
+mongo_log_dir: /var/log/mongodb
