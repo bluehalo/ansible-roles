@@ -46,7 +46,13 @@ Example Playbook
       roles:
         - name: Mount Webserver Devices
           role: mounts
-          mount_devices: "{{ webserver.mounts[env] | default(webserver.mounts.default) }}"
+          mounts_devices:
+            - name: /var/log
+              src: /dev/xvdb
+              fstype: ext4
+              opts: 'defaults,nofail'
+              state: mounted
+
 
 License
 -------

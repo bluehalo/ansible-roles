@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 127.0.0.1	localhost	localhost.localdomain localhost4 localhost4.localdomain4
-::1			localhost	localhost.localdomain localhost6 localhost6.localdomain6
+::1		localhost	localhost.localdomain localhost6 localhost6.localdomain6
 
 {# Example: (Add to relevant group_vars) #}
 {#  hosts_extra_entries: #}
@@ -13,7 +13,7 @@
 {% endfor %}
 
 {% endif %}
-{% for host in groups['tag_env_' + (env | replace('-','_'))] | sort %}
+{% for host in hosts_entries %}
 {% if host != 'localhost' %}
 {% set h = hostvars[host] %}
 {{ h.ec2_private_ip_address }}   {{ h.ec2_private_dns_name }}  {{ h.ec2_tag_Name }}
