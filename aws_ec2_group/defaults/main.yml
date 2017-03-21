@@ -1,0 +1,16 @@
+---
+# defaults file for aws_ec2_group
+
+# description of the security group
+aws_ec2_group_description: "{{ aws_ec2_group_name }} ports"
+
+# whether to remove any existing rules on group that are not defined in aws_ec2_group_rules
+aws_ec2_group_purge_rules: False
+
+# whether to create tags for the group
+aws_ec2_group_create_tag: True
+
+# tags to create (if aws_ec2_group_create_tag is True)
+aws_ec2_group_tags:
+  Name: "{{ aws_ec2_group_name }}"
+

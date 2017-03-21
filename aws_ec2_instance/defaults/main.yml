@@ -1,0 +1,9 @@
+---
+# defaults file for aws_ec2_instance
+
+aws_ec2_instance_security_groups: []
+aws_ec2_instance_volumes: []
+aws_ec2_instance_assign_public_ip: yes
+aws_ec2_instance_termination_protection: no
+aws_ec2_instance_wait: no
+

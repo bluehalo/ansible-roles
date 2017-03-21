@@ -1,0 +1,25 @@
+---
+# tasks file for aws_ec2_instance
+
+- name: Create EC2 instance
+  ec2:
+    # required
+    instance_type: "{{ aws_ec2_instance_type }}"
+    image: "{{ aws_ec2_instance_ami }}"
+    # optional
+    group: "{{ aws_ec2_instance_security_groups | default(omit) }}"
+    count_tag: "{{ aws_ec2_instance_count_tag | default(omit) }}"
+    exact_count: "{{ aws_ec2_instance_exact_count | default(omit) }}"
+    assign_public_ip: "{{ aws_ec2_instance_assign_public_ip }}"
+    instance_profile_name: "{{ aws_ec2_instance_profile | default(omit) }}"
+    instance_tags: "{{ aws_ec2_instance_tags | default(omit) }}"
+    profile: "{{ aws_boto_profile | default(omit) }}"
+    region: "{{ aws_region | default(omit) }}"
+    ec2_url: "{{ aws_ec2_url | default(omit) }}"
+    termination_protection: "{{ aws_ec2_instance_termination_protection }}"
+    volumes: "{{ aws_ec2_instance_volumes | default(omit) }}"
+    vpc_subnet_id: "{{ aws_vpc_subnet_id | default(omit) }}"
+    wait: "{{ aws_ec2_instance_wait }}"
+    wait_timeout: "{{ aws_ec2_instance_wait_timeout | default(omit) }}"
+    zone: "{{ aws_ec2_instance_availability_zone | default(omit) }}"
+

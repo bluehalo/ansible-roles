@@ -1,0 +1,36 @@
+---
+# tasks file for aws_ec2_group
+
+#- debug: msg="Creating EC2 Security Group - {{ aws_ec2_group_name }}"
+
+- name: Create EC2 security group
+  ec2_group:
+    name:  "{{ aws_ec2_group_name }}"
+    description:  "{{ aws_ec2_group_description }}"
+    rules: "{{ aws_ec2_group_rules }}"
+    purge_rules: "{{ aws_ec2_group_purge_rules }}"
+    region: "{{ aws_region | default(omit) }}"
+    ec2_url: "{{ aws_ec2_url | default(omit) }}"
+    vpc_id: "{{ aws_vpc_id | default(omit) }}"
+    profile: "{{ aws_boto_profile | default(omit) }}"
+  register: aws_ec2_sg
+  ignore_errors: True
+
+- name: Fail the play if the previous command did not succeed
+  fail:
+    msg: "Create Security Group Command Failed"
+  when:
+    - aws_ec2_sg.failed is defined and aws_ec2_sg.failed and 'already exists' not in aws_ec2_sg.msg
+
+- name: Create EC2 security group tags (if configured)
+  ec2_tag:
+    resource: "{{ aws_ec2_sg.group_id }}"
+    region:  "{{ aws_region | default(omit) }}"
+    ec2_url: "{{ aws_ec2_url | default(omit) }}"
+    profile: "{{ aws_boto_profile | default(omit) }}"
+    state: present
+    tags: "{{ aws_ec2_group_tags }}"
+  when:
+    - aws_ec2_group_create_tag
+    - aws_ec2_sg.group_id is defined
+
