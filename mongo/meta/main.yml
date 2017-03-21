@@ -59,9 +59,9 @@ galaxy_info:
   #  - 10
   #  - 6
   #  - 9
-  #- name: MacOSX
-  #  versions:
-  #  - all
+  - name: MacOSX
+    versions:
+    - all
   #  - 10.10
   #  - 10.11
   #  - 10.12
@@ -142,9 +142,9 @@ galaxy_info:
   #  - wily
   #  - xenial
   #  - yakkety
-  #- name: Debian
-  #  versions:
-  #  - all
+  - name: Debian
+    versions:
+    - all
   #  - etch
   #  - jessie
   #  - lenny
