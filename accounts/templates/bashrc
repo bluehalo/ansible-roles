@@ -59,9 +59,9 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\H\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+    PS1='${debian_chroot:+($debian_chroot)}\u@\H:\w\$ '
 fi
 unset color_prompt force_color_prompt
 
@@ -69,12 +69,16 @@ unset color_prompt force_color_prompt
 case "$TERM" in
 xterm*|rxvt*)
 {% if accounts_prompt_prefix is defined %}
-  {% if item != 'root' %}
-    PS1="[{{ accounts_prompt_prefix }}] \[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-  {% else %}
-    PS1="[{{ accounts_prompt_prefix }}] [\u@\h \W]\$ "
-  {% endif %}
+    prefix="[{{ accounts_prompt_prefix }}] "
+{% else %}
+    prefix=""
 {% endif %}
+{% if item != 'root' %}
+    PS1="${prefix}\[\e]0;${debian_chroot:+($debian_chroot)}\u@\H: \w\a\]$PS1"
+{% else %}
+    PS1="${prefix}[\u@\H \W]\$ "
+{% endif %}
+    unset prefix
     ;;
 *)
     ;;
