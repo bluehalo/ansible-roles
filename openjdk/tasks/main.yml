@@ -1,0 +1,17 @@
+---
+# tasks file for openjdk
+
+- name: Ensure latest openjdk is installed
+  yum:
+    name: java
+    state: latest
+    update_cache: yes
+  tags: install
+
+- name: Ensure java profile
+  template:
+    src: java.sh.j2
+    dest: /etc/profile.d/java.sh
+    mode: 0644
+  tags: config
+
