@@ -25,4 +25,4 @@
   tags: [ install, config ]
 
 - name: Start mongo service (service mongod start)
-  service: name=mongod stat
+  service: name=mongod state=started enabled=yes
