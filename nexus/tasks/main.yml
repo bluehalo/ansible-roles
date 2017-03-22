@@ -1,0 +1,104 @@
+---
+# tasks file for nexus
+
+- name: "Ensure nexus group"
+  group: name="{{ nexus_group }}"
+
+- name: "Ensure nexus user"
+  user:
+    name: "{{ nexus_user }}"
+    group: "{{ nexus_group }}"
+    home: "{{ nexus_home }}"
+
+- name: "Ensure Nexus directories exist"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ nexus_user }}"
+    group: "{{ nexus_group }}"
+    mode: 0755
+  with_items:
+    - "{{ nexus_home }}"
+    - "{{ nexus_dest }}"
+    - "{{ nexus_pid_dir }}"
+
+- name: "Download Nexus {{ nexus_version }}"
+  get_url:
+    url: "{{ nexus_download_base_url }}/{{ nexus_distribution_name }}"
+    dest: "{{ nexus_dest }}/{{ nexus_distribution_name }}"
+    force: "{{ nexus_download_force }}"
+    validate_certs: no
+  register: nexus_download
+
+- name: "Unarchive Nexus"
+  unarchive:
+    src: "{{ nexus_dest }}/{{ nexus_distribution_name }}"
+    dest: "{{ nexus_dest }}"
+    copy: no
+  when:
+    - nexus_download.changed
+
+# setting ownership in unarchive task does not work properly
+- name: "Update Nexus ownership"
+  file:
+    path: "{{ item }}"
+    recurse: yes
+    owner: "{{ nexus_user }}"
+    group: "{{ nexus_group }}"
+  when:
+    - nexus_download.changed
+  with_items:
+    - "{{ nexus_dest }}/{{ nexus_distribution_dir }}"
+    - "{{ nexus_dest }}/sonatype-work"
+
+- name: "Create Nexus symlink"
+  file:
+    src: "{{ nexus_dest }}/{{ nexus_distribution_dir }}"
+    dest: "{{ nexus_dest }}/{{ nexus_link }}"
+    state: link
+  when:
+    - nexus_download.changed
+
+- name: Stage Nexus service script
+  command: "cp {{ nexus_dest }}/{{ nexus_distribution_dir }}/bin/nexus /etc/init.d/nexus"
+  when:
+    - nexus_download.changed
+
+- name: Configure Nexus service script
+  lineinfile:
+    dest: "/etc/init.d/nexus"
+    state: present
+    regexp: "{{ item.pattern }}"
+    line: "{{ item.replacement }}"
+    insertafter: "{{ item.after | default(omit) }}"
+  with_items:
+    - pattern: "^NEXUS_HOME="
+      replacement: "NEXUS_HOME=\"{{ nexus_dest }}/{{ nexus_link }}\""
+    - pattern: "^RUN_AS_USER="
+      replacement: "RUN_AS_USER=\"{{ nexus_user }}\""
+      after: "^#RUN_AS_USER="
+    - pattern: "^PIDDIR="
+      replacement: "PIDDIR=\"{{ nexus_pid_dir }}\""
+      after: "^#PIDDIR="
+  when:
+    - nexus_download.changed
+  notify:
+    - reload systemctl
+    - restart nexus
+
+- name: Configure Nexus properties
+  lineinfile:
+    dest: "{{ nexus_dest }}/{{ nexus_link }}/conf/nexus.properties"
+    state: present
+    regexp: "{{ item.pattern }}"
+    line: "{{ item.replacement }}"
+  with_items:
+    - pattern: "^application-port="
+      replacement: "application-port={{ nexus_port }}"
+    - pattern: "^application-host="
+      replacement: "application-host={{ nexus_host }}"
+  when:
+    - nexus_download.changed
+  notify:
+    - restart nexus
+

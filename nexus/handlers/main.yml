@@ -1,0 +1,7 @@
+---
+# handlers file for nexus
+
+- name: reload systemctl
+  command: systemctl daemon-reload
+- name: restart nexus
+  service: name=nexus state=restarted enabled=yes

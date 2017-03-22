@@ -1,0 +1,20 @@
+---
+# defaults file for nexus
+
+nexus_host: 0.0.0.0
+nexus_port: 8081
+
+nexus_group: nexus
+nexus_user: nexus
+nexus_home: /opt/nexus
+nexus_shell: /sbin/nologin
+
+nexus_download_base_url: http://download.sonatype.com/nexus/oss
+nexus_distribution_name: nexus-{{ nexus_version }}-bundle.tar.gz
+nexus_distribution_dir: nexus-{{ nexus_version }}
+nexus_download_force: no
+
+nexus_dest: "{{ nexus_home }}"
+nexus_link: nexus-current
+
+nexus_pid_dir: /var/run/nexus
