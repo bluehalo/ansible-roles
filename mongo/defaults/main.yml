@@ -1,6 +1,8 @@
 ---
 # defaults file for mongo
 
+mongo_version: 3.4
+
 # The name of the mongo process
 mongo_process_name: mongod
 

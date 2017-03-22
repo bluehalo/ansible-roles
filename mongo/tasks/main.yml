@@ -1,6 +1,13 @@
 ---
 # tasks file for mongo
 
+- name: Add repository
+  yum_repository:
+    name: mongodb-org-{{ mongo_version }}
+    description: MongoDB Repository
+    baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/{{ mongo_version }}/$basearch/
+    gpgcheck: no
+
 - name: install mongo
   yum: name=mongodb-org state=latest
 
