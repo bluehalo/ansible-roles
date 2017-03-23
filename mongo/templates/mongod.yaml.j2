@@ -1,0 +1,36 @@
+storage:
+    dbPath: {{ mongo_db_dir }}
+    engine: wiredTiger
+    wiredTiger:
+        indexConfig:
+            prefixCompression: true
+        engineConfig:
+{% if mongo_wt_cache_gb %}
+            cacheSizeGB: {{ mongo_wt_cache_gb }}
+{% endif %}
+            directoryForIndexes: {{ mongo_wt_directory_for_indexes | lower }}
+            statisticsLogDelaySecs: 0
+        collectionConfig:
+            blockCompressor: snappy
+systemLog:
+    destination: file
+    path: {{ mongo_log_path }}
+    logAppend: {{ mongo_log_append | lower }}
+    logRotate: {{ mongo_log_rotate }}
+    verbosity: {{ mongo_log_verbosity }}
+    timeStampFormat: iso8601-utc
+processManagement:
+    fork: {{ mongo_fork_process | lower }}
+    pidFilePath: {{ mongo_pid_file }}
+net:
+    bindIp: 0.0.0.0
+    port: {{ mongo_port }}
+security:
+    authorization: {{ mongo_authorization }}
+operationProfiling:
+    slowOpThresholdMs: {{ mongo_slow_op_threshold_ms }}
+    mode: {{ mongo_operation_profiling_mode }}
+{% if sharding | default(False) %}
+sharding:
+    clusterRole: {{ mongo_cluster_role }}
+{% endif %}

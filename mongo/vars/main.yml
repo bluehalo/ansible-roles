@@ -1,0 +1,4 @@
+---
+# vars file for mongo
+
+mongo_user: mongod

@@ -1,0 +1,8 @@
+# Default limit for number of user's processes to prevent
+# accidental fork bombs.
+# See rhbz #432903 for reasoning.
+
+*       soft    nofile    350000
+*       hard    nofile    350000
+*       soft    nproc     350000
+*       hard    nproc     350000
