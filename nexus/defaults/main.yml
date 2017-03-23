@@ -4,17 +4,24 @@
 nexus_host: 0.0.0.0
 nexus_port: 8081
 
-nexus_group: nexus
-nexus_user: nexus
-nexus_home: /opt/nexus
-nexus_shell: /sbin/nologin
 
-nexus_download_base_url: http://download.sonatype.com/nexus/oss
+# archived versions are here
+#nexus_download_base_url: http://download.sonatype.com/nexus/oss
+# latest version is here
+nexus_download_base_url: http://www.sonatype.org/downloads
+
+nexus_version: 2.14.3-02
+
 nexus_distribution_name: nexus-{{ nexus_version }}-bundle.tar.gz
 nexus_distribution_dir: nexus-{{ nexus_version }}
 nexus_download_force: no
 
 nexus_dest: "{{ nexus_home }}"
 nexus_link: nexus-current
+
+nexus_group: nexus
+nexus_user: nexus
+nexus_home: /opt/nexus
+nexus_shell: /sbin/nologin
 
 nexus_pid_dir: /var/run/nexus

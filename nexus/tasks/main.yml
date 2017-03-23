@@ -22,7 +22,7 @@
     - "{{ nexus_dest }}"
     - "{{ nexus_pid_dir }}"
 
-- name: "Download Nexus {{ nexus_version }}"
+- name: "Download Nexus"
   get_url:
     url: "{{ nexus_download_base_url }}/{{ nexus_distribution_name }}"
     dest: "{{ nexus_dest }}/{{ nexus_distribution_name }}"
@@ -80,8 +80,6 @@
     - pattern: "^PIDDIR="
       replacement: "PIDDIR=\"{{ nexus_pid_dir }}\""
       after: "^#PIDDIR="
-  when:
-    - nexus_download.changed
   notify:
     - reload systemctl
     - restart nexus
