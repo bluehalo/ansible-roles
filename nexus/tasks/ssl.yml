@@ -1,0 +1,70 @@
+---
+- name: Configure Nexus SSL properties
+  lineinfile:
+    dest: "{{ nexus_dest }}/{{ nexus_link }}/conf/nexus.properties"
+    state: present
+    regexp: "{{ item.pattern }}"
+    line: "{{ item.replacement }}"
+  with_items:
+    - pattern: "^application-port-ssl="
+      replacement: "application-port-ssl={{ nexus_ssl_port }}"
+  notify:
+    - restart nexus
+
+- name: Configure Nexus SSL
+  lineinfile:
+    dest: "{{ nexus_dest }}/{{ nexus_link }}/bin/jsw/conf/wrapper.conf"
+    state: present
+    regexp: "{{ item.pattern }}"
+    line: "{{ item.replacement }}"
+    insertafter: "^wrapper.app.parameter.2="
+  with_items:
+    - pattern: "^wrapper.app.parameter.4="
+      replacement: "wrapper.app.parameter.4=./conf/jetty-http-redirect-to-https.xml"
+    - pattern: "^wrapper.app.parameter.3="
+      replacement: "wrapper.app.parameter.3=./conf/jetty-https.xml"
+  notify:
+    - restart nexus
+
+- name: Ensure Nexus SSL directory exists
+  file:
+    path: "{{ nexus_dest }}/{{ nexus_link }}/conf/ssl"
+    state: directory
+    owner: "{{ nexus_user }}"
+    group: "{{ nexus_group }}"
+    mode: 0755
+
+- name: Determine if a keystore already exists
+  stat: path="{{ nexus_dest }}/{{ nexus_link }}/conf/ssl/keystore.jks"
+  register: nexus_keystore_file
+  when:
+    - nexus_ssl_keystore is defined
+
+- name: Deploy keystore (if configured and one does not already exist)
+  copy:
+    src: "{{ nexus_ssl_keystore }}"
+    dest: "{{ nexus_dest }}/{{ nexus_link }}/conf/ssl"
+    owner: "{{ nexus_user }}"
+    group: "{{ nexus_group }}"
+    mode: 0600
+  when:
+    - nexus_ssl_keystore is defined
+    - nexus_keystore_file.stat.exists == False
+
+- name: Configure Nexus SSL keystore
+  lineinfile:
+    dest: "{{ nexus_dest }}/{{ nexus_link }}/conf/jetty-https.xml"
+    state: present
+    regexp: "{{ item.pattern }}"
+    line: "{{ item.replacement }}"
+    backrefs: yes
+  with_items:
+    - pattern: '^(.*)(<Set name="keyStorePassword">).*$'
+      replacement: '\1\2{{ nexus_ssl_keypass }}</Set>'
+    - pattern: '^(.*)(<Set name="keyManagerPassword">).*$'
+      replacement: '\1\2{{ nexus_ssl_keypass }}</Set>'
+    - pattern: '^(.*)(<Set name="trustStorePassword">).*$'
+      replacement: '\1\2{{ nexus_ssl_storepass }}</Set>'
+  notify:
+    - restart nexus
+

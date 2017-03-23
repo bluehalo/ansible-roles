@@ -16,18 +16,26 @@ Variables that can be passed to this role and their default values are as follow
     nexus_host: 0.0.0.0
     nexus_port: 8081
 
-    nexus_group: nexus
-    nexus_user: nexus
-    nexus_home: /opt/nexus
-    nexus_shell: /sbin/nologin
+    nexus_ssl: False
+    nexus_ssl_port: 8443
+    nexus_ssl_keypass: changeit
+    nexus_ssl_storepass: changeit
 
-    nexus_download_base_url: http://download.sonatype.com/nexus/oss
+    nexus_download_base_url: http://www.sonatype.org/downloads
+
+    nexus_version: 2.14.3-02
+
     nexus_distribution_name: nexus-{{ nexus_version }}-bundle.tar.gz
     nexus_distribution_dir: nexus-{{ nexus_version }}
     nexus_download_force: no
 
     nexus_dest: "{{ nexus_home }}"
     nexus_link: nexus-current
+
+    nexus_group: nexus
+    nexus_user: nexus
+    nexus_home: /opt/nexus
+    nexus_shell: /sbin/nologin
 
     nexus_pid_dir: /var/run/nexus
 
@@ -46,7 +54,6 @@ Including an example of how to use your role (for instance, with variables passe
       roles:
         - name: Install nexus
           role: nexus
-          nexus_version: 2.14.2-01
 
 License
 -------

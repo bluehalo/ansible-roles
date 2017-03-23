@@ -95,8 +95,10 @@
       replacement: "application-port={{ nexus_port }}"
     - pattern: "^application-host="
       replacement: "application-host={{ nexus_host }}"
-  when:
-    - nexus_download.changed
   notify:
     - restart nexus
+
+- include: ssl.yml
+  when:
+    - nexus_ssl
 

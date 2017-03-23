@@ -4,6 +4,10 @@
 nexus_host: 0.0.0.0
 nexus_port: 8081
 
+nexus_ssl: False
+nexus_ssl_port: 8443
+nexus_ssl_keypass: changeit
+nexus_ssl_storepass: changeit
 
 # archived versions are here
 #nexus_download_base_url: http://download.sonatype.com/nexus/oss
