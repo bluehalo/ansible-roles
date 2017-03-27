@@ -1,7 +1,7 @@
 mongo
-=========
+=====
 
-Use this role to install, configure, and manage MongoDB
+Use this role to install, configure, and manage MongoDB.
 
 Requirements
 ------------
@@ -18,7 +18,6 @@ The most commonly modified variables are listed below:
 
     # The location of the database files
     mongo_db_dir: /data/db
-
 
     # The location of the configuration file
     mongo_conf_file: "/etc/mongod.conf"
@@ -55,18 +54,15 @@ Example Playbook
 
 Install and configure mongo
 
-    - name: dataflow webapp
-      hosts: "tag_webapp:&tag_dataflow:&tag_env_green"
-      become: yes
-      become_method: sudo
+    - name: Install MongoDB
+      hosts: servers
       roles:
         - role: mongo
-      tags: [ webapp ]
 
 License
 -------
 
-BSD
+MIT
 
 Author Information
 ------------------

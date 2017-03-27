@@ -18,7 +18,8 @@ If you are interested in other versions or functionality, please provide patches
 
 # Getting Started
 
-TBD
+Each role contains a README describing its usage. You can also view the [ansible-playbooks]
+(https://github.com/Asymmetrik/ansible-playbooks) Github repo for some example playbooks.
 
 # Development
 

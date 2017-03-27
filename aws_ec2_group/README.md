@@ -16,10 +16,10 @@ See [Ansible ec2 module documentation](http://docs.ansible.com/ansible/ec2_group
 
 Required variables:
 
-    # TODO
+    # name of the security group
     aws_ec2_group_name:
 
-    # TODO
+    # list of security group rules (see the examples below)
     aws_ec2_group_rules:
 
 Optional variables:

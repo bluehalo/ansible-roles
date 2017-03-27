@@ -53,7 +53,6 @@ Example Playbook
               opts: 'defaults,nofail'
               state: mounted
 
-
 License
 -------
 
