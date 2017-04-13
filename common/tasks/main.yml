@@ -17,9 +17,11 @@
 
 - name: Ensure SELINUX is enforcing
   lineinfile: dest=/etc/selinux/config state=present regexp="SELINUX=.*" line="SELINUX=enforcing"
+  tags: selinux
 
 - name: Restore default SELinux security contexts
   shell: restorecon -r -v /var/log && restorecon -r -v /etc/audit
+  tags: selinux
 
 - name: Ensure ntpd service enabled and running
   service: name=ntpd enabled=yes state=started

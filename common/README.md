@@ -5,6 +5,7 @@ An Ansible role for performing "common" server initialization tasks.
 
 Does the following:
 
+- Adds epel yum repository
 - Installs common packages via yum:
     - ntp
     - wget
