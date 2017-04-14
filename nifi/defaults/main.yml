@@ -1,0 +1,14 @@
+---
+# defaults file for nifi
+
+nifi_base_dir: /opt/nifi
+nifi_home: "{{ nifi_base_dir }}/nifi-current"
+nifi_conf_dir: "{{ nifi_home }}/conf"
+nifi_log_dir: /var/log/nifi
+nifi_pid_dir: /var/run/nifi
+nifi_pid_file: "{{ nifi_pid_dir }}/nifi.pid"
+
+# number of log files to keep
+nifi_log_retention: 10
+nifi_custom_log_levels: []
+

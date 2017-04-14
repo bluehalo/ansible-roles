@@ -1,0 +1,5 @@
+---
+# vars file for nifi
+
+nifi_user: nifi
+nifi_service: /etc/systemd/system/nifi.service

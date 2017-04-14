@@ -1,0 +1,6 @@
+####### NiFi Extra Args
+{% for extra in nifi_extra_args -%}
+{% for key, value in extra.items() -%}
+{{ key }}={{ value }}
+{% endfor -%}
+{% endfor -%}

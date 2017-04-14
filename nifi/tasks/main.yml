@@ -1,0 +1,74 @@
+---
+# tasks file for nifi
+
+# cannot use yum to install rpm because it will never upgrade (https://github.com/ansible/ansible-modules-core/issues/4529)
+- name: Install nifi via rpm
+  command: "rpm --nosignature -U {{ nifi_rpm_file }}"
+  when: "{{ nifi_install_rpm | default(True) }}"
+  notify:
+    - restart nifi
+  tags: [ install ]
+
+- name: Ensure files created by nifi rpm are world-readable
+  file: path="{{ nifi_base_dir }}" state=directory mode="a+rX" recurse=yes
+  tags: [ install ]
+
+- name: Ensure nifi symlink
+  file: src="{{ nifi_base_dir }}/nifi-{{ versions.nifi }}" dest="{{ nifi_home }}" state=link
+  notify:
+    - restart nifi
+  tags: [ install ]
+
+- name: Create nifi systemd service
+  template: src=nifi.service.j2 dest="{{ nifi_service }}" owner=root group=root mode=0644
+  notify:
+    - reload systemctl
+    - restart nifi
+  tags: [ install ]
+
+- name: Ensure nifi-required directories exist and are world-readable
+  file: path="{{ item }}" state=directory owner="{{ nifi_user }}" group="{{ nifi_user }}" mode=0755
+  with_items:
+    - "{{ nifi_log_dir }}"
+  tags: [ install ]
+
+- name: Create nifi scripts and configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode="{{ item.mode | default(0644) }}"
+  with_items:
+    - { src: nifi.sh.j2, dest: "{{ nifi_home }}/bin/nifi.sh", mode: "0755" }
+    - { src: nifi-env.sh.j2, dest: "{{ nifi_home }}/bin/nifi-env.sh", mode: "0755" }
+    - { src: extra-args.properties.j2, dest: "{{ nifi_conf_dir }}/extra-args.properties" }
+  notify:
+    - restart nifi
+  tags: [ config ]
+
+- name: Update nifi configs
+  lineinfile:
+    dest: "{{ nifi_conf_dir }}/nifi.properties"
+    state: present
+    regexp: "^nifi.variable.registry.properties="
+    line: "nifi.variable.registry.properties={{ nifi_conf_dir }}/extra-args.properties"
+  notify:
+    - restart nifi
+  tags: [ config ]
+
+- name: Update nifi log retention
+  replace:
+    dest: "{{ nifi_conf_dir }}/logback.xml"
+    regexp: '^(\s+)\<maxHistory\>.*$'
+    replace: '\1<maxHistory>{{ nifi_log_retention }}</maxHistory>'
+  notify:
+    - restart nifi
+  tags: [ config, log ]
+
+- name: Update nifi custom log levels
+  blockinfile:
+    dest: "{{ nifi_conf_dir }}/logback.xml"
+    insertbefore: '^    <root level=.*$'
+    block: '    <logger name="{{ item.name }}" level="{{ item.level }}"/>'
+    marker: '    <!-- {mark} ANSIBLE MANAGED BLOCK {{ item.name }} -->'
+  with_items: "{{ nifi_custom_log_levels }}"
+  notify:
+    - restart nifi
+  tags: [ config, log ]
+
