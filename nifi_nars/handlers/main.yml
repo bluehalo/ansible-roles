@@ -1,0 +1,5 @@
+---
+# handlers file for nifi_nars
+
+- name: restart nifi
+  service: name=nifi state=restarted enabled=yes

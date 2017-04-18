@@ -1,0 +1,5 @@
+---
+# defaults file for nifi_nars
+
+nifi_nars_user: nifi
+nifi_nars_group: nifi

@@ -51,7 +51,7 @@ Install and configure NiFi
       hosts: servers
       roles:
         - role: nifi
-          nifi_rpm_file: "path/to/nifi-assembly-{{ nifi_version }}.rpm"
+          nifi_rpm_file: "/opt/nifi/nifi-assembly-{{ nifi_version }}.rpm"
 
 License
 -------
