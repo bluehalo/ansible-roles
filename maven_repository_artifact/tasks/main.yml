@@ -1,0 +1,17 @@
+---
+# tasks file for maven_repository_artifact
+
+- name: "Download {{ maven_repository_artifact_id }} artifact"
+  maven_artifact:
+    repository_url: "{{ maven_repository_url }}"
+    validate_certs: "{{ maven_repository_validate_certs | default(omit) }}"
+    username: "{{ maven_repository_username | default(omit) }}"
+    password: "{{ maven_repository_password | default(omit) }}"
+    group_id: "{{ maven_repository_artifact_group }}"
+    artifact_id: "{{ maven_repository_artifact_id }}"
+    version: "{{ maven_repository_artifact_version | default(omit) }}"
+    extension: "{{ maven_repository_artifact_extension | default(omit) }}"
+    classifier: "{{ maven_repository_artifact_classifier | default(omit) }}"
+    dest: "{{ maven_repository_artifact_dest }}"
+  register: maven_repository_artifact_result
+

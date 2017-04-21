@@ -1,0 +1,19 @@
+---
+# tasks file for local_artifact
+
+- name: "Upload local {{ local_artifact_id }} artifact"
+  copy:
+    src: "{{ local_artifact_src }}"
+    dest: "{{ local_artifact_dest }}"
+  when: local_artifact_srcglob is undefined
+  register: local_artifact_result
+
+- name: "Upload local {{ local_artifact_id }} artifact(s) (glob)"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ local_artifact_dest }}"
+  when: local_artifact_srcglob is defined
+  with_fileglob:
+    - "{{ local_artifact_srcglob }}"
+  register: local_artifact_result
+
