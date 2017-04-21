@@ -27,12 +27,40 @@ Role uses register variable named ```local_artifact_result```
 Example Playbook
 ----------------
 
-Install and configure NiFi
+Retrieve an artifact from either localhost or Maven Central based on
+```use_local_artifact``` variable:
 
-    - name: Install nifi
+    - name: Get foo artifact from repository
       hosts: servers
+      vars:
+        - foo_version: 1.0.0-SNAPSHOT
+        - foo_local_src: /path/to/local/foo.rpm
+        - foo_dest: "/opt/foo/foo-{{ foo_version }}.rpm"
+        - maven_repository_url: "http://repo1.maven.org/maven2"
       roles:
-        - role: nifi
+        - name: Get foo rpm from repository
+          role: maven_repository_artifact
+          maven_repository_artifact_group: org.example
+          maven_repository_artifact_id: foo
+          maven_repository_artifact_version: "{{ foo_version }}"
+          maven_repository_artifact_extension: rpm
+          maven_repository_artifact_classifier: bin
+          maven_repository_artifact_dest: "{{ foo_dest }}"
+          when: local_artifact is undefined
+
+        - name: Get locally-built foo rpm
+          role: local_artifact
+          local_artifact_id: foo
+          local_artifact_src: "{{ foo_local_src }}"
+          local_artifact_dest: "{{ foo_dest }}"
+          when: local_artifact is defined
+
+        # example of using the retrieved rpm in a subsequent role
+        - name: Install and configure retrieved foo rpm
+          role: foo_install
+          foo_path: "{{ foo_dest }}"
+          when: (maven_repository_artifact_result is defined and maven_repository_artifact_result.changed) or
+                (local_artifact_result is defined and local_artifact_result.changed)
 
 License
 -------

@@ -3,7 +3,7 @@ maven_repository_artifact
 
 An Ansible role that is a wrapper around the [maven_artifact](http://docs.ansible.com/ansible/maven_artifact_module.html)
 role to simplify downloading an artifact from a Maven repository. The main benefit of this role to extract URL, authentication
-and security settings so that they can be specified as group_vars, rather than needing to specify as parameters on every
+and security settings so that they can be specified as group_vars or play vars, rather than needing to specify as parameters on every
 invocation.
 
 Requirements
@@ -36,8 +36,12 @@ Role uses register variable named ```maven_repository_artifact_result```
 Example Playbook
 ----------------
 
+Retrieve an artifact from Maven Central:
+
     - name: Get foo artifact from repository
       hosts: servers
+      vars:
+        - maven_repository_url: "http://repo1.maven.org/maven2"
       roles:
         - role: maven_repository_artifact
           maven_repository_artifact_group: org.example
