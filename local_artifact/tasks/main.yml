@@ -12,8 +12,8 @@
   copy:
     src: "{{ item }}"
     dest: "{{ local_artifact_dest }}"
-  when: local_artifact_srcglob is defined
   with_fileglob:
-    - "{{ local_artifact_srcglob }}"
+    - "{{ local_artifact_srcglob | default('doesnotmatchanything') }}"
+  when: local_artifact_srcglob is defined
   register: local_artifact_result
 
