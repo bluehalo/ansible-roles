@@ -1,0 +1,72 @@
+---
+- name: copy nifi configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
+  with_items:
+    - { src: 'nifi.properties.j2', dest: "{{nifi_conf_dir}}/nifi.properties" }
+    - { src: 'extra-args.properties.j2', dest: "{{nifi_conf_dir}}/extra-args.properties" }
+  notify:
+    - restart nifi
+  tags: [ deploy, prop, props ]
+
+- name: copy nifi configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
+  with_items:
+    - { src: 'authorizers.xml.j2', dest: "{{nifi_conf_dir}}/authorizers.xml" }
+    - { src: 'bootstrap.conf.j2', dest: "{{nifi_base_dir}}/nifi-current/conf/bootstrap.conf" }
+    - { src: 'bootstrap.conf.j2', dest: "{{nifi_conf_dir}}/bootstrap.conf" }
+    - { src: 'bootstrap-notification-services.xml.j2', dest: "{{nifi_conf_dir}}/bootstrap-notification-services.xml" }
+    - { src: 'logback.xml.j2', dest: "{{nifi_conf_dir}}/logback.xml" }
+    - { src: 'login-identity-providers.xml.j2', dest: "{{nifi_conf_dir}}/login-identity-providers.xml" }
+    - { src: 'state-management.xml.j2', dest: "{{nifi_conf_dir}}/state-management.xml" }
+    - { src: 'zookeeper.properties.j2', dest: "{{nifi_conf_dir}}/zookeeper.properties" }
+  notify:
+    - restart nifi
+  tags: [ config ]
+
+- name: Update nifi custom log levels
+  blockinfile:
+    dest: "{{ nifi_conf_dir }}/logback.xml"
+    insertbefore: '^    <root level=.*$'
+    block: '    <logger name="{{ item.name }}" level="{{ item.level }}"/>'
+    marker: '    <!-- {mark} ANSIBLE MANAGED BLOCK {{ item.name }} -->'
+  with_items: "{{ nifi_custom_log_levels }}"
+  notify:
+    - restart nifi
+  tags: [ config, log ]
+
+- name: copy keystore and truststore
+  copy: src="{{item.src}}" dest="{{item.dest}}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
+  with_items:
+    - { src: "./keystores/{{ nifi_input_socket_host }}_keystore.jks", dest: "{{nifi_conf_dir}}/keystore.jks" }
+    - { src: "./truststores/{{ nifi_input_socket_host }}_truststore.jks", dest: "{{nifi_conf_dir}}/truststore.jks" }
+  when: "{{ nifi_is_secure }}"
+
+- name: copy nifi scripts
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0755'
+  with_items:
+    - { src: 'nifi.sh.j2', dest: "{{ nifi_home }}/bin/nifi.sh" }
+    - { src: 'nifi-env.sh.j2', dest: "{{ nifi_home }}/bin/nifi-env.sh" }
+
+# adding sftp key to all nifi nodes
+- name: download sftp key
+  get_url:
+    url: "{{ downloads_prefix }}nifi-rsa"
+    url_username: "{{ downloads_user }}"
+    url_password: "{{ downloads_password }}"
+    dest: "{{ nifi_user_home }}/.ssh/id_rsa"
+    validate_certs: no
+  register: downloaded_key
+
+- name: update key ownership/permissions
+  file:
+    path: "{{ nifi_user_home }}/.ssh/id_rsa"
+    owner: "{{ nifi_user }}"
+    group: "{{ nifi_user }}"
+    mode: 0600
+  when: "{{ downloaded_key.changed }}"
+
+- name: Ensure authorized_key
+  authorized_key: user="{{ nifi_user }}" key="{{ nifi_public_key }}"
+
+- name: Start NiFi service
+  service: name=nifi state=started enabled=yes
