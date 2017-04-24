@@ -1,0 +1,43 @@
+---
+- name: copy nifi configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
+  with_items:
+    - { src: 'nifi.properties.j2', dest: "{{nifi_conf_dir}}/nifi.properties" }
+    - { src: 'extra-args.properties.j2', dest: "{{nifi_conf_dir}}/extra-args.properties" }
+  notify:
+    - restart nifi
+  tags: [ deploy, prop, props ]
+
+- name: copy nifi configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
+  with_items:
+    - { src: 'authorizers.xml.j2', dest: "{{nifi_conf_dir}}/authorizers.xml" }
+    - { src: 'bootstrap.conf.j2', dest: "{{nifi_conf_dir}}/bootstrap.conf" }
+    - { src: 'bootstrap-notification-services.xml.j2', dest: "{{nifi_conf_dir}}/bootstrap-notification-services.xml" }
+    - { src: 'logback.xml.j2', dest: "{{nifi_conf_dir}}/logback.xml" }
+    - { src: 'login-identity-providers.xml.j2', dest: "{{nifi_conf_dir}}/login-identity-providers.xml" }
+    - { src: 'state-management.xml.j2', dest: "{{nifi_conf_dir}}/state-management.xml" }
+    - { src: 'zookeeper.properties.j2', dest: "{{nifi_conf_dir}}/zookeeper.properties" }
+  notify:
+    - restart nifi
+  tags: [ config ]
+
+- name: Update nifi custom log levels
+  blockinfile:
+    dest: "{{ nifi_conf_dir }}/logback.xml"
+    insertbefore: '^    <root level=.*$'
+    block: '    <logger name="{{ item.name }}" level="{{ item.level }}"/>'
+    marker: '    <!-- {mark} ANSIBLE MANAGED BLOCK {{ item.name }} -->'
+  with_items: "{{ nifi_custom_log_levels }}"
+  notify:
+    - restart nifi
+  tags: [ config, log ]
+
+- name: copy nifi scripts
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0755'
+  with_items:
+    - { src: 'nifi.sh.j2', dest: "{{ nifi_home }}/bin/nifi.sh" }
+    - { src: 'nifi-env.sh.j2', dest: "{{ nifi_home }}/bin/nifi-env.sh" }
+
+- name: Start NiFi service
+  service: name=nifi state=started enabled=yes
