@@ -22,9 +22,9 @@ clientPort=2181
 initLimit=10
 syncLimit=5
 tickTime=2000
-dataDir={{ nifi_zk_dir }}
-autopurge.purgeInterval=24
-autopurge.snapRetainCount=5
+dataDir={{ nifi_zookeeper_dir }}
+autopurge.purgeInterval={{ nifi_zookeeper_autopurge_purgeInterval }}
+autopurge.snapRetainCount={{ nifi_zookeeper_autopurge_snapRetainCount }}
 #
 # Specifies the servers that are part of this zookeeper ensemble. For
 # every NiFi instance running an embedded zookeeper, there needs to be

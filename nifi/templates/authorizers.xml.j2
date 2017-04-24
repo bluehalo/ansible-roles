@@ -55,9 +55,11 @@
         <property name="Users File">{{ nifi_conf_dir }}/users.xml</property>
         <property name="Initial Admin Identity">{{ nifi_initial_admin | default('') }}</property>
         <property name="Legacy Authorized Users File"></property>
-        {% for node in nifi_nodes -%}
+        {% if nifi_nodes_list | length > 0 -%}
+        {% for node in nifi_nodes_list -%}
         <property name="Node Identity {{ loop.index }}">CN={{ node }}, OU=NIFI</property>
         {% endfor -%}
+        {% endif -%}
         <!-- Provide the identity (typically a DN) of each node when clustered, see above description of Node Identity.
         <property name="Node Identity 1"></property>
         <property name="Node Identity 2"></property>

@@ -29,6 +29,9 @@
   when: ansible_distribution == "Amazon" or (ansible_distribution == "CentOS" and ansible_distribution_major_version < "7")
   tags: [ startup ]
 
+- name: remove embedded conf directory
+  file: 
+
 - name: Ensure nifi-required directories exist and are world-readable
   file: path="{{ item }}" state=directory owner="{{ nifi_user }}" group="{{ nifi_user }}" mode=0755
   with_items:
@@ -59,11 +62,11 @@
   with_items: "{{ nifi_provenance_repositories }}"
 
 - name: ensure zookeeper data directory exists
-  file: path="{{ nifi_zk_dir }}" state=directory owner="{{ nifi_user }}" group="{{ nifi_user }}" mode=0755
+  file: path="{{ nifi_zookeeper_dir }}" state=directory owner="{{ nifi_user }}" group="{{ nifi_user }}" mode=0755
   when: "{{ nifi_state_management_embedded_zookeeper_start }}"
 
 - name: add myid file for embedded zookeeper
-  template: src="myid.j2" dest="{{ nifi_zk_dir }}/myid" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
+  template: src="myid.j2" dest="{{ nifi_zookeeper_dir }}/myid" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
   when: "{{ nifi_state_management_embedded_zookeeper_start }}"
 
 - name: ensure nifi extra directories exist

@@ -201,8 +201,8 @@ nifi.cluster.flow.election.max.wait.time=5 mins
 {% if nifi_state_management_embedded_zookeeper_start -%}
 nifi.cluster.flow.election.max.candidates={{ nifi_nodes_list[0:3] | length }}
 {% else -%}
-{% if nifi_zk_servers | length > 0 -%}
-nifi.cluster.flow.election.max.candidates={{ nifi_zk_servers | length }}
+{% if nifi_zookeeper_servers | length > 0 -%}
+nifi.cluster.flow.election.max.candidates={{ nifi_zookeeper_servers | length }}
 {% else -%}
 nifi.cluster.flow.election.max.candidates=
 {% endif -%}
@@ -212,8 +212,8 @@ nifi.cluster.flow.election.max.candidates=
 {% if nifi_state_management_embedded_zookeeper_start -%}
 nifi.zookeeper.connect.string={{ nifi_nodes_list[0:3] | join(':2181,') }}:2181
 {% else -%}
-{% if nifi_zk_servers | length > 0 -%}
-nifi.zookeeper.connect.string={{ nifi_zk_servers | join(':2181,') }}:2181
+{% if nifi_zookeeper_servers | length > 0 -%}
+nifi.zookeeper.connect.string={{ nifi_zookeeper_servers | join(':2181,') }}:2181
 {% else -%}
 nifi.zookeeper.connect.string=
 {% endif -%}
