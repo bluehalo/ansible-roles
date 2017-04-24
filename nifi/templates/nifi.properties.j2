@@ -15,9 +15,9 @@
 
 # Core Properties #
 nifi.version={{ versions.nifi }}
-nifi.flow.configuration.file={{ nifi_conf_dir }}/flow.xml.gz
+nifi.flow.configuration.file={{ nifi_etc_dir }}/flow.xml.gz
 nifi.flow.configuration.archive.enabled=true
-nifi.flow.configuration.archive.dir={{ nifi_conf_dir }}/archive/
+nifi.flow.configuration.archive.dir={{ nifi_etc_dir }}/archive/
 nifi.flow.configuration.archive.max.time=30 days
 nifi.flow.configuration.archive.max.storage=500 MB
 nifi.flowcontroller.autoResumeState=true
@@ -29,7 +29,7 @@ nifi.bored.yield.duration=10 millis
 
 nifi.authorizer.configuration.file={{ nifi_conf_dir }}/authorizers.xml
 nifi.login.identity.provider.configuration.file={{ nifi_conf_dir }}/login-identity-providers.xml
-nifi.templates.directory={{ nifi_conf_dir }}/templates
+nifi.templates.directory={{ nifi_etc_dir }}/templates
 nifi.ui.banner.text=
 nifi.ui.autorefresh.interval=30 sec
 nifi.nar.library.directory={{ nifi_nar_dir }}
