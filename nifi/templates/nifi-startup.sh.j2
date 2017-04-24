@@ -21,7 +21,7 @@
 #
 
 # Make use of the configured NIFI_HOME directory and pass service requests to the nifi.sh executable
-NIFI_HOME=/opt/nifi/nifi-current
+NIFI_HOME={{ nifi_home }}
 bin_dir=${NIFI_HOME}/bin
 nifi_executable=${bin_dir}/nifi.sh
 

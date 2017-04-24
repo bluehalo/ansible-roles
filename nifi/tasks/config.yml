@@ -22,17 +22,6 @@
     - restart nifi
   tags: [ config ]
 
-- name: Update nifi custom log levels
-  blockinfile:
-    dest: "{{ nifi_conf_dir }}/logback.xml"
-    insertbefore: '^    <root level=.*$'
-    block: '    <logger name="{{ item.name }}" level="{{ item.level }}"/>'
-    marker: '    <!-- {mark} ANSIBLE MANAGED BLOCK {{ item.name }} -->'
-  with_items: "{{ nifi_custom_log_levels }}"
-  notify:
-    - restart nifi
-  tags: [ config, log ]
-
 - name: copy nifi scripts
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0755'
   with_items:
