@@ -3,3 +3,13 @@
 
 nifi_user: nifi
 nifi_service: /etc/systemd/system/nifi.service
+
+nifi_base_dir: /var/lib/nifi
+nifi_home: "{{ nifi_base_dir }}/nifi-current"
+nifi_conf_dir: "{{ nifi_home }}/conf"
+nifi_nar_dir: "{{ nifi_home }}/lib"
+nifi_work_dir: "{{ nifi_home }}/work"
+nifi_etc_dir: /etc/nifi
+nifi_log_dir: /var/log/nifi
+nifi_pid_dir: /var/run/nifi
+nifi_pid_file: "{{ nifi_pid_dir }}/nifi.pid"

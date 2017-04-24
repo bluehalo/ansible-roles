@@ -5,15 +5,8 @@ nifi_nodes_list: []
 # extra arg that are useful in expression languages
 nifi_extra_args: []
 
-nifi_base_dir: /var/lib/nifi
-nifi_home: "{{ nifi_base_dir }}/nifi-current"
-nifi_conf_dir: "{{ nifi_home }}/conf"
-nifi_nar_dir: "{{ nifi_home }}/lib"
-nifi_work_dir: "{{ nifi_home }}/work"
-nifi_etc_dir: /etc/nifi
-nifi_log_dir: /var/log/nifi
-nifi_pid_dir: /var/run/nifi
-nifi_pid_file: "{{ nifi_pid_dir }}/nifi.pid"
+# List of directories for nifi to look in for additional nars.
+nifi_custom_nars: []
 
 nifi_node_jvm_memory: '1024m'
 nifi_java_command: 'java'
@@ -24,18 +17,14 @@ nifi_flowfile_repository: "{{ nifi_home }}/flowfile_repository"
 nifi_content_repositories: [ "{{ nifi_home }}/content_repository" ]
 nifi_provenance_repositories: [ "{{ nifi_home }}/provenance_repository" ]
 
-nifi_is_secure: False
-
-# List of directories for nifi to look in for additional nars.
-nifi_custom_nars: []
-
+# NiFi cluster settings
+nifi_single_node: True
 nifi_input_socket_host:
 nifi_input_socket_port:
-
-nifi_single_node: True
 nifi_cluster_node_protocol_port:
 nifi_web_http_port: 8080
 
+# Queue swap settings
 nifi_queue_swap_threshold: 20000
 nifi_swap_in_threads: 1
 nifi_swap_out_threads: 4
@@ -63,10 +52,11 @@ nifi_zookeeper_session_timeout: '10 seconds'
 nifi_zookeeper_autopurge_purgeInterval: 24
 nifi_zookeeper_autopurge_snapRetainCount: 30
 
-#
-nifi_initial_admin: ''
+# Security settings
+nifi_initial_admin:
+nifi_is_secure: False
 
-# number of log files to keep
+# Logback logging levels and settings
 nifi_log_app_file_retention: 10
 nifi_log_user_file_retention: 10
 nifi_log_boot_file_retention: 10
