@@ -88,8 +88,10 @@
     <logger name="org.apache.nifi" level="{{ nifi_log_level_org_apache_nifi }}"/>
     <logger name="org.apache.nifi.processors" level="{{ nifi_log_level_org_apache_nifi_processors }}"/>
     <logger name="org.apache.nifi.processors.standard.LogAttribute" level="{{ nifi_log_level_org_apache_nifi_processors_standard_LogAttribute }}"/>
+    <logger name="org.apache.nifi.controller.repository" level="{{ nifi_log_level_org_apache_nifi_controller_repository }}" />
     <logger name="org.apache.nifi.controller.repository.StandardProcessSession" level="{{ nifi_log_level_org_apache_nifi_controller_repository_StandardProcessSession }}" />
 
+    <logger name="org.wali" level="{{ nifi_log_level_org_wali }}" />
 
     <logger name="org.apache.zookeeper.ClientCnxn" level="ERROR" />
     <logger name="org.apache.zookeeper.server.NIOServerCnxn" level="ERROR" />
