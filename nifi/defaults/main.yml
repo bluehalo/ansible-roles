@@ -5,7 +5,7 @@ nifi_nodes_list: []
 # extra arg that are useful in expression languages
 nifi_extra_args: []
 
-nifi_base_dir: /opt/nifi
+nifi_base_dir: /var/lib/nifi
 nifi_home: "{{ nifi_base_dir }}/nifi-current"
 nifi_conf_dir: "{{ nifi_home }}/conf"
 nifi_nar_dir: "{{ nifi_home }}/lib"

@@ -34,36 +34,11 @@
     - restart nifi
   tags: [ config, log ]
 
-- name: copy keystore and truststore
-  copy: src="{{item.src}}" dest="{{item.dest}}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
-  with_items:
-    - { src: "./keystores/{{ nifi_input_socket_host }}_keystore.jks", dest: "{{nifi_conf_dir}}/keystore.jks" }
-    - { src: "./truststores/{{ nifi_input_socket_host }}_truststore.jks", dest: "{{nifi_conf_dir}}/truststore.jks" }
-  when: "{{ nifi_is_secure }}"
-
 - name: copy nifi scripts
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0755'
   with_items:
     - { src: 'nifi.sh.j2', dest: "{{ nifi_home }}/bin/nifi.sh" }
     - { src: 'nifi-env.sh.j2', dest: "{{ nifi_home }}/bin/nifi-env.sh" }
-
-# adding sftp key to all nifi nodes
-- name: download sftp key
-  get_url:
-    url: "{{ downloads_prefix }}nifi-rsa"
-    url_username: "{{ downloads_user }}"
-    url_password: "{{ downloads_password }}"
-    dest: "{{ nifi_user_home }}/.ssh/id_rsa"
-    validate_certs: no
-  register: downloaded_key
-
-- name: update key ownership/permissions
-  file:
-    path: "{{ nifi_user_home }}/.ssh/id_rsa"
-    owner: "{{ nifi_user }}"
-    group: "{{ nifi_user }}"
-    mode: 0600
-  when: "{{ downloaded_key.changed }}"
 
 - name: Ensure authorized_key
   authorized_key: user="{{ nifi_user }}" key="{{ nifi_public_key }}"
