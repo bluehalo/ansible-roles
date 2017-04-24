@@ -12,7 +12,6 @@
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ nifi_user }}" group="{{ nifi_user }}" mode='0644'
   with_items:
     - { src: 'authorizers.xml.j2', dest: "{{nifi_conf_dir}}/authorizers.xml" }
-    - { src: 'bootstrap.conf.j2', dest: "{{nifi_base_dir}}/nifi-current/conf/bootstrap.conf" }
     - { src: 'bootstrap.conf.j2', dest: "{{nifi_conf_dir}}/bootstrap.conf" }
     - { src: 'bootstrap-notification-services.xml.j2', dest: "{{nifi_conf_dir}}/bootstrap-notification-services.xml" }
     - { src: 'logback.xml.j2', dest: "{{nifi_conf_dir}}/logback.xml" }
@@ -39,9 +38,6 @@
   with_items:
     - { src: 'nifi.sh.j2', dest: "{{ nifi_home }}/bin/nifi.sh" }
     - { src: 'nifi-env.sh.j2', dest: "{{ nifi_home }}/bin/nifi-env.sh" }
-
-- name: Ensure authorized_key
-  authorized_key: user="{{ nifi_user }}" key="{{ nifi_public_key }}"
 
 - name: Start NiFi service
   service: name=nifi state=started enabled=yes

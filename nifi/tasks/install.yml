@@ -10,7 +10,6 @@
 
 - name: Ensure files created by nifi rpm are world-readable
   file: path="{{ nifi_base_dir }}" state=directory mode="a+rX" recurse=yes
-  tags: [ install ]
 
 - name: Ensure nifi symlink
   file: src="{{ nifi_base_dir }}/nifi-{{ versions.nifi }}" dest="{{ nifi_home }}" state=link
@@ -23,14 +22,12 @@
     - reload systemctl
     - restart nifi
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version >= "7"
+  tags: [ service ]
 
 - name: copy startup script
   template: src=nifi-startup.sh.j2 dest=/etc/init.d/nifi owner=root group=root mode=0755
   when: ansible_distribution == "Amazon" or (ansible_distribution == "CentOS" and ansible_distribution_major_version < "7")
-  tags: [ startup ]
-
-- name: remove embedded conf directory
-  file: 
+  tags: [ service ]
 
 - name: Ensure nifi-required directories exist and are world-readable
   file: path="{{ item }}" state=directory owner="{{ nifi_user }}" group="{{ nifi_user }}" mode=0755
@@ -40,6 +37,7 @@
     - "{{ nifi_pid_dir }}"
     - "{{ nifi_nar_dir }}"
     - "{{ nifi_work_dir }}"
+    - "{{ nifi_etc_dir }}"
     - "{{ nifi_database_repository }}"
     - "{{ nifi_flowfile_repository }}"
     - "{{ nifi_database_repository }}/lost+found"

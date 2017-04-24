@@ -13,7 +13,7 @@ nifi_work_dir: "{{ nifi_home }}/work"
 nifi_etc_dir: /etc/nifi
 nifi_log_dir: /var/log/nifi
 nifi_pid_dir: /var/run/nifi
-nifi_pid_file: "{{ nifi_pid_dir }}/nifi_pid"
+nifi_pid_file: "{{ nifi_pid_dir }}/nifi.pid"
 
 nifi_node_jvm_memory: '1024m'
 nifi_java_command: 'java'
