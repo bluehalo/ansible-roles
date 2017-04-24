@@ -167,7 +167,7 @@
     {% for value in nifi_custom_log_levels -%}
     <logger name="{{ value['name'] }}" level="{{ value['level'] }}"/>
     {% endfor -%}
-    {% endif %}
+    {% endif -%}
 
     <root level="{{ nifi_log_level_root }}">
         <appender-ref ref="APP_FILE"/>
