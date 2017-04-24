@@ -84,6 +84,7 @@ Role Variables
     nifi_log_level_org_apache_nifi: INFO
     nifi_log_level_org_apache_nifi_processors: WARN
     nifi_log_level_org_apache_nifi_processors_standard_LogAttribute: INFO
+    nifi_log_level_org_apache_nifi_controller_repository: WARN
     nifi_log_level_org_apache_nifi_controller_repository_StandardProcessSession: WARN
     nifi_log_level_org_apache_nifi_cluster: INFO
     nifi_log_level_org_apache_nifi_server_JettyServer: INFO
@@ -95,6 +96,7 @@ Role Variables
     nifi_log_level_org_apache_nifi_bootstrap: INFO
     nifi_log_level_org_apache_nifi_bootstrap_Command: INFO
     nifi_log_level_org_apache_nifi_web_filter_RequestLogger: INFO
+    nifi_log_level_org_wali: WARN
     nifi_custom_log_levels: []
 
 Dependencies
