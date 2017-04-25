@@ -4,8 +4,6 @@
   with_items:
     - { src: 'nifi.properties.j2', dest: "{{nifi_conf_dir}}/nifi.properties" }
     - { src: 'extra-args.properties.j2', dest: "{{nifi_conf_dir}}/extra-args.properties" }
-  notify:
-    - restart nifi
   tags: [ deploy, prop, props ]
 
 - name: copy nifi configs
@@ -18,8 +16,6 @@
     - { src: 'login-identity-providers.xml.j2', dest: "{{nifi_conf_dir}}/login-identity-providers.xml" }
     - { src: 'state-management.xml.j2', dest: "{{nifi_conf_dir}}/state-management.xml" }
     - { src: 'zookeeper.properties.j2', dest: "{{nifi_conf_dir}}/zookeeper.properties" }
-  notify:
-    - restart nifi
   tags: [ config ]
 
 - name: copy nifi scripts
