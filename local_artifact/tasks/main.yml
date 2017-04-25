@@ -1,14 +1,14 @@
 ---
 # tasks file for local_artifact
 
-- name: "Upload local {{ local_artifact_id }} artifact"
+- name: "Upload local {{ local_artifact_src }} artifact to {{ local_artifact_dest }}"
   copy:
     src: "{{ local_artifact_src }}"
     dest: "{{ local_artifact_dest }}"
   when: local_artifact_srcglob is undefined
   register: local_artifact_result
 
-- name: "Upload local {{ local_artifact_id }} artifact(s) (glob)"
+- name: "Upload local {{ local_artifact_srcglob }} artifact(s) (glob) to {{ local_artifact_dest }}"
   copy:
     src: "{{ item }}"
     dest: "{{ local_artifact_dest }}"

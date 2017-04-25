@@ -14,8 +14,6 @@ Role Variables
 
 The following variables should be passed to the role:
 
-    local_artifact_id - an artifact identifier, used in output messages only
-
     local_artifact_src - local path to the file to be uploaded; overridden by ```local_artifact_srcglob```
 
     local_artifact_srcglob - local path glob, used in a with_fileglob loop; overrides ```local_artifact_src```
@@ -41,7 +39,6 @@ Retrieve an artifact from either localhost or Maven Central based on
         - name: Get foo rpm from repository
           role: maven_repository_artifact
           maven_repository_artifact_group: org.example
-          maven_repository_artifact_id: foo
           maven_repository_artifact_version: "{{ foo_version }}"
           maven_repository_artifact_extension: rpm
           maven_repository_artifact_classifier: bin
@@ -50,7 +47,6 @@ Retrieve an artifact from either localhost or Maven Central based on
 
         - name: Get locally-built foo rpm
           role: local_artifact
-          local_artifact_id: foo
           local_artifact_src: "{{ foo_local_src }}"
           local_artifact_dest: "{{ foo_dest }}"
           when: local_artifact is defined
