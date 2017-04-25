@@ -14,7 +14,7 @@ Role Variables
 
 Optional variables:
 
-    rpm_nosignature - if True, enables rpm ```--nosignature``` flag to not verify package or header signatures
+    rpm_nosignature - default: True. if True, enables rpm ```--nosignature``` flag to not verify package or header signatures
 
 Dependencies
 ------------
