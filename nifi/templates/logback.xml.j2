@@ -163,6 +163,12 @@
         <appender-ref ref="BOOTSTRAP_FILE" />
     </logger>
 
+    {% if nifi_custom_log_levels | length > 0 -%}
+    {% for value in nifi_custom_log_levels -%}
+    <logger name="{{ value['name'] }}" level="{{ value['level'] }}"/>
+    {% endfor -%}
+    {% endif -%}
+
     <root level="{{ nifi_log_level_root }}">
         <appender-ref ref="APP_FILE"/>
     </root>
