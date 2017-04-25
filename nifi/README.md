@@ -6,15 +6,19 @@ Use this role to install, configure, and manage Apache NiFi.
 Requirements
 ------------
 
-- Role has only been tested with CentOS 7.
-- Role installs NiFi via rpm, and the rpm file must be accssible on the target system prior to executing this role
+- NiFi distribution must be accssible on the target system prior to executing this role
+  - if RPM, the RPM must be installed
+  - if tar.gz, it must be unarchived
 
 Role Variables
 --------------
 
-### Variables that must be overridden are:
-    nifi_rpm_file: location of the rpm file to be installed
-    nifi_install_rpm: boolean controls whether to update the rpm install or not, defaults to True
+### Variables that determine the nifi install location, and their default values:
+
+    nifi_base_dir: /var/lib/nifi
+    nifi_etc_dir: /etc/nifi
+    nifi_log_dir: /var/log/nifi
+    nifi_pid_dir: /var/run/nifi
 
 ### Other Default variables are listed below:
     # A complete list of IP addresses for each nodes within the nifi cluster

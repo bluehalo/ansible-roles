@@ -1,5 +1,5 @@
-Role Name
-=========
+local_artifact
+==============
 
 An Ansible role for uploading an artifact from the local system. The main benefit of this role to pair with the
 the ```repository_artifact``` role in a when clause to use either a "released" artifact from a repository or a local artifact.
