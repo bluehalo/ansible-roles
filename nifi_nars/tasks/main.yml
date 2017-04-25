@@ -2,23 +2,19 @@
 # tasks file for nifi_nars
 
 - name: Ensure required directories exist
-  file: path="{{ nifi_nars_base_dir }}" state=directory owner="{{ nifi_nars_user }}" group="{{ nifi_nars_group }}" mode=0755
-  tags: [ install ]
-
-# cannot use yum to install rpm because it will never upgrade (https://github.com/ansible/ansible-modules-core/issues/4529)
-- name: Install nars via rpm
-  command: "rpm --nosignature -U {{ nifi_nars_rpm }}"
-  notify:
-    - restart nifi
-  tags: [ install ]
+  file:
+    path: "{{ nifi_nars_base_dir }}"
+    state: directory
+    owner: "{{ nifi_nars_user }}"
+    group: "{{ nifi_nars_group }}"
+    mode: 0755
 
 - name: Ensure symlink
   file: src="{{ nifi_nars_base_dir }}/{{ nifi_nars_dir }}" dest="{{ nifi_nars_symlink }}" state=link
   notify:
     - restart nifi
-  tags: [ install ]
 
-- name: Update nifi configs
+- name: Ensure nars are configured in nifi.properties
   lineinfile:
     dest: "{{ nifi_conf_dir }}/nifi.properties"
     state: present
@@ -27,5 +23,4 @@
     insertafter: "^nifi.nar.library.directory="
   notify:
     - restart nifi
-  tags: [ config ]
 

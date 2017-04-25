@@ -1,14 +1,7 @@
 ---
 # tasks file for nifi
 
-# cannot use yum to install rpm because it will never upgrade (https://github.com/ansible/ansible-modules-core/issues/4529)
-- name: Install nifi via rpm
-  command: "rpm --nosignature -U {{ nifi_rpm_file }}"
-  when: "{{ nifi_install_rpm | default(True) }}"
-  notify:
-    - restart nifi
-
-- name: Ensure files created by nifi rpm are world-readable
+- name: Ensure nifi files are world-readable
   file: path="{{ nifi_base_dir }}" state=directory mode="a+rX" recurse=yes
 
 - name: Ensure nifi symlink
@@ -24,7 +17,7 @@
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version >= "7"
   tags: [ service ]
 
-- name: copy startup script
+- name: Create nifi init.d service
   template: src=nifi-startup.sh.j2 dest=/etc/init.d/nifi owner=root group=root mode=0755
   when: ansible_distribution == "Amazon" or (ansible_distribution == "CentOS" and ansible_distribution_major_version < "7")
   tags: [ service ]
