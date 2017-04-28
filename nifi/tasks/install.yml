@@ -6,14 +6,11 @@
 
 - name: Ensure nifi symlink
   file: src="{{ nifi_base_dir }}/nifi-{{ versions.nifi }}" dest="{{ nifi_home }}" state=link
-  notify:
-    - restart nifi
 
 - name: Create nifi systemd service
   template: src=nifi.service.j2 dest="{{ nifi_service }}" owner=root group=root mode=0644
   notify:
     - reload systemctl
-    - restart nifi
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version >= "7"
   tags: [ service ]
 
