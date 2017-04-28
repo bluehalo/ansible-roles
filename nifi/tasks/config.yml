@@ -28,5 +28,5 @@
     - { src: 'nifi.sh.j2', dest: "{{ nifi_home }}/bin/nifi.sh" }
     - { src: 'nifi-env.sh.j2', dest: "{{ nifi_home }}/bin/nifi-env.sh" }
 
-- name: Start NiFi service
+- name: Ensure NiFi is running
   service: name=nifi state=started enabled=yes
