@@ -4,4 +4,6 @@
 # cannot use yum to install rpm because it will never upgrade (https://github.com/ansible/ansible-modules-core/issues/4529)
 - name: Install rpm
   command: "rpm {{ (rpm_nosignature) | ternary('--nosignature','') }} -U {{ rpm_path }}"
+  args:
+    warn: no
 
