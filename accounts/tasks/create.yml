@@ -18,19 +18,19 @@
 
 - name: set user ssh key
   authorized_key: user="{{ item.0.username }}" key="{{ item.1 }}"
-  when: "{{item.1 is defined}}"
+  when: item.1 is defined
   with_subelements:
     - "{{ accounts_create_users }}"
     - ssh_key
 
 - name: add user to sudoers 
   template: src=sudo_nopasswd dest="/etc/sudoers.d/{{ item.username }}" owner=root group=root mode=0644
-  when: "{{ item.admin == True }}"
+  when: item.admin == True
   with_items: "{{ accounts_create_users }}"
 
 - name: remove user from sudoers
   file: path="/etc/sudoers.d/{{ item.username }}" state=absent
-  when: "{{ item.admin == False }}"
+  when: item.admin == False
   with_items: "{{ accounts_create_users }}"
 
 - name: add user to sshd_config AllowUsers if configured

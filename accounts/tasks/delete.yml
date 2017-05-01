@@ -8,7 +8,7 @@
 
 - name: remove deleted user from sudoers
   file: path=/etc/sudoers.d/{{ item.name }} state=absent
-  when: "{{ item.changed }}"
+  when: item.changed
   with_items: "{{ user_deleted.results }}"
 
 - name: remove user from sshd_config AllowUsers if configured
@@ -23,5 +23,5 @@
 
 - name: per-user group deletion
   group: name="{{ item.name }}" state=absent
-  when: "{{ item.changed }}"
+  when: item.changed
   with_items: "{{ user_deleted.results }}"
