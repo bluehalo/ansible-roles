@@ -21,6 +21,10 @@ Role Variables
     nifi_pid_dir: /var/run/nifi
 
 ### Other Default variables are listed below:
+
+    # whether to restart nifi after making changes; default is True, for a cluster you may wish to disable
+    nifi_perform_restart: True
+
     # A complete list of IP addresses for each nodes within the nifi cluster
     nifi_nodes_list: []
     
