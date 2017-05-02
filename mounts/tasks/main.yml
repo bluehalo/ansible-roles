@@ -6,7 +6,7 @@
     fstype: "{{ item.fstype }}"
     dev: "{{ item.src }}"
     force: no
-  when: "{{ item.src not in mounts_mounted }}"
+  when: item.src not in mounts_mounted
   with_items: "{{ mounts_devices }}"
 
 - name: ensure devices mounted
@@ -26,12 +26,12 @@
   command: "/sbin/restorecon {{ item.name }}"
   when:
     - mounted_result.changed
-    - "{{ item.name == mounts_log_directory }}"
+    - item.name == mounts_log_directory
   with_items: "{{ mounts_devices }}"
 
 - name: restart rsyslog
   command: "/sbin/service rsyslog restart"
   when:
     - mounted_result.changed
-    - "{{ item.name == mounts_log_directory }}"
+    - item.name == mounts_log_directory
   with_items: "{{ mounts_devices }}"
