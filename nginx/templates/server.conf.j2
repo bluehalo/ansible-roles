@@ -1,0 +1,61 @@
+server {
+    listen {{ item.listen | default('80') }};
+
+    server_name {{ item.server_name }};
+
+{% if item.root is defined %}
+    root {{ item.root }};
+
+{% endif %}
+    index {{ item.index | default('index.html index.htm') }};
+
+{% if item.error_pages is defined %}
+{% for error_page in item.error_pages %}
+    error_page {{ error_page }};
+{% endfor %}
+
+{% endif %}
+    access_log {{ nginx_log_dir }}/{{ item.name }}.access.log;
+    error_log {{ nginx_log_dir }}/{{ item.name }}.error.log error;
+
+    client_max_body_size {{ item.client_max_body_size | default (0) }};
+    client_body_buffer_size {{ item.client_body_buffer_size | default('500M') }};
+    proxy_intercept_errors on;
+
+{% if item.ssl | default(false) %}
+    # Enable server SSL
+    include {{ nginx_ssl_conf_path }};
+
+{% endif %}
+{% if item.includes is defined %}
+{% for include in item.includes %}
+    include {{ include }};
+{% endfor %}
+
+{% endif %}
+{% if item.basic_auth | default(false) %}
+    # Basic Auth Protection
+    auth_basic "restricted servers";
+    auth_basic_user_file {{ nginx_htpasswd_file_path }};
+
+{% endif %}
+{% if item.redirect | default(false) %}
+    location = / {
+        return 301 $scheme://{{ item.server_name }}/{{item.redirect}};
+    }
+
+{% endif %}
+    location / {
+        proxy_pass http://{{ item.proxy }};
+        proxy_set_header Host            $host;
+        proxy_set_header X-Real-IP       $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_redirect                   off;
+        proxy_buffering                  off;
+    }
+
+{% if item.extra_parameters is defined %}
+    {{ item.extra_parameters|indent(4) }}
+{% endif %}
+}
+

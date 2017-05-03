@@ -1,0 +1,17 @@
+---
+# vars file for nginx
+
+nginx_user: nginx
+
+nginx_base_path: /etc/nginx
+nginx_conf_file_path: "{{ nginx_base_path }}/nginx.conf"
+nginx_mime_file_path: "{{ nginx_base_path }}/mime.types"
+nginx_htpasswd_file_path: "{{ nginx_base_path }}/.htpasswd"
+
+nginx_conf_path: "{{ nginx_base_path }}/conf.d"
+nginx_default_conf: "{{ nginx_conf_path }}/default.conf"
+
+nginx_log_dir: /var/log/nginx
+
+nginx_pidfile: /var/run/nginx.pid
+

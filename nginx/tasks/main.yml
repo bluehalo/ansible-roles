@@ -1,0 +1,90 @@
+---
+# tasks file for nginx
+
+- name: Add nginx yum repository
+  yum_repository:
+    name: nginx
+    description: nginx
+    baseurl: "{{ nginx_yum_repo_url }}"
+    gpgcheck: no
+    enabled: yes
+
+- name: Install nginx
+  yum: name="{{ item }}" state=installed
+  with_items:
+    - nginx
+    # needed for htpasswd utility
+    - httpd-tools
+
+- name: Ensure SELinux settings for nginx reverse proxying
+  seboolean: name=httpd_can_network_connect state=yes persistent=yes
+  when: nginx_configure_selinux
+
+- name: Copy nginx configuration
+  template:
+    src: "{{ nginx_conf_template }}"
+    dest: "{{ nginx_conf_file_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nginx
+
+- name: Ensure nginx_conf_path exists
+  file:
+    path: "{{ nginx_conf_path }}"
+    state: directory
+  notify: reload nginx
+
+- name: Remove default nginx conf file (if configured)
+  file:
+    path: "{{ nginx_default_conf }}"
+    state: absent
+  when: nginx_remove_default_conf
+  notify: restart nginx
+
+- name: Add managed conf files
+  template:
+    src: "{{ item.template|default(nginx_server_conf_template) }}"
+    dest: "{{ nginx_conf_path }}/{{ item.server_name.split(' ')[0] }}.conf"
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: item.state|default('present') != 'absent'
+  with_items: "{{ nginx_servers }}"
+  notify: reload nginx
+
+- name: Remove managed conf files
+  file:
+    path: "{{ nginx_conf_path }}/{{ item.server_name.split(' ')[0] }}.conf"
+    state: absent
+  when: item.state|default('present') == 'absent'
+  with_items: "{{ nginx_servers }}"
+  notify: reload nginx
+
+- name: Copy ssl configuration
+  template:
+    src: ssl.conf.j2
+    dest: "{{ nginx_ssl_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: nginx_enable_ssl
+  notify:
+    - reload nginx
+
+- name: Copy basic auth file
+  template:
+    src: "{{ nginx_basic_auth_file }}"
+    dest: "{{ nginx_htpasswd_file_path }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: nginx_basic_auth_file is defined
+  notify:
+    - reload nginx
+
+- name: Ensure nginx is started and enabled to start at boot
+  service: name=nginx state=started enabled=yes
+
