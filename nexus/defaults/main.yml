@@ -9,6 +9,8 @@ nexus_ssl_port: 8443
 nexus_ssl_keypass: changeit
 nexus_ssl_storepass: changeit
 
+nexus_webapp_context_path: /nexus
+
 # archived versions are here
 #nexus_download_base_url: http://download.sonatype.com/nexus/oss
 # latest version is here

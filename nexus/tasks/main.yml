@@ -95,6 +95,8 @@
       replacement: "application-port={{ nexus_port }}"
     - pattern: "^application-host="
       replacement: "application-host={{ nexus_host }}"
+    - pattern: "^nexus-webapp-context-path="
+      replacement: "nexus-webapp-context-path={{ nexus_webapp_context_path }}"
   notify:
     - restart nexus
 
