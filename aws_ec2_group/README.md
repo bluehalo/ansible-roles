@@ -45,9 +45,12 @@ Optional variables:
     # whether to create tags for the group
     aws_ec2_group_create_tag: True
 
-    # tags to create (if aws_ec2_group_create_tag is True)
-    aws_ec2_group_tags:
-        Name: "{{ aws_ec2_group_name }}"
+    # default tags to create, if aws_ec2_group_create_tag is True
+    aws_ec2_group_default_tags:
+      Name: "{{ aws_ec2_group_name }}"
+
+    # extra tags to create, in addition to those in 'aws_ec2_group_default_tags', if aws_ec2_group_create_tag is True
+    aws_ec2_group_tags: {}
 
 Example Playbook
 ----------------

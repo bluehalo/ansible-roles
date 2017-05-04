@@ -29,7 +29,7 @@
     ec2_url: "{{ aws_ec2_url | default(omit) }}"
     profile: "{{ aws_boto_profile | default(omit) }}"
     state: present
-    tags: "{{ aws_ec2_group_tags }}"
+    tags: "{{ aws_ec2_group_tags | combine(aws_ec2_group_default_tags) }}"
   when:
     - aws_ec2_group_create_tag
     - aws_ec2_sg.group_id is defined
