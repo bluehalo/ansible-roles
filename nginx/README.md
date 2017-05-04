@@ -11,7 +11,7 @@ Assumes a RedHat OS
 Role Variables
 --------------
 
-TODO
+See defaults/main.yml for a complete list.
 
 Example Playbook
 ----------------
@@ -24,6 +24,7 @@ Creates a reverse proxy for ui.example.com forwarding to {{ ui_host }}:8080 with
         - domain: example.com
       roles:
         - role: nginx
+          nginx_enable_ssl: true
           nginx_configure_selinux: true
           nginx_basic_auth_file: files/htpasswd
           nginx_servers:
