@@ -19,6 +19,9 @@ Role Variables
     nifi_etc_dir: /etc/nifi
     nifi_log_dir: /var/log/nifi
     nifi_pid_dir: /var/run/nifi
+    
+### Required Variables
+    nifi_version
 
 ### Other Default variables are listed below:
 
@@ -56,7 +59,15 @@ Role Variables
     nifi_queue_swap_threshold: 20000
     nifi_swap_in_threads: 1
     nifi_swap_out_threads: 4
-    
+
+    # Content Repository Settings
+    nifi_content_claim_max_flow_files: 100
+    nifi_content_claim_max_appendable_size: '10 MB'
+    nifi_content_archive_max_retention_period: '12 hours'
+    nifi_content_archive_max_usage_percentage: '50%'
+    nifi_content_archive_enabled: 'false'
+    nifi_content_always_sync: 'false'
+     
     # Provenance settings
     nifi_provenance_implementation: VolatileProvenanceRepository
     nifi_provenance_max_storage_time: '24 hours'
@@ -66,6 +77,7 @@ Role Variables
     nifi_provenance_query_threads: 2
     nifi_provenance_index_threads: 1
     nifi_provenance_repository_buffer_size: 100000
+    nifi_provenance_indexed_fields: EventType, FlowFileUUID, Filename, ProcessorID, Relationship
     
     # Status repository settings
     nifi_components_status_repository_buffer_size: 1440
