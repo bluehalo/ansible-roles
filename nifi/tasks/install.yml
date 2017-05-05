@@ -5,7 +5,7 @@
   file: path="{{ nifi_base_dir }}" state=directory mode="a+rX" recurse=yes
 
 - name: Ensure nifi symlink
-  file: src="{{ nifi_base_dir }}/nifi-{{ versions.nifi }}" dest="{{ nifi_home }}" state=link
+  file: src="{{ nifi_base_dir }}/nifi-{{ nifi_version }}" dest="{{ nifi_home }}" state=link
   notify:
     - restart nifi
 
