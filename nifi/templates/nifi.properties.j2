@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Core Properties #
-nifi.version={{ versions.nifi }}
+nifi.version={{ nifi_version }}
 nifi.flow.configuration.file={{ nifi_etc_dir }}/flow.xml.gz
 nifi.flow.configuration.archive.enabled=true
 nifi.flow.configuration.archive.dir={{ nifi_etc_dir }}/archive/
@@ -49,7 +49,7 @@ nifi.state.management.provider.local=local-provider
 nifi.state.management.provider.cluster=zk-provider
 # Specifies whether or not this instance of NiFi should run an embedded ZooKeeper server
 {% set is_zk_node = nifi_nodes_list[0:3] | intersect([ec2_private_ip_address]) | length > 0 -%}
-{% set should_run_zk = nifi_state_management_embedded_zookeeper_start | default(True) -%}
+{% set should_run_zk = nifi_state_management_embedded_zookeeper_start -%}
 nifi.state.management.embedded.zookeeper.start={{ (is_zk_node and should_run_zk) | lower }}
 # Properties file that provides the ZooKeeper properties to use if <nifi.state.management.embedded.zookeeper.start> is set to true
 nifi.state.management.embedded.zookeeper.properties={{ nifi_conf_dir }}/zookeeper.properties
@@ -74,36 +74,36 @@ nifi.swap.out.threads={{ nifi_swap_out_threads }}
 
 # Content Repository
 nifi.content.repository.implementation=org.apache.nifi.controller.repository.FileSystemRepository
-nifi.content.claim.max.appendable.size={{ nifi_content_claim_max_appendable_size | default('10 MB') }}
-nifi.content.claim.max.flow.files={{ nifi_content_claim_max_flow_files | default('100') }}
+nifi.content.claim.max.appendable.size={{ nifi_content_claim_max_appendable_size }}
+nifi.content.claim.max.flow.files={{ nifi_content_claim_max_flow_files }}
 {% for repo in nifi_content_repositories -%}
 nifi.content.repository.directory.repo{{ loop.index0 }}={{ repo }}
 {% endfor -%}
-nifi.content.repository.archive.max.retention.period={{ nifi_content_archive_max_retention_period | default('12 hours') }}
-nifi.content.repository.archive.max.usage.percentage={{ nifi_content_archive_max_usage_percentage | default('50%') }}
-nifi.content.repository.archive.enabled={{ nifi_content_archive_enabled | default('false') | lower }}
-nifi.content.repository.always.sync={{ nifi_content_always_sync | default('false') | lower }}
+nifi.content.repository.archive.max.retention.period={{ nifi_content_archive_max_retention_period }}
+nifi.content.repository.archive.max.usage.percentage={{ nifi_content_archive_max_usage_percentage }}
+nifi.content.repository.archive.enabled={{ nifi_content_archive_enabled | lower }}
+nifi.content.repository.always.sync={{ nifi_content_always_sync | lower }}
 nifi.content.viewer.url=/nifi-content-viewer/
 
 # Provenance Repository Properties
-nifi.provenance.repository.implementation=org.apache.nifi.provenance.{{ nifi_provenance_implementation | default('VolatileProvenanceRepository') }}
+nifi.provenance.repository.implementation=org.apache.nifi.provenance.{{ nifi_provenance_implementation }}
 
 # Persistent Provenance Repository Properties
 {% for repo in nifi_provenance_repositories -%}
 nifi.provenance.repository.directory.repo{{ loop.index0 }}={{ repo }}
 {% endfor -%}
-nifi.provenance.repository.max.storage.time={{ nifi_provenance_max_storage_time | default('24 hours') }}
-nifi.provenance.repository.max.storage.size={{ nifi_provenance_max_storage_size | default('1 GB') }}
-nifi.provenance.repository.rollover.time={{ nifi_provenance_rollover_time | default('30 secs') }}
-nifi.provenance.repository.rollover.size={{ nifi_provenance_rollover_size | default('100 MB') }}
-nifi.provenance.repository.query.threads={{ nifi_provenance_query_threads | default('2') }}
-nifi.provenance.repository.index.threads={{ nifi_provenance_index_threads | default('1') }}
+nifi.provenance.repository.max.storage.time={{ nifi_provenance_max_storage_time }}
+nifi.provenance.repository.max.storage.size={{ nifi_provenance_max_storage_size }}
+nifi.provenance.repository.rollover.time={{ nifi_provenance_rollover_time }}
+nifi.provenance.repository.rollover.size={{ nifi_provenance_rollover_size }}
+nifi.provenance.repository.query.threads={{ nifi_provenance_query_threads }}
+nifi.provenance.repository.index.threads={{ nifi_provenance_index_threads }}
 nifi.provenance.repository.compress.on.rollover=true
 nifi.provenance.repository.always.sync=false
 nifi.provenance.repository.journal.count=16
 # Comma-separated list of fields. Fields that are not indexed will not be searchable. Valid fields are:
 # EventType, FlowFileUUID, Filename, TransitURI, ProcessorID, AlternateIdentifierURI, Relationship, Details
-nifi.provenance.repository.indexed.fields={{ nifi_provenance_indexed_fields | default('EventType, FlowFileUUID, Filename, ProcessorID, Relationship') }}
+nifi.provenance.repository.indexed.fields={{ nifi_provenance_indexed_fields }}
 # FlowFile Attributes that should be indexed and made searchable.  Some examples to consider are filename, uuid, mime.type
 nifi.provenance.repository.indexed.attributes=
 # Large values for the shard size will result in more Java heap usage when searching the Provenance Repository
@@ -239,7 +239,7 @@ nifi.kerberos.spnego.authentication.expiration=12 hours
 nifi.variable.registry.properties={{ nifi_conf_dir }}/extra-args.properties
 
 # Build info
-nifi.build.tag=Forked NARS: nifi-{{ versions.nifi }}
+nifi.build.tag=Forked NARS: nifi-{{ nifi_version }}
 #nifi.build.branch=NIFI-3100-rc1
 #nifi.build.revision=1b2b9f1
 nifi.build.timestamp=
