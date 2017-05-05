@@ -66,7 +66,7 @@ nifi_components_status_snapshot_frequency: '1 min'
 # nifi zookeeper settings
 nifi_zookeeper_servers: []
 nifi_zookeeper_dir: /data/zookeeper
-nifi_state_management_embedded_zookeeper_start: True
+nifi_state_management_embedded_zookeeper_start: False
 nifi_zookeeper_root_node: '/nifi'
 nifi_zookeeper_session_timeout: '10 seconds'
 nifi_zookeeper_autopurge_purgeInterval: 24
