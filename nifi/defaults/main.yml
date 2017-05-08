@@ -49,13 +49,13 @@ nifi_content_archive_enabled: 'false'
 nifi_content_always_sync: 'false'
 
 # Provenance Settings
-nifi_provenance_implementation: VolatileProvenanceRepository
+nifi_provenance_implementation: PersistentProvenanceRepository
 nifi_provenance_max_storage_time: '24 hours'
 nifi_provenance_max_storage_size: '1 GB'
 nifi_provenance_rollover_time: '30 secs'
 nifi_provenance_rollover_size: '100 MB'
 nifi_provenance_query_threads: 2
-nifi_provenance_index_threads: 1
+nifi_provenance_index_threads: 2
 nifi_provenance_repository_buffer_size: 100000
 nifi_provenance_indexed_fields: EventType, FlowFileUUID, Filename, ProcessorID, Relationship
 

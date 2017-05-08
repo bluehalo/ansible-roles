@@ -20,6 +20,7 @@ nifi.flow.configuration.archive.enabled=true
 nifi.flow.configuration.archive.dir={{ nifi_etc_dir }}/archive/
 nifi.flow.configuration.archive.max.time=30 days
 nifi.flow.configuration.archive.max.storage=500 MB
+nifi.flow.configuration.archive.max.count=
 nifi.flowcontroller.autoResumeState=true
 nifi.flowcontroller.graceful.shutdown.period=10 sec
 nifi.flowservice.writedelay.interval=500 ms
@@ -87,6 +88,11 @@ nifi.content.viewer.url=/nifi-content-viewer/
 
 # Provenance Repository Properties
 nifi.provenance.repository.implementation=org.apache.nifi.provenance.{{ nifi_provenance_implementation }}
+nifi.provenance.repository.debug.frequency=1_000_000
+nifi.provenance.repository.encryption.key.provider.implementation=
+nifi.provenance.repository.encryption.key.provider.location=
+nifi.provenance.repository.encryption.key.id=
+nifi.provenance.repository.encryption.key=
 
 # Persistent Provenance Repository Properties
 {% for repo in nifi_provenance_repositories -%}
@@ -133,13 +139,16 @@ nifi.web.war.directory=./lib
 {% if nifi_is_secure -%}
 nifi.web.http.host=
 nifi.web.http.port=
+nifi.web.http.network.interface.default=
 nifi.web.https.host={{ nifi_input_socket_host }}
 nifi.web.https.port=9443
+nifi.web.https.network.interface.default=
 {% else -%}
 nifi.web.http.host={{ nifi_input_socket_host }}
 nifi.web.http.port=8080
 nifi.web.https.host=
 nifi.web.https.port=
+nifi.web.https.network.interface.default=
 {% endif -%}
 nifi.web.jetty.working.directory=./work/jetty
 nifi.web.jetty.threads=200
