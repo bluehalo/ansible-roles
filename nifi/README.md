@@ -13,6 +13,9 @@ Requirements
 Role Variables
 --------------
 
+### Required Variables
+    nifi_version
+
 ### Variables that determine the nifi install location, and their default values:
 
     nifi_base_dir: /opt/nifi
@@ -20,9 +23,6 @@ Role Variables
     nifi_log_dir: /var/log/nifi
     nifi_pid_dir: /var/run/nifi
     
-### Required Variables
-    nifi_version
-
 ### Other Default variables are listed below:
 
     # whether to restart nifi after making changes; default is True, for a cluster you may wish to disable
@@ -68,14 +68,14 @@ Role Variables
     nifi_content_archive_enabled: 'false'
     nifi_content_always_sync: 'false'
      
-    # Provenance settings
-    nifi_provenance_implementation: VolatileProvenanceRepository
+    # Provenance settings: PersistentProvenanceRepository or VolatileProvenanceRepository
+    nifi_provenance_implementation: PersistentProvenanceRepository
     nifi_provenance_max_storage_time: '24 hours'
     nifi_provenance_max_storage_size: '1 GB'
     nifi_provenance_rollover_time: '30 secs'
     nifi_provenance_rollover_size: '100 MB'
     nifi_provenance_query_threads: 2
-    nifi_provenance_index_threads: 1
+    nifi_provenance_index_threads: 2
     nifi_provenance_repository_buffer_size: 100000
     nifi_provenance_indexed_fields: EventType, FlowFileUUID, Filename, ProcessorID, Relationship
     

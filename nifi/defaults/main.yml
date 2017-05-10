@@ -63,7 +63,7 @@ nifi_provenance_indexed_fields: EventType, FlowFileUUID, Filename, ProcessorID, 
 nifi_components_status_repository_buffer_size: 1440
 nifi_components_status_snapshot_frequency: '1 min'
 
-# nifi zookeeper settings
+# NiFi zookeeper settings
 nifi_zookeeper_servers: []
 nifi_zookeeper_dir: /data/zookeeper
 nifi_state_management_embedded_zookeeper_start: False
