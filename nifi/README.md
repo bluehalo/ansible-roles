@@ -15,7 +15,7 @@ Role Variables
 
 ### Variables that determine the nifi install location, and their default values:
 
-    nifi_base_dir: /var/lib/nifi
+    nifi_base_dir: /opt/nifi
     nifi_etc_dir: /etc/nifi
     nifi_log_dir: /var/log/nifi
     nifi_pid_dir: /var/run/nifi
