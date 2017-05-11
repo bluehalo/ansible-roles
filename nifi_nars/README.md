@@ -4,7 +4,7 @@ nifi_nars
 This Ansible role configures custom Apache NiFi nars:
 
 - creates a symlink to the nars
-- adds them to the nifi configuration
+- optionally adds them to the NiFi configuration
 
 Requirements
 ------------
@@ -19,9 +19,6 @@ Role Variables
 
 Required variables:
 
-    # a unique identifier for these custom nars, in order to differentiate between multiple calls to this role
-    nifi_nars_id
-
     # base directory where the custom nars are installed, for example /opt/myorg
     nifi_nars_base_dir
 
@@ -33,6 +30,12 @@ Required variables:
 
     # NiFi conf directory - location of nifi.properties file; this can be reused from the nifi role
     nifi_conf_dir
+
+Optional variables:
+
+    # if specified the nars will be configured in nifi.properties, using this value as a unique identifier
+    # if unspecified (default), the nars must be configured by other means (e.g. 'nifi_custom_nars' in nifi role)
+    nifi_nars_id
 
 Variables that can be overridden (and their default values):
 

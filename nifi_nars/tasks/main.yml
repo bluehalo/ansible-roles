@@ -23,4 +23,5 @@
     insertafter: "^nifi.nar.library.directory="
   notify:
     - restart nifi
+  when: nifi_nars_id is defined
 
