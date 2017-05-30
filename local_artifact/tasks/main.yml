@@ -15,5 +15,5 @@
   with_fileglob:
     - "{{ local_artifact_srcglob | default('doesnotmatchanything') }}"
   when: local_artifact_srcglob is defined
-  register: local_artifact_result
+  register: local_artifact_glob_result
 

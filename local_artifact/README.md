@@ -20,7 +20,11 @@ The following variables should be passed to the role:
 
     local_artifact_dest - path where the artifact should be written to
 
-Role uses register variable named ```local_artifact_result```
+Role sets the following register variables:
+
+    local_artifact_result - when local_artifact_src is passed
+
+    local_artifact_glob_result - when local_artifact_srcglob is passed
 
 Example Playbook
 ----------------
