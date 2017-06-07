@@ -8,10 +8,10 @@
 - name: create users
   user: name="{{ item.username }}"
         group="{{ item.username }}"
-        groups="{{ item.groups | join(',') }}"
+        groups="{{ (item.groups | default([])) | join(',') }}"
         shell="{{ item.shell if item.shell is defined else accounts_shell }}"
         password="{{ item.password if item.password is defined else '!' }}"
-        comment="{{ item.name }}"
+        comment="{{ item.name | default(omit) }}"
         home="{{item.home if item.home is defined else accounts_home_root+item.username}}"
         createhome=yes
   with_items: "{{ accounts_create_users }}"
