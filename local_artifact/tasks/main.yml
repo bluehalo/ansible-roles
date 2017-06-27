@@ -1,6 +1,9 @@
 ---
 # tasks file for local_artifact
 
+- name: Ensure directory exists
+  file: path="{{ local_artifact_dest | dirname }}" state=directory mode=0755
+
 - name: "Upload local {{ local_artifact_src }} artifact to {{ local_artifact_dest }}"
   copy:
     src: "{{ local_artifact_src }}"
