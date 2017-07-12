@@ -41,10 +41,11 @@ server {
 {% endif %}
 {% if item.redirect | default(false) %}
     location = / {
-        return 301 $scheme://{{ item.server_name }}/{{item.redirect}};
+        return 301 {{ item.redirect_scheme | default('$scheme') }}://{{ item.redirect_server | default(item.server_name) }}/{{item.redirect}};
     }
 
 {% endif %}
+{% if item.proxy | default(false) %}
     location / {
         proxy_pass http://{{ item.proxy }};
         proxy_set_header Host            $host;
@@ -56,19 +57,18 @@ server {
         proxy_read_timeout 300;
         keepalive_timeout  5 5;
         tcp_nodelay        {{ nginx_tcp_nodelay }};
-{% if item.ssl | default(false) %}
-
+    {% if item.ssl | default(false) %}
         # Proxy settings for applications
         proxy_set_header X-ProxyScheme $scheme;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-ProxyHost $host;
         proxy_set_header X-ProxyPort  443;
         proxy_set_header X-ProxyContextPath "";
-{% endif %}
+    {% endif %}
     }
+{% endif %}
 
 {% if item.extra_parameters is defined %}
     {{ item.extra_parameters|indent(4) }}
 {% endif %}
 }
-
