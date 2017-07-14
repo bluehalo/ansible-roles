@@ -19,20 +19,19 @@ To create user accounts, configure a list like the following:
     accounts_create_users:
       - username: john
         name: John Lennon
-        groups: []
+        uid: 1001
+        groups: [wheel]
         admin: yes
         ssh_key:
           - "ssh-rsa ......."
       - username: paul
         name: Paul McCartney
-        groups: []
         admin: yes
         ssh_key:
           - "ssh-rsa ......."
       - username: george
         name: George Harrison
-        groups: []
-        admin: yes
+        admin: no
         ssh_key:
           - "ssh-rsa ......."
 
@@ -51,6 +50,8 @@ them are as follows.
     accounts_umask: 022
     # optional: override to add a prefix to users' prompts (enclosed square brackets and followed by a space)
     #accounts_prompt_prefix: 
+    # whether to create a home directory for the user
+    accounts_createhome: yes
 
     # Password aging controls set in /etc/login.defs:
 

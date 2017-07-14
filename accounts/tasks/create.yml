@@ -7,13 +7,14 @@
 
 - name: create users
   user: name="{{ item.username }}"
+        uid="{{ item.uid | default(omit) }}"
         group="{{ item.username }}"
         groups="{{ (item.groups | default([])) | join(',') }}"
         shell="{{ item.shell if item.shell is defined else accounts_shell }}"
         password="{{ item.password if item.password is defined else '!' }}"
         comment="{{ item.name | default(omit) }}"
         home="{{item.home if item.home is defined else accounts_home_root+item.username}}"
-        createhome=yes
+        createhome="{{ accounts_createhome }}"
   with_items: "{{ accounts_create_users }}"
 
 - name: set user ssh key
