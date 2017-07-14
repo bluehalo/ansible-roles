@@ -4,7 +4,7 @@
     name: java-1.8.0
     state: latest
     update_cache: yes
-  tags: install
+  tags: [ install, yum ]
 
 - name: Ensure java profile
   template:

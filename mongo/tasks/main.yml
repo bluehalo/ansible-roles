@@ -7,9 +7,11 @@
     description: MongoDB Repository
     baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/{{ mongo_version }}/$basearch/
     gpgcheck: no
+  tags: [ yum ]
 
 - name: install mongo
   yum: name=mongodb-org state=latest
+  tags: [ yum ]
 
 - name: ensure conf directories exist
   file: path="{{ item }}" state=directory owner="{{ mongo_user }}" group="{{ mongo_user }}" mode=0755

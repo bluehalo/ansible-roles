@@ -3,6 +3,7 @@
 
 - name: Add epel yum repository
   yum: name=epel-release
+  tags: yum
 
 - name: Ensure common packages are installed
   yum: name={{ item }} state=present
@@ -14,6 +15,7 @@
     - selinux-policy-targeted
     - yum-plugin-priorities
     - python-lxml
+  tags: yum
 
 - name: Ensure SELINUX is enforcing
   lineinfile: dest=/etc/selinux/config state=present regexp="SELINUX=.*" line="SELINUX=enforcing"

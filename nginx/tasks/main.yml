@@ -8,6 +8,7 @@
     baseurl: "{{ nginx_yum_repo_url }}"
     gpgcheck: no
     enabled: yes
+  tags: yum
 
 - name: Install nginx
   yum: name="{{ item }}" state=installed
@@ -15,6 +16,7 @@
     - nginx
     # needed for htpasswd utility
     - httpd-tools
+  tags: yum
 
 - name: Ensure SELinux settings for nginx reverse proxying
   seboolean: name=httpd_can_network_connect state=yes persistent=yes
