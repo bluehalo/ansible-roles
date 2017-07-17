@@ -1,2 +1,3 @@
 ---
 rpm_nosignature: True
+rpm_force_install: True
