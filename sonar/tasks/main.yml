@@ -1,0 +1,83 @@
+---
+# tasks file for sonar
+
+- name: Add Sonar yum repository
+  yum_repository:
+    name: sonarqube
+    description: SonarQube Repo
+    baseurl: "{{ sonar_yum_repo_url }}"
+    gpgcheck: no
+  tags: [ yum, yum_repository ]
+
+- name: Install sonar via yum
+  yum: name=sonar state=present
+  tags: yum
+
+- name: Ensure Sonar configuration
+  lineinfile:
+    dest: "{{ sonar_home }}/conf/sonar.properties"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  notify: restart sonar
+  with_items:
+    - regexp: "^sonar.jdbc.username"
+      line: "sonar.jdbc.username={{ sonar_db_username }}"
+    - regexp: "^sonar.jdbc.password"
+      line: "sonar.jdbc.password={{ sonar_db_password }}"
+    - regexp: "^sonar.jdbc.url"
+      line: "sonar.jdbc.url={{ sonar_jdbc_url }}"
+    - regexp: "^sonar.path.data"
+      line: "sonar.path.data={{ sonar_data_dir }}"
+    - regexp: "^sonar.path.logs"
+      line: "sonar.path.logs={{ sonar_log_dir }}"
+    - regexp: "^sonar.web.javaOpts"
+      line: "sonar.web.javaOpts=-server"
+
+- name: Ensure Sonar configuration
+  lineinfile:
+    dest: "{{ sonar_home }}/conf/wrapper.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  notify: restart sonar
+  with_items:
+    - regexp: "^wrapper.logfile="
+      line: "wrapper.logfile={{ sonar_log_dir }}/sonar.log"
+    - regexp: "^wrapper.java.command="
+      line: "wrapper.java.command={{ java_path }}"
+
+- name: Ensure Sonar-required directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ sonar_user }}"
+    group: "{{ sonar_user }}"
+    mode: 0755
+  with_items:
+    - "{{ sonar_data_dir }}"
+    - "{{ sonar_log_dir }}"
+
+- name: Ensure Sonar user has access to database
+  postgresql_user:
+    name: "{{ sonar_db_username }}"
+    password: "{{ sonar_db_password }}"
+    state: present
+
+- name: Ensure Sonar user does not have unnecessary privileges
+  postgresql_user:
+    name: "{{ sonar_db_username }}"
+    role_attr_flags: "NOSUPERUSER,NOCREATEDB"
+    state: present
+
+- name: Ensure Sonar PostgreSQL database is created
+  postgresql_db:
+    name: "{{ sonar_db_name }}"
+    owner: "{{ sonar_db_username }}"
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+    state: present
+
+- name: Ensure Sonar is running and set to start on boot
+  service: name=sonar state=started enabled=yes
+

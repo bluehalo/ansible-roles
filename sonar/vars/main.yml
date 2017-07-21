@@ -1,0 +1,4 @@
+---
+# vars file for sonar
+
+sonar_user: sonar

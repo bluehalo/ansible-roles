@@ -1,0 +1,46 @@
+---
+# tasks file for postgresql
+
+- name: Ensure SELINUX is disabled
+  lineinfile:
+    dest: /etc/selinux/config
+    state: present
+    regexp: "SELINUX=.*"
+    line: "SELINUX=disabled"
+  tags: selinux
+
+- name: Ensure PostgreSQL packages are installed
+  yum: name="{{ item }}" state=present
+  with_items:
+    - postgresql-server
+    - python-psycopg2
+  notify:
+    - restart postgresql
+  register: postgresql_yum
+  tags: yum
+
+- name: Ensure postgresql_data_dir exists
+  file:
+    path: "{{ postgresql_data_dir }}"
+    state: directory
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_user }}"
+    mode: 0700
+  tags: install
+
+- name: Ensure postgresql_data_dir is configured
+  lineinfile:
+    dest: /etc/sysconfig/pgsql/postgresql
+    create: yes
+    line: PGDATA={{ postgresql_data_dir }}
+  notify:
+    - restart postgresql
+
+- name: Init postgresql
+  become_user: "{{ postgresql_user }}"
+  shell: /usr/bin/initdb -E UTF8 {{ postgresql_data_dir }}
+  when : postgresql_yum.results[0].changed
+
+- name: Ensure PostgreSQL service is running and set to start on boot
+  service: name=postgresql state=started enabled=yes
+

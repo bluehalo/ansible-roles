@@ -1,0 +1,4 @@
+---
+# defaults file for postgresql
+
+postgresql_data_dir: /var/lib/pgsql/data

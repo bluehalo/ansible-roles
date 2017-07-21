@@ -1,0 +1,15 @@
+---
+# defaults file for sonar
+
+sonar_yum_repo_url: http://downloads.sourceforge.net/project/sonar-pkg/rpm
+
+sonar_home: /opt/sonar
+sonar_data_dir: /data/sonar
+sonar_log_dir: /var/log/sonar
+
+java_path: /usr/bin/java
+
+sonar_jdbc_url: jdbc:postgresql://localhost/sonar
+sonar_db_name: sonar
+sonar_db_username: sonar
+sonar_db_password: sonar

@@ -1,0 +1,6 @@
+---
+dependencies:
+  - role: postgresql
+    tags: [ dep, postgresql ]
+  - role: openjdk
+    tags: [ dep, openjdk ]
