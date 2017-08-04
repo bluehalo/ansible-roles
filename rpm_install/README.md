@@ -31,7 +31,3 @@ License
 
 MIT
 
-Author Information
-------------------
-
-[Asymmetrik, Ltd.](https://www.asymmetrik.com/)
