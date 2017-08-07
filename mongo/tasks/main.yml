@@ -8,10 +8,24 @@
     baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/{{ mongo_version }}/$basearch/
     gpgcheck: no
   tags: [ yum ]
+  when: local_artifact is undefined
 
 - name: install mongo
-  yum: name=mongodb-org state=latest
+  yum:
+    name: mongodb-org
+    state: latest
   tags: [ yum ]
+  when: local_artifact is undefined
+
+- name: install mongo from local packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ mongo_server_rpm_name }}"
+    - "{{ mongo_shell_rpm_name }}"
+  tags: [ yum ]
+  when: local_artifact is defined
 
 - name: ensure conf directories exist
   file: path="{{ item }}" state=directory owner="{{ mongo_user }}" group="{{ mongo_user }}" mode=0755
@@ -24,6 +38,7 @@
 
 - name: Ensure SELinux access to mongo port
   command: semanage port -a -t mongod_port_t -p tcp {{ mongo_port }}
+  ignore_errors: yes
 
 - name: copy system configs
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner='root' group='root' mode='0644'
