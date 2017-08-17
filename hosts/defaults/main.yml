@@ -1,9 +1,6 @@
 ---
 # defaults file for hosts
 
-# value to set as the hostname
-hosts_hostname: "{{ inventory_hostname }}"
-
 # absolute path to the hosts file
 hosts_dest: /etc/hosts
 

@@ -1,9 +1,6 @@
 ---
 # tasks file for hosts
 
-- name: set hostname
-  hostname: name="{{ hosts_hostname }}"
-
 - name: update hosts file
   template:
     src: hosts.j2
