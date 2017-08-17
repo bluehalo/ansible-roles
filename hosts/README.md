@@ -1,10 +1,7 @@
 hosts
 =====
 
-An Ansible role to:
-
-1. Set hostname
-1. Configure hosts file to contain all systems in the inventory within a specific subset
+An Ansible role to configure ```/etc/hosts``` to contain all systems in the inventory within a specific subset
 
 Requirements
 ------------
@@ -22,11 +19,7 @@ Requirements
 Role Variables
 --------------
 
-The variables that can be passed to this role and a brief description about
-them are as follows.
-
-    # value to set as the hostname
-    hosts_hostname: "{{ inventory_hostname }}"
+The variables that can be passed to this role and their default values:
 
     # absolute path to the hosts file
     hosts_dest: /etc/hosts
@@ -34,7 +27,7 @@ them are as follows.
     # whether to create a backup of the hosts file
     hosts_backup: yes
 
-    # optional hosts file entries
+    # optional extra entries, for example:
     hosts_extra_entries:
       - { ip: '127.0.0.1', hosts: [ 'hostname1', 'hostname2' ] }
       - { ip: '127.0.0.2', hosts: [ 'hostname3', 'hostname4' ] }
@@ -42,8 +35,7 @@ them are as follows.
 Example Playbook
 ----------------
 
-This example sets the hostname to the EC2 private DNS name, and adds all servers in a specific group
-to /etc/hosts:
+This example adds all servers in a specific group to ```/etc/hosts```:
 
     - name: Configure Hosts
       become: yes
@@ -51,9 +43,8 @@ to /etc/hosts:
       remote_user: "{{ remote_user | default(omit) }}"
       hosts: servers
       roles:
-        - name: Configure Hostnames
+        - name: Configure Hosts
           role: hosts
-          hosts_hostname: "{{ ec2_private_dns_name }}"
           hosts_entries: "{{ groups['tag_group_' + group] | sort }}"
 
 License
