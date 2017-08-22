@@ -48,6 +48,8 @@ The most commonly modified variables are listed below:
     mongo_wt_directory_for_indexes: false
     mongo_authorization: disabled
 
+    # Whether to perform selinux-specific configuration, default is true
+    selinux_enabled: true
 
 Example Playbook
 ----------------

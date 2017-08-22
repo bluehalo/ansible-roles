@@ -36,6 +36,9 @@ them are as follows.
     mounts_default_passno: 0
     mounts_default_fstab: /etc/fstab
 
+    # Whether to perform selinux-specific configuration, default is true
+    selinux_enabled: true
+
 Example Playbook
 ----------------
 

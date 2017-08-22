@@ -9,13 +9,10 @@ Does the following:
 - Installs common packages via yum:
     - ntp
     - wget
-    - policycoreutils-python
-    - libsemanage-python
-    - selinux-policy-targeted
     - yum-plugin-priorities
     - python-lxml
-- Enables SELINUX
 - Starts NTP
+- Installs and enables SELINUX if configured
 
 Requirements
 ------------
@@ -25,7 +22,8 @@ Assumes a Unix/Linux OS, and has only been tested on the RedHat OS family
 Role Variables
 ------------
 
-None
+    # Whether to install and configure SELinux in enforcing mode, default is true
+    selinux_enabled: true
 
 Example Playbook
 ----------------

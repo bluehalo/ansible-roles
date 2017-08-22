@@ -64,6 +64,9 @@ them are as follows.
     # Number of days warning given before a password expires.
     accounts_pass_warn_age: 14
 
+    # Whether to restore default SELinux security contexts on user home dir, default is true
+    selinux_enabled: true
+
 Example Playbook
 ----------------
 

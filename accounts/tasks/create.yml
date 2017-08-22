@@ -75,6 +75,7 @@
 - name: Restore default SELinux security contexts on user home dir
   shell: "restorecon -r {{ item.home if item.home is defined else accounts_home_root+item.username}}"
   with_items: "{{ accounts_create_users }}"
+  when: selinux_enabled | default(true)
   tags: [ selinux ]
   
 - name: Reset password-changed date to today

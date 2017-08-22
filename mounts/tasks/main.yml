@@ -25,9 +25,11 @@
 - name: restore /var/log
   command: "/sbin/restorecon {{ item.name }}"
   when:
+    - selinux_enabled | default(true)
     - mounted_result.changed
     - item.name == mounts_log_directory
   with_items: "{{ mounts_devices }}"
+  tags: selinux
 
 - name: restart rsyslog
   command: "/sbin/service rsyslog restart"

@@ -10,21 +10,12 @@
   with_items:
     - ntp
     - wget
-    - policycoreutils-python
-    - libsemanage-python
-    - selinux-policy-targeted
     - yum-plugin-priorities
     - python-lxml
   tags: yum
 
-- name: Ensure SELINUX is enforcing
-  lineinfile: dest=/etc/selinux/config state=present regexp="SELINUX=.*" line="SELINUX=enforcing"
-  tags: selinux
-
-- name: Restore default SELinux security contexts
-  shell: restorecon -r -v /var/log && restorecon -r -v /etc/audit
-  tags: selinux
-
 - name: Ensure ntpd service enabled and running
   service: name=ntpd enabled=yes state=started
 
+- include: selinux.yml
+  when: selinux_enabled | default(true)
