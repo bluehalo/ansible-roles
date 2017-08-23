@@ -1,0 +1,20 @@
+---
+- name: Upload Oracle JDK RPM
+  copy:
+    src: "{{ oracle_jdk_rpm_local_src }}"
+    dest: "{{ oracle_jdk_rpm_dest }}"
+  register: oracle_jdk_uploaded
+
+- name: Install Oracle JDK via RPM
+  yum:
+    name: "{{ oracle_jdk_rpm_dest }}"
+    state: present
+  tags: [ install, yum ]
+
+- name: Ensure java profile.d script
+  template:
+    src: java.sh.j2
+    dest: /etc/profile.d/java.sh
+    mode: 0644
+  tags: config
+
