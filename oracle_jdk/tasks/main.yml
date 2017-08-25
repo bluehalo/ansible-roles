@@ -5,6 +5,14 @@
     dest: "{{ oracle_jdk_rpm_dest }}"
   register: oracle_jdk_uploaded
 
+- name: Remove openjdk if present
+  yum:
+    name:
+      - java-1.8.0-openjdk
+      - java-1.8.0-openjdk-headless
+    state: absent
+  tags: yum
+
 - name: Install Oracle JDK via RPM
   yum:
     name: "{{ oracle_jdk_rpm_dest }}"
