@@ -77,10 +77,10 @@
   with_items: "{{ accounts_create_users }}"
   when: selinux_enabled | default(true)
   tags: [ selinux ]
+  changed_when: false
   
 - name: Reset password-changed date to today
   shell: "chage -d {{ (ansible_date_time.epoch|int / 86400)|int }} {{ item.username }}"
   with_items: "{{ accounts_create_users }}"
   tags: [ resetpassword ]
   
-

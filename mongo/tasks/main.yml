@@ -36,12 +36,14 @@
 - name: Ensure SELinux context on data directory
   command: chcon -R -u system_u -t mongod_var_lib_t {{ mongo_db_dir }}
   when: selinux_enabled | default(true)
+  changed_when: false
   tags: selinux
 
 - name: Ensure SELinux access to mongo port
   command: semanage port -a -t mongod_port_t -p tcp {{ mongo_port }}
   when: selinux_enabled | default(true)
   tags: selinux
+  changed_when: false
   ignore_errors: yes
 
 - name: copy system configs
