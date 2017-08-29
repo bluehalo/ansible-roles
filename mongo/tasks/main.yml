@@ -24,6 +24,7 @@
   with_items:
     - "{{ mongo_server_rpm_name }}"
     - "{{ mongo_shell_rpm_name }}"
+    - "{{ mongo_tools_rpm_name }}"
   tags: [ yum ]
   when: local_artifact is defined
 
