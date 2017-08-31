@@ -1,0 +1,7 @@
+---
+influxdb_meta_dir: "/var/lib/influxdb/meta"
+influxdb_data_dir: "/data"
+influxdb_index_version: "inmem"
+influxdb_wal_dir: "/var/lib/influxdb/wal"
+influxdb_retention_check_interval: "30m"
+influxdb_http_log_enabled: true
