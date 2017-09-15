@@ -1,7 +1,8 @@
 mongo
 =====
 
-Use this role to install, configure, and manage MongoDB.
+Use this role to install, configure, and manage MongoDB. Role installs Mongo via yum by default, but can optionally install
+from local rpm files instead.
 
 Requirements
 ------------
@@ -12,6 +13,9 @@ Role Variables
 --------------
 
 The most commonly modified variables are listed below:
+
+    # the mongo version to use when installing via yum, ignored when installing from rpm files
+    mongo_version: 3.4
 
     # The name of the mongo process
     mongo_process_name: mongod
@@ -50,6 +54,29 @@ The most commonly modified variables are listed below:
 
     # Whether to perform selinux-specific configuration, default is true
     selinux_enabled: true
+
+Properties used to configure a replica set:
+
+    # enable to initialize replica set
+    mongo_init_replica_set: false
+
+    # list of servers in the replica set
+    mongo_replica_servers: []
+
+    # replicate set name
+    mongo_replica_set_name: rs0
+
+    # sleep time between adding nodes to the replica set
+    mongo_replica_sleep_millis: 10000
+
+Properties used to install from rpm files (the rpm files must first be uploaded to host system):
+
+    local_artifact: true
+
+    # complete paths to rpm files on the host system:
+    mongo_server_rpm_name:
+    mongo_shell_rpm_name:
+    mongo_tools_rpm_name:
 
 Example Playbook
 ----------------
