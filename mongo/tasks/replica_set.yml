@@ -1,0 +1,14 @@
+---
+# replica set tasks file for mongo
+
+- name: Wait for Mongo to become available
+  wait_for: port={{ mongo_port }} timeout=120
+
+- name: Create the file to initialize the mongod replica set
+  template: src=init_replica_set.js.j2 dest=/tmp/init_replica_set.js
+  run_once: true
+
+- name: Initialize the replica set
+  shell: /usr/bin/mongo --port "{{ mongo_port }}" /tmp/init_replica_set.js
+  changed_when: false
+  run_once: true

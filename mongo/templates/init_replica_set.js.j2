@@ -1,0 +1,7 @@
+rs.initiate()
+sleep({{ mongo_replica_sleep_millis }})
+{% for host in mongo_replica_servers %}
+rs.add("{{ host }}:{{ mongo_port }}")
+sleep({{ mongo_replica_sleep_millis }})
+{% endfor %}
+printjson(rs.status())

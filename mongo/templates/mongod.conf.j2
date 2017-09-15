@@ -34,3 +34,8 @@ operationProfiling:
 sharding:
     clusterRole: {{ mongo_cluster_role }}
 {% endif %}
+
+{% if mongo_init_replica_set | default(False) %}
+replication:
+    replSetName: {{ mongo_replica_set_name }}
+{% endif %}

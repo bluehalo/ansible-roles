@@ -61,3 +61,6 @@
 
 - name: Start mongod service
   service: name=mongod state=started enabled=yes
+
+- include: replica_set.yml
+  when: mongo_init_replica_set | default(false)
