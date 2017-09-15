@@ -10,13 +10,13 @@ mongo_process_name: mongod
 mongo_db_dir: /data/db
 
 # The location of the configuration file
-mongo_conf_file: "/etc/mongod.conf"
+mongo_conf_file: /etc/mongod.conf
 
 # The location of the pid file
-mongo_pid_file: "/var/run/mongodb/mongod.pid"
+mongo_pid_file: /var/run/mongodb/mongod.pid
 
 # The location of the log file
-mongo_log_path: "/var/log/mongodb/mongod.log"
+mongo_log_path: /var/log/mongodb/mongod.log
 
 # Mongo port
 mongo_port: 27017

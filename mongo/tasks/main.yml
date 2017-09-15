@@ -1,7 +1,7 @@
 ---
 # tasks file for mongo
 
-- name: Add repository
+- name: Add mongo yum repository
   yum_repository:
     name: mongodb-org-{{ mongo_version }}
     description: MongoDB Repository
@@ -10,14 +10,14 @@
   tags: [ yum ]
   when: local_artifact is undefined
 
-- name: install mongo
+- name: Install mongo via yum
   yum:
     name: mongodb-org
     state: latest
   tags: [ yum ]
   when: local_artifact is undefined
 
-- name: install mongo from local packages
+- name: Install mongo from local packages
   yum:
     name: "{{ item }}"
     state: present
@@ -28,10 +28,8 @@
   tags: [ yum ]
   when: local_artifact is defined
 
-- name: ensure conf directories exist
-  file: path="{{ item }}" state=directory owner="{{ mongo_user }}" group="{{ mongo_user }}" mode=0755
-  with_items:
-    - "{{ mongo_db_dir }}"
+- name: Ensure DB directory exists
+  file: path="{{ mongo_db_dir }}" state=directory owner="{{ mongo_user }}" group="{{ mongo_user }}" mode=0755
   tags: [ dep ]
 
 - name: Ensure SELinux context on data directory
@@ -47,19 +45,19 @@
   changed_when: false
   ignore_errors: yes
 
-- name: copy system configs
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner='root' group='root' mode='0644'
+- name: Copy system configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
   with_items:
-    - { src: '99-mongodb-nproc.conf.j2', dest: '/etc/security/limits.d/99-mongodb-nproc.conf' }
+    - { src: 99-mongodb-nproc.conf.j2, dest: /etc/security/limits.d/99-mongodb-nproc.conf }
   tags: [ install, config ]
 
-- name: copy mongo configs
-  template: src="{{ item.src }}" dest="{{ item.dest }}" mode='0644'
+- name: Copy mongo config
+  template: src="{{ item.src }}" dest="{{ item.dest }}" mode=0644
   with_items:
-    - { src: 'mongod.yaml.j2', dest: "{{ mongo_conf_file }}" }
+    - { src: mongod.conf.j2, dest: "{{ mongo_conf_file }}" }
   notify:
     - restart mongod
   tags: [ install, config ]
 
-- name: Start mongo service (service mongod start)
+- name: Start mongod service
   service: name=mongod state=started enabled=yes
