@@ -1,5 +1,5 @@
-openjdk
-=======
+influxdb
+========
 
 An Ansible role to configure influxDB.  This role does not currently support installing influxDB.  However,
 it is easily installed using the following commands:

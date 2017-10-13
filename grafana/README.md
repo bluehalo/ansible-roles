@@ -1,4 +1,4 @@
-openjdk
+grafana
 =======
 
 An Ansible role to configure grafana.  This role does not currently support installing grafana.  However,
