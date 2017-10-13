@@ -42,6 +42,14 @@ mongo_authorization: disabled
 mongo_config_db: ''
 mongo_chunk_size: 0
 
+mongo_ssl_enabled: false
+# the following are required if mongo_ssl_enabled is true:
+#mongo_ssl_mode:
+#mongo_ssl_pem_key_file:
+#mongo_ssl_ca_file:
+#mongo_ssl_allow_invalid_certificates:
+#mongo_ssl_allow_invalid_hostnames:
+
 # enable to initialize replica set
 mongo_init_replica_set: false
 

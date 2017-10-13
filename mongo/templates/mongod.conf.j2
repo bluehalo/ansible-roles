@@ -25,6 +25,14 @@ processManagement:
 net:
     bindIp: 0.0.0.0
     port: {{ mongo_port }}
+{% if mongo_ssl_enabled | default(False) %}
+    ssl:
+        mode: {{ mongo_ssl_mode }}
+        PEMKeyFile: {{ mongo_ssl_pem_key_file }}
+        CAFile: {{ mongo_ssl_ca_file }}
+        allowInvalidCertificates: {{ mongo_ssl_allow_invalid_certificates }}
+        allowInvalidHostnames: {{ mongo_ssl_allow_invalid_hostnames }}
+{% endif %}
 security:
     authorization: {{ mongo_authorization }}
 operationProfiling:

@@ -55,6 +55,15 @@ The most commonly modified variables are listed below:
     # Whether to perform selinux-specific configuration, default is true
     selinux_enabled: true
 
+    # ssl properties:
+    mongo_ssl_enabled: false
+    # the following are required if mongo_ssl_enabled is true:
+    #mongo_ssl_mode:
+    #mongo_ssl_pem_key_file:
+    #mongo_ssl_ca_file:
+    #mongo_ssl_allow_invalid_certificates:
+    #mongo_ssl_allow_invalid_hostnames:
+
 Properties used to configure a replica set:
 
     # enable to initialize replica set
