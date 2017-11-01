@@ -30,8 +30,8 @@ net:
         mode: {{ mongo_ssl_mode }}
         PEMKeyFile: {{ mongo_ssl_pem_key_file }}
         CAFile: {{ mongo_ssl_ca_file }}
-        allowInvalidCertificates: {{ mongo_ssl_allow_invalid_certificates }}
-        allowInvalidHostnames: {{ mongo_ssl_allow_invalid_hostnames }}
+        allowInvalidCertificates: {{ mongo_ssl_allow_invalid_certificates | lower }}
+        allowInvalidHostnames: {{ mongo_ssl_allow_invalid_hostnames | lower }}
 {% endif %}
 security:
     authorization: {{ mongo_authorization }}
