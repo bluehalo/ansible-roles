@@ -29,6 +29,9 @@ net:
     ssl:
         mode: {{ mongo_ssl_mode }}
         PEMKeyFile: {{ mongo_ssl_pem_key_file }}
+{% if mongo_ssl_pem_key_password %}
+        PEMKeyPassword: {{ mongo_ssl_pem_key_password }}
+{% endif %}
         CAFile: {{ mongo_ssl_ca_file }}
         allowInvalidCertificates: {{ mongo_ssl_allow_invalid_certificates | lower }}
         allowInvalidHostnames: {{ mongo_ssl_allow_invalid_hostnames | lower }}
