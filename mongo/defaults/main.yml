@@ -62,3 +62,9 @@ mongo_replica_set_name: rs0
 
 # sleep time between adding nodes to the replica set
 mongo_replica_sleep_millis: 10000
+
+# full path to mongo executable, used to configure replica set
+mongo_cmd: /usr/bin/mongo
+
+# extra opts for invoking mongo executable
+mongo_cmd_opts: ''

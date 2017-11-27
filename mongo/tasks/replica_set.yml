@@ -9,6 +9,6 @@
   run_once: true
 
 - name: Initialize the replica set
-  shell: /usr/bin/mongo --port "{{ mongo_port }}" /tmp/init_replica_set.js
+  shell: "{{ mongo_cmd }} {{ mongo_cmd_opts }} --port {{ mongo_port }} /tmp/init_replica_set.js"
   changed_when: false
   run_once: true
