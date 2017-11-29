@@ -12,13 +12,6 @@
     vpc_id: "{{ aws_vpc_id | default(omit) }}"
     profile: "{{ aws_boto_profile | default(omit) }}"
   register: aws_ec2_sg
-  ignore_errors: True
-
-- name: Fail if group not created
-  fail:
-      msg: "Create Security Group failed for: {{ aws_ec2_group_name }}"
-  when:
-    - aws_ec2_sg.failed is defined and aws_ec2_sg.failed and 'already exists' not in aws_ec2_sg.msg
 
 - name: "Tag EC2 security group: {{ aws_ec2_group_name }}"
   ec2_tag:
@@ -31,4 +24,3 @@
   when:
     - aws_ec2_group_create_tag
     - aws_ec2_sg.group_id is defined
-
