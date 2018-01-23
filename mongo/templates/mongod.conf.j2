@@ -25,11 +25,11 @@ processManagement:
 net:
     bindIp: 0.0.0.0
     port: {{ mongo_port }}
-{% if mongo_ssl_enabled | default(False) %}
+{% if mongo_ssl_enabled == true %}
     ssl:
         mode: {{ mongo_ssl_mode }}
         PEMKeyFile: {{ mongo_ssl_pem_key_file }}
-{% if mongo_ssl_pem_key_password %}
+{% if mongo_ssl_pem_key_password | default(False) %}
         PEMKeyPassword: {{ mongo_ssl_pem_key_password }}
 {% endif %}
         CAFile: {{ mongo_ssl_ca_file }}
@@ -46,7 +46,7 @@ sharding:
     clusterRole: {{ mongo_cluster_role }}
 {% endif %}
 
-{% if mongo_init_replica_set | default(False) %}
+{% if mongo_init_replica_set == true %}
 replication:
     replSetName: {{ mongo_replica_set_name }}
 {% endif %}
