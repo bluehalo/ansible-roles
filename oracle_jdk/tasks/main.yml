@@ -8,8 +8,8 @@
 - name: Remove openjdk if present
   yum:
     name:
-      - java-1.8.0-openjdk
-      - java-1.8.0-openjdk-headless
+      - java-*-openjdk
+      - java-*-openjdk-headless
     state: absent
   tags: yum
 
