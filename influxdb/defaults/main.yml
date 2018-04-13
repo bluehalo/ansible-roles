@@ -1,4 +1,5 @@
 ---
+influxdb_version: 1.5.1
 influxdb_meta_dir: "/var/lib/influxdb/meta"
 influxdb_data_dir: "/data"
 influxdb_index_version: "inmem"

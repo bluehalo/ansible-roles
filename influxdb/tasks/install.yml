@@ -1,11 +1,11 @@
 ---
 - name: Download InfluxDB
   get_url:
-    url: https://dl.influxdata.com/influxdb/releases/influxdb-1.3.5.x86_64.rpm
+    url: "https://dl.influxdata.com/influxdb/releases/influxdb-{{ influxdb_version }}.x86_64.rpm"
     dest: /tmp
     mode: 0755
 
 - name: install influx rpm from a local file
   yum:
-    name: /tmp/influxdb-1.3.5.x86_64.rpm
+    name: "/tmp/influxdb-{{ influxdb_version }}.x86_64.rpm"
     state: present

@@ -1,4 +1,5 @@
 ---
+grafana_version: 5.0.4
 grafana_app_mode: production
 
 grafana_root_url: 'http://localhost:3000'
