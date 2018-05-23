@@ -73,12 +73,18 @@
     mode: 0640
   with_items:
     - { src: mongod.conf.j2, dest: "{{ mongo_conf_file }}" }
-  notify:
-    - restart mongod
+  register: mongo_config
   tags: [ install, config ]
 
-- name: Start mongod service
-  service: name=mongod state=started enabled=yes
+- name: Determine mongod service state
+  set_fact:
+    mongod_state: "{{ mongo_config.changed | ternary('restarted','started') }}"
+
+- name: Ensure mongod service is {{ mongod_state }}
+  service:
+    name: mongod
+    state: "{{ mongod_state }}"
+    enabled: yes
 
 - include: replica_set.yml
   when: mongo_init_replica_set | default(false)

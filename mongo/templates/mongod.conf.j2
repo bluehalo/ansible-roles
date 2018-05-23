@@ -1,52 +1,56 @@
-storage:
-    dbPath: {{ mongo_db_dir }}
-    engine: wiredTiger
-    wiredTiger:
-        indexConfig:
-            prefixCompression: true
-        engineConfig:
-{% if mongo_wt_cache_gb %}
-            cacheSizeGB: {{ mongo_wt_cache_gb }}
-{% endif %}
-            directoryForIndexes: {{ mongo_wt_directory_for_indexes | lower }}
-            statisticsLogDelaySecs: 0
-        collectionConfig:
-            blockCompressor: snappy
+# mongod.conf
+
+# for documentation of all options, see:
+#   http://docs.mongodb.org/manual/reference/configuration-options/
+
+# where to write logging data.
 systemLog:
-    destination: file
-    path: {{ mongo_log_path }}
-    logAppend: {{ mongo_log_append | lower }}
-    logRotate: {{ mongo_log_rotate }}
-    verbosity: {{ mongo_log_verbosity }}
-    timeStampFormat: iso8601-utc
+  destination: file
+  path: {{ mongo_log_path }}
+  logAppend: {{ mongo_log_append | lower }}
+  logRotate: {{ mongo_log_rotate }}
+  verbosity: {{ mongo_log_verbosity }}
+
+# Where and how to store data.
+storage:
+  dbPath: {{ mongo_db_dir }}
+  journal:
+    enabled: true
+  engine: wiredTiger
+
+# how the process runs
 processManagement:
-    fork: {{ mongo_fork_process | lower }}
-    pidFilePath: {{ mongo_pid_file }}
+  fork: {{ mongo_fork_process | lower }}
+  pidFilePath: {{ mongo_pid_file }}
+{% if mongo_version | version_compare('3.6', '>=') %}
+  timeZoneInfo: /usr/share/zoneinfo
+{% endif %}
+
+# network interfaces
 net:
-    bindIp: 0.0.0.0
-    port: {{ mongo_port }}
+  port: {{ mongo_port }}
+  bindIp: 0.0.0.0
 {% if mongo_ssl_enabled == true %}
-    ssl:
-        mode: {{ mongo_ssl_mode }}
-        PEMKeyFile: {{ mongo_ssl_pem_key_file }}
+  ssl:
+    mode: {{ mongo_ssl_mode }}
+    PEMKeyFile: {{ mongo_ssl_pem_key_file }}
 {% if mongo_ssl_pem_key_password | default(False) %}
-        PEMKeyPassword: {{ mongo_ssl_pem_key_password }}
+    PEMKeyPassword: {{ mongo_ssl_pem_key_password }}
 {% endif %}
-        CAFile: {{ mongo_ssl_ca_file }}
-        allowInvalidCertificates: {{ mongo_ssl_allow_invalid_certificates | lower }}
-        allowInvalidHostnames: {{ mongo_ssl_allow_invalid_hostnames | lower }}
+    CAFile: {{ mongo_ssl_ca_file }}
+    allowInvalidCertificates: {{ mongo_ssl_allow_invalid_certificates | lower }}
+    allowInvalidHostnames: {{ mongo_ssl_allow_invalid_hostnames | lower }}
 {% endif %}
+
 security:
-    authorization: {{ mongo_authorization }}
-operationProfiling:
-    slowOpThresholdMs: {{ mongo_slow_op_threshold_ms }}
-    mode: {{ mongo_operation_profiling_mode }}
-{% if sharding | default(False) %}
-sharding:
-    clusterRole: {{ mongo_cluster_role }}
-{% endif %}
+  authorization: {{ mongo_authorization }}
 
 {% if mongo_init_replica_set == true %}
 replication:
-    replSetName: {{ mongo_replica_set_name }}
+  replSetName: {{ mongo_replica_set_name }}
+{% endif %}
+
+{% if sharding | default(False) %}
+sharding:
+  clusterRole: {{ mongo_cluster_role }}
 {% endif %}

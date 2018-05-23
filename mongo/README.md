@@ -15,7 +15,7 @@ Role Variables
 The most commonly modified variables are listed below:
 
     # the mongo version to use when installing via yum, ignored when installing from rpm files
-    mongo_version: 3.4
+    mongo_version: 3.6
 
     # The name of the mongo process
     mongo_process_name: mongod
@@ -36,20 +36,15 @@ The most commonly modified variables are listed below:
     mongo_port: 27017
     
     # Mongo logging properties
-    mongo_log_append: true
-    mongo_log_rotate: reopen
+    mongo_log_append: false
+    mongo_log_rotate: rename
     mongo_log_verbosity: 0
     
     # Determines whether the process should be forked
     mongo_fork_process: true
     
-    mongo_slow_op_threshold_ms: 1000
-    mongo_operation_profiling_mode: slowOp
     mongo_cluster_role: shardsvr
     
-    # WiredTiger configurations
-    mongo_wt_cache_gb: 0
-    mongo_wt_directory_for_indexes: false
     mongo_authorization: disabled
 
     # Whether to perform selinux-specific configuration, default is true
