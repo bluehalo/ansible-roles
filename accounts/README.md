@@ -63,6 +63,12 @@ them are as follows.
     accounts_pass_min_len: 14
     # Number of days warning given before a password expires.
     accounts_pass_warn_age: 14
+    # Number of days of inactivity after a password has expired before the account is locked;
+    # -1 will remove an account's inactivity
+    accounts_inactive_days: -1
+    # Date or number of days since January 1, 1970 on which the user's account will no longer be accessible;
+    # -1 will remove an account expiration date
+    accounts_expire_date: -1
 
     # Whether to restore default SELinux security contexts on user home dir, default is true
     selinux_enabled: true

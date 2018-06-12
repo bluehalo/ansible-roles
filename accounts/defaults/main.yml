@@ -21,8 +21,14 @@ accounts_createhome: yes
 # Maximum number of days a password may be used.
 accounts_pass_max_days: 99999
 # Minimum number of days allowed between password changes.
-accounts_pass_min_days: 1
+accounts_pass_min_days: 0
 # Minimum acceptable password length.
 accounts_pass_min_len: 14
 # Number of days warning given before a password expires.
 accounts_pass_warn_age: 14
+# Number of days of inactivity after a password has expired before the account is locked;
+# -1 will remove an account's inactivity
+accounts_inactive_days: -1
+# Date or number of days since January 1, 1970 on which the user's account will no longer be accessible;
+# -1 will remove an account expiration date
+accounts_expire_date: -1
