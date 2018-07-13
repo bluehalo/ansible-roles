@@ -16,6 +16,7 @@
     state: latest
   tags: [ yum ]
   when: local_artifact is undefined
+  register: mongo_install_result
 
 - name: Install mongo from local packages
   yum:
@@ -27,6 +28,7 @@
     - "{{ mongo_tools_rpm_name }}"
   tags: [ yum ]
   when: local_artifact is defined
+  register: mongo_install_result
 
 - name: Ensure DB directory exists
   file:
@@ -73,12 +75,16 @@
     mode: 0640
   with_items:
     - { src: mongod.conf.j2, dest: "{{ mongo_conf_file }}" }
-  register: mongo_config
+  register: mongo_config_result
   tags: [ install, config ]
 
 - name: Determine mongod service state
   set_fact:
-    mongod_state: "{{ mongo_config.changed | ternary('restarted','started') }}"
+    mongod_state: "{{ (mongo_install_result.changed or mongo_config_result.changed) | ternary('restarted','started') }}"
+
+- name: Reload systemctl daemon
+  command: systemctl daemon-reload
+  when: mongo_install_result.changed
 
 - name: Ensure mongod service is {{ mongod_state }}
   service:
