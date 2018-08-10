@@ -13,5 +13,5 @@
     extension: "{{ maven_repository_artifact_extension | default(omit) }}"
     classifier: "{{ maven_repository_artifact_classifier | default(omit) }}"
     dest: "{{ maven_repository_artifact_dest }}"
+    verify_checksum: "{{ ansible_version.full | version_compare('2.6', '>=') | ternary('change', omit) }}"
   register: maven_repository_artifact_result
-
