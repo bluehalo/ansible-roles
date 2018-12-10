@@ -1,0 +1,28 @@
+---
+# tasks file for uam
+
+- name: Ensure UAM installer file defined
+  fail: msg="Variable 'uam_installer' is not defined"
+  when: uam_installer is not defined
+
+- name: Check for UAM installer
+  stat:
+    path: "{{ uam_upload_dir }}/{{ uam_installer }}"
+  register: stat_result
+
+- name: Upload UAM distribution
+  copy:
+    src: "{{ uam_local_src_dir }}/{{ uam_installer }}"
+    dest: "{{ uam_upload_dir }}/{{ uam_installer }}"
+    mode: u+rwx
+  when: not stat_result.stat.exists
+
+- name: Check for UAM executable
+  stat:
+    path: "/usr/sbin/InvMgr"
+  register: stat_result
+
+- name: Install User Activity Monitor
+  command: "{{ uam_upload_dir }}/{{ uam_installer }} --target tmp"
+  become: yes
+  when: not stat_result.stat.exists

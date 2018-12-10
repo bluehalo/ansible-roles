@@ -1,0 +1,46 @@
+---
+# tasks file for mcafee
+
+- name: Ensure McAfee ZIP file defined
+  fail: msg="Variable 'mcafee_zip_file' is not defined"
+  when: mcafee_zip_file is not defined
+
+- name: Install unzip
+  yum:
+    name: unzip
+    state: present
+  become: yes
+
+- name: Check for McAfee ZIP file
+  stat:
+    path: "{{ mcafee_upload_dir }}/{{ mcafee_zip_file }}"
+  register: stat_result
+
+- name: Upload McAfee ZIP file
+  copy:
+    src: "{{ mcafee_local_src_dir }}/{{ mcafee_zip_file }}"
+    dest: "{{ mcafee_upload_dir }}/{{ mcafee_zip_file }}"
+    mode: u+rwx
+  when: not stat_result.stat.exists
+
+- name: Extract McAfee installer
+  unarchive:
+    src: "{{ mcafee_upload_dir }}/{{ mcafee_zip_file }}"
+    dest: /tmp
+    copy: no
+    mode: 0755
+  become: yes
+
+- name: Install mcafee
+  command: /tmp/install.sh -u
+  register: install_result
+  changed_when: "'Agent Successfully Installed' not in install_result.stdout and 'higher or same version of the agent is already installed' not in install_result.stdout and install_result.rc != 0"
+  failed_when: "'Agent Successfully Installed' not in install_result.stdout and 'higher or same version of the agent is already installed' not in install_result.stdout and install_result.rc != 0"
+  become: yes
+
+- name: Restart McAfee service
+  service:
+    name: cma
+    state: restarted
+    enabled: yes
+  become: yes

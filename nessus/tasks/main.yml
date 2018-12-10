@@ -1,0 +1,64 @@
+---
+# tasks file for nessus
+
+- name: Ensure Nessus rpm file defined
+  fail: msg="Variable 'nessus_rpm_file' is not defined"
+  when: nessus_rpm_file is not defined
+
+- name: Check for Nessus rpm
+  stat:
+    path: "{{ nessus_upload_dir }}/{{ nessus_rpm_file }}"
+  register: stat_result
+
+- name: Upload Nessus rpm
+  copy:
+    src: "{{ nessus_local_src_dir }}/{{ nessus_rpm_file }}"
+    dest: "{{ nessus_upload_dir }}/{{ nessus_rpm_file }}"
+    mode: u+rwx
+  when: not stat_result.stat.exists
+
+- name: Check for Nessus installation
+  stat:
+    path: "{{ nessus_install_dir }}"
+  register: stat_result
+
+- name: Install Nessus Agent
+  yum:
+    name: "{{ nessus_upload_dir }}/{{ nessus_rpm_file }}"
+    state: present
+  become: yes
+  when: not stat_result.stat.exists
+
+- name: Check Nessus Agent
+  command: "{{ nessus_agent_check_cmd }}"
+  become: yes
+  changed_when: false
+  ignore_errors: yes
+  register: check_result
+
+- name: Start Nessus Agent
+  service:
+    name: nessusagent
+    state: started
+    enabled: yes
+  become: yes
+  when: check_result.stdout | search('Not linked to')
+
+- name: Check Nessus service status
+  command: systemctl status nessusagent
+  changed_when: false
+  ignore_errors: yes
+  register: nessus_agent_status
+
+- name: Start Nessus daemon if agent fails to start
+  command: "{{ nessus_daemon_cmd }}"
+  async: 1000
+  poll: 0
+  changed_when: false
+  ignore_errors: yes
+  when: nessus_agent_status.stdout | search('failed')
+
+- name: Link Nessus Agent to Nessus Manager
+  command: "{{ nessus_agent_link_cmd }}"
+  become: yes
+  when: check_result.stdout | search('Not linked to')

@@ -1,0 +1,14 @@
+---
+# defaults file for nessus
+
+nessus_install_dir: /opt/nessus_agent
+
+nessus_cli_cmd: "{{ nessus_install_dir }}/sbin/nessuscli"
+nessus_agent_check_cmd:  "{{ nessus_cli_cmd }} agent status"
+nessus_agent_link_cmd: >
+  {{ nessus_cli_cmd }} agent link
+    --key={{ nessus_key }}
+    --groups="{{ nessus_group }}"
+    --host={{ nessus_manager_host }}
+    --port={{ nessus_manager_port }}
+nessus_daemon_cmd: "{{ nessus_install_dir }}/sbin/nessusd -q &"
