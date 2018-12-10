@@ -1,0 +1,58 @@
+---
+#
+# Configure some common Best Practices
+#
+
+- name: Set security limits if not previously specified
+  template:
+    src: 99-nproc.conf.j2
+    dest: /etc/security/limits.d/99-nproc.conf
+    owner: root
+    group: root
+    mode: 0644
+    force: no
+  tags: limits
+
+- name: Turn off swappiness
+  sysctl: name=vm.swappiness value=0 state=present reload=yes
+  tags: sysctl
+
+- name: Disable Transparent Huge Pages until reboot
+  shell: "echo never > {{ item }}"
+  with_items:
+    - /sys/kernel/mm/transparent_hugepage/enabled
+    - /sys/kernel/mm/transparent_hugepage/defrag
+  ignore_errors: true
+  changed_when: false
+  tags: thp
+
+- name: Increase the number of TCP socket ports available
+  sysctl: name="net.ipv4.ip_local_port_range" value="10000 65000" state=present reload=yes
+  tags: sysctl
+
+- name: Set how long sockets stay in a TIMED_WAIT state when closed
+  sysctl: name="net.netfilter.nf_conntrack_tcp_timeout_time_wait" value="1" state=absent reload=yes
+  tags: sysctl
+
+- name: Check if auditd exists
+  stat: path=/etc/sysconfig/auditd
+  register: auditd
+  tags: audit
+
+- name: Stop auditd service
+  service: name=auditd state=stopped
+  when: auditd.stat.isdir is defined and auditd.stat.isdir
+  tags: audit
+
+- name: Disable auditd augenrules
+  lineinfile: dest=/etc/sysconfig/auditd state=present regexp="USE_AUGENRULES=.*" line="USE_AUGENRULES=\"no\""
+  when: auditd.stat.isdir is defined and auditd.stat.isdir
+  tags: audit
+
+- name: Remove Audit rules
+  file: path="/etc/audit/rules.d/compliance.rules" state=absent
+  tags: audit
+
+- name: Set syslog plugin for audisp to not active
+  replace: dest=/etc/audisp/plugins.d/syslog.conf regexp="active = yes" replace="active = no"
+  tags: syslog
