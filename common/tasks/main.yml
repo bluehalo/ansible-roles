@@ -16,6 +16,29 @@
 
 - name: Ensure ntpd service enabled and running
   service: name=ntpd enabled=yes state=started
+  tags: ntp
+
+- name: Use internal sftp instead of openssh to avoid errors caused by long MOTD
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    state: present
+    regexp: "^Subsystem sftp"
+    line: 'Subsystem sftp internal-sftp'
+  when: not restricted_deploy
+  tags: sftp
+
+- name: Ensure rc.local if not present
+  template:
+    src: rc.local.j2
+    dest: /etc/rc.d/rc.local
+    owner: root
+    group: root
+    mode: 0755
+    force: no
+  tags: rc_local
 
 - include: selinux.yml
   when: selinux_enabled | default(true)
+
+- include: best_practices.yml
+  when: best_practices_enabled | default(true)

@@ -13,6 +13,7 @@ Does the following:
     - python-lxml
 - Starts NTP
 - Installs and enables SELINUX if configured
+- Configures common best practices if enabled (security limits, disable swappiness, THP, etc.)
 
 Requirements
 ------------
@@ -24,6 +25,9 @@ Role Variables
 
     # Whether to install and configure SELinux in enforcing mode, default is true
     selinux_enabled: true
+
+    # Whether to configure some common best practices
+    best_practices_enabled: true
 
 Example Playbook
 ----------------
