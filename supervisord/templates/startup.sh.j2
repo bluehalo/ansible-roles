@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+#       /etc/rc.d/init.d/supervisord
+# supervisord   This shell script takes care of starting and stopping
+#               supervisord.  Tested on Fedora 11.
+#
+# Author: Brian Bouterse bmbouter@gmail.com
+#
+# chkconfig: 345 80 80
+# description: supervisord is a client/server process control system. \
+# processname: supervisord
+# pidfile: /var/run/{{ supervisord_service_name }}.pid
+
+# Source function library.
+. /etc/init.d/functions
+
+DAEMON=`which supervisord`
+PIDFILE=/var/run/{{ supervisord_service_name }}.pid
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+start() {
+        echo -n "Starting {{ supervisord_service_name }}: "
+        if [ -f $PIDFILE ]; then
+                PID=`cat $PIDFILE`
+                echo {{ supervisord_service_name }} already running: $PID
+                exit 2;
+        else
+                daemon $DAEMON --pidfile=$PIDFILE -c {{ supervisord_conf_dir}}/{{ supervisord_service_name }}.conf
+                RETVAL=$?
+                echo
+                [ $RETVAL -eq 0 ] && touch /var/lock/subsys/{{ supervisord_service_name }}
+                return $RETVAL
+        fi
+
+}
+
+stop() {
+        echo -n "Shutting down {{ supervisord_service_name }}: "
+        echo
+        killproc -p $PIDFILE {{ supervisord_service_name }}
+        echo
+        rm -f /var/lock/subsys/{{ supervisord_service_name }}
+        return 0
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status {{ supervisord_service_name }}
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage:  {start|stop|status|restart}"
+        exit 1
+        ;;
+esac
+exit $?

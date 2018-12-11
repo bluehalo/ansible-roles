@@ -1,0 +1,12 @@
+---
+# tasks file for pip
+
+- name: Download pip installation script
+  get_url:
+    url: "{{ pip_url }}"
+    dest: "{{ pip_download_dir }}/{{ pip_script }}"
+    validate_certs: no
+
+- name: Install pip
+  shell: "python {{ pip_download_dir }}/{{ pip_script }}"
+  changed_when: false

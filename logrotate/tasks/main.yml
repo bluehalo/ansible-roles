@@ -1,0 +1,23 @@
+---
+- name: ensure logrotate is installed
+  yum: name=logrotate state=present
+  tags: yum
+
+- name: ensure required directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ logrotate_conf_dir }}"
+    - "{{ logrotate_log_dir }}"
+
+- name: set logrotate service configuration
+  template:
+    src: logrotate.conf.j2
+    dest: "{{ logrotate_conf_dir }}/{{ logrotate_filename }}"
+    owner: root
+    group: root
+    mode: 0644

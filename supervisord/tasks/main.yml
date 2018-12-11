@@ -1,0 +1,31 @@
+---
+- name: ensure supervisord is installed
+  yum: name=supervisor state=present
+  tags: yum
+
+- name: ensure required directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ supervisord_user }}"
+    group: "{{ supervisord_user }}"
+    mode: 0755
+  with_items:
+    - "{{ supervisord_conf_dir }}"
+    - "{{ supervisord_log_dir }}"
+
+- name: set supervisord service configuration
+  template:
+    src: supervisord.conf.j2
+    dest: "{{ supervisord_conf_dir }}/{{ supervisord_service_name }}.conf"
+    mode: 0644
+
+- name: set supervisord service script
+  template:
+    src: startup.sh.j2
+    dest: "/etc/init.d/{{ supervisord_service_name }}"
+    mode: 0755
+
+- name: ensure service started and chkconfig enabled
+  service: name="{{ supervisord_service_name }}" state=started enabled=yes
+
