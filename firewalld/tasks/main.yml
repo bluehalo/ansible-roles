@@ -1,0 +1,34 @@
+---
+- name: Ensure firewalld is installed
+  yum: name=firewalld state=present
+  tags: yum
+
+- name: Ensure firewalld service started and chkconfig enabled
+  service: name=firewalld state=started enabled=yes
+
+- name: Add firewalld services
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+  with_items: "{{ firewalld_services }}"
+  register: firewall_services_result
+
+- name: Add firewalld TCP ports
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    state: enabled
+  with_items: "{{ firewalld_ports }}"
+  register: firewall_ports_result
+
+- name: Add firewalld port forwards
+  command: firewall-cmd --permanent --add-forward-port=port={{ item.port }}:proto={{ item.proto | default('tcp') }}:toport={{ item.toport }}
+  with_items: "{{ firewalld_port_forwards }}"
+  register: firewall_forwards_result
+
+- name: Reload firewalld
+  command: firewall-cmd --reload
+  when: (firewall_services_result is defined and firewall_services_result.changed) or
+        (firewall_ports_result is defined and firewall_ports_result.changed) or
+        (firewall_forwards_result is defined and firewall_forwards_result.changed)

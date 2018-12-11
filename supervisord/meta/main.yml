@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: logrotate
+    logrotate_filename: supervisord
+    logrotate_pattern: "{{ supervisord_log_dir }}/*.log"

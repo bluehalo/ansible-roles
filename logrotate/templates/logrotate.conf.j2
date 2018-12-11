@@ -1,0 +1,31 @@
+{{ logrotate_pattern }} {
+{% if logrotate_max_size %}
+maxsize {{ logrotate_max_size }}
+{% endif %}
+{% if logrotate_duration %}
+{{ logrotate_duration }}
+{% endif %}
+{% if logrotate_max_history %}
+rotate {{ logrotate_max_history | int }}
+{% endif %}
+{% if logrotate_compress %}
+{{ logrotate_compress }}
+{% endif %}
+{% if logrotate_missingok %}
+missingok
+{% endif %}
+{% if logrotate_notifempty %}
+notifempty
+{% endif %}
+{% if logrotate_copytruncate %}
+copytruncate
+{% endif %}
+{% if logrotate_postrotate %}
+    # Ensures the postrotate command is executed only once
+    sharedscripts
+    # after logfile is rotated, execute the postrotate command
+    postrotate
+        {{ logrotate_postrotate }}
+    endscript
+{% endif %}
+}

@@ -1,0 +1,6 @@
+---
+# defaults file for pip
+
+pip_url: https://bootstrap.pypa.io/get-pip.py
+pip_script: get-pip.py
+pip_download_dir: /tmp

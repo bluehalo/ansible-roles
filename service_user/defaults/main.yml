@@ -1,0 +1,4 @@
+---
+# defaults file for service_user
+
+service_user_group: "{{ service_user_name }}"

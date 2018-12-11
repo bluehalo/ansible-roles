@@ -1,0 +1,4 @@
+---
+firewalld_services: []
+firewalld_ports: []
+firewalld_port_forwards: {}
