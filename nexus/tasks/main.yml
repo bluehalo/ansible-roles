@@ -100,7 +100,7 @@
   notify:
     - restart nexus
 
-- include: ssl.yml
+- include_tasks: ssl.yml
   when:
     - nexus_ssl
 

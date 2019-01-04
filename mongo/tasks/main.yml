@@ -92,5 +92,5 @@
     state: "{{ mongod_state }}"
     enabled: yes
 
-- include: replica_set.yml
+- include_tasks: replica_set.yml
   when: mongo_init_replica_set | default(false)

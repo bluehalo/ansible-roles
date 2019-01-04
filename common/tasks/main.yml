@@ -37,8 +37,8 @@
     force: no
   tags: rc_local
 
-- include: selinux.yml
+- include_tasks: selinux.yml
   when: selinux_enabled | default(true)
 
-- include: best_practices.yml
+- include_tasks: best_practices.yml
   when: best_practices_enabled | default(true)

@@ -5,7 +5,7 @@
   template: src=login.defs.j2 dest=/etc/login.defs owner=root group=root mode=0644
   tags: config
 
-- include: create.yml
+- include_tasks: create.yml
   tags: create
-- include: delete.yml
+- include_tasks: delete.yml
   tags: delete
