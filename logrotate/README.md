@@ -1,7 +1,8 @@
 logrotate
 =========
 
-An Ansible role to install and configure logrotate.
+An Ansible role to install and configure logrotate. Ensures logrotate is installed,
+then adds a configuration for a given service to manage.
 
 Requirements
 ------------
@@ -11,7 +12,15 @@ Assumes RedHat OS family
 Role Variables
 --------------
 
-Variables and their default values:
+Required variables:
+
+    # name of the application whose logs will be managed
+    logrotate_filename
+
+    # file pattern to manage
+    logrotate_pattern
+
+Optional variables and their default values:
 
     logrotate_conf_dir: /etc/logrotate.d
     logrotate_log_dir: /var/log/logrotate
@@ -33,8 +42,10 @@ Example Playbook
     - name: Example Playbook
       hosts: servers
       roles:
-        - name: Install logrotate
+        - name: Configure logrotate for myapp logs
           role: logrotate
+          logrotate_filename: myapp
+          logrotate_pattern: /var/log/myapp/*.log
 
 License
 -------
