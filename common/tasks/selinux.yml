@@ -2,11 +2,9 @@
 # selinux tasks file for common
 
 - name: Ensure common packages are installed
-  yum: name={{ item }} state=present
-  with_items:
-    - policycoreutils-python
-    - libsemanage-python
-    - selinux-policy-targeted
+  yum:
+    name: [ policycoreutils-python, libsemanage-python, selinux-policy-targeted ]
+    state: present
   tags: [ yum, selinux ]
 
 - name: Ensure SELINUX is enforcing

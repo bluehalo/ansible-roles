@@ -6,16 +6,16 @@
   tags: yum
 
 - name: Ensure common packages are installed
-  yum: name={{ item }} state=present
-  with_items:
-    - ntp
-    - wget
-    - yum-plugin-priorities
-    - python-lxml
+  yum:
+    name: [ ntp, wget, yum-plugin-priorities, python-lxml ]
+    state: present
   tags: yum
 
 - name: Ensure ntpd service enabled and running
-  service: name=ntpd enabled=yes state=started
+  service:
+    name: ntpd
+    enabled: yes
+    state: started
   tags: ntp
 
 - name: Use internal sftp instead of openssh to avoid errors caused by long MOTD

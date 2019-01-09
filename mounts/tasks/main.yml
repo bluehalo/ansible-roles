@@ -32,7 +32,9 @@
   tags: selinux
 
 - name: restart rsyslog
-  command: "/sbin/service rsyslog restart"
+  service:
+    name: rsyslog
+    state: restarted
   when:
     - mounted_result.changed
     - item.name == mounts_log_directory
