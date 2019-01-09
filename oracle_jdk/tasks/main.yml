@@ -3,6 +3,7 @@
   copy:
     src: "{{ oracle_jdk_rpm_local_src }}"
     dest: "{{ oracle_jdk_rpm_dest }}"
+  when: not oracle_jdk_skip_upload | default(false)
   register: oracle_jdk_uploaded
 
 - name: Remove openjdk if present

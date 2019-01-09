@@ -1,0 +1,4 @@
+---
+# defaults file for oracle_jdk
+
+oracle_jdk_skip_upload: false
