@@ -12,7 +12,7 @@
     state: installed
   tags: [ compliance, yum ]
 
-- name: Ensure additional security packages installed for Amazon Linux
+- name: Ensure additional security packages installed
   yum:
     name:
       - selinux-policy
@@ -190,7 +190,7 @@
   lineinfile: dest=/etc/selinux/config state=present regexp="SELINUX=.*" line="SELINUX=enforcing"
   tags: [ compliance, selinux ]
 
-- name: make kernel changes for amazon linux
+- name: make kernel changes
   replace:
     path: /boot/grub/menu.lst
     regexp: 'selinux=0'
