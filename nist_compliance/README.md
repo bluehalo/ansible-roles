@@ -1,4 +1,4 @@
-compliance
+nist_compliance
 ========
 
 An Ansible role for applying secure configurations in compliance with NIST standards.
@@ -29,7 +29,7 @@ Example Playbook
       become_method: sudo
       roles:
         - name: Run compliance requirements
-          role: compliance
+          role: nist_compliance
 
 License
 -------
