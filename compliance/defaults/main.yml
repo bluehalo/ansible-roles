@@ -1,0 +1,4 @@
+---
+compliance_disabled_services: [ 'acpid', 'kdump', 'mdmonitor', 'messagebus', 'portreserve', 'atd' ]
+compliance_email_sysadmin: "{{ compliance_email_sysadmin }}"
+compliance_show_ssh_banner: false

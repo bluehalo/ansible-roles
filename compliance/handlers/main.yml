@@ -1,0 +1,11 @@
+- name: restart crond
+  service: name=crond state=restarted
+- name: restart auditd
+  service: name=auditd state=restarted
+- name: restart sshd
+  service: name=sshd state=restarted
+- name: restart postfix
+  service: name=postfix state=restarted
+- name: newaliases
+  command: newaliases
+  notify: restart postfix
