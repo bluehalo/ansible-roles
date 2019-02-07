@@ -6,17 +6,6 @@
     dest: "{{ influxdb_dest }}"
     mode: 0755
 
-- name: Download InfluxDB from S3
-  when: download_from_s3 | default(false)
-  include_role:
-    name: get_s3
-  vars:
-    get_s3_src: "{{ influxdb_filename }}"
-    get_s3_dest: "{{ influxdb_dest }}/{{ influxdb_filename }}"
-    get_s3_overwrite: different
-  tags: [ download ]
-
-
 - name: install influx rpm from a local file
   yum:
     name: "{{ influxdb_dest }}/{{ influxdb_filename }}"

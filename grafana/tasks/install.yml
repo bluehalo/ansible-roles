@@ -6,16 +6,6 @@
     dest: "{{ grafana_dest }}"
     mode: 0755
 
-- name: Download Grafana from S3
-  when: download_from_s3 | default(false)
-  include_role:
-    name: get_s3
-  vars:
-    get_s3_src: "{{ grafana_filename }}"
-    get_s3_dest: "{{ grafana_dest }}/{{ grafana_filename }}"
-    get_s3_overwrite: different
-  tags: [ download ]
-
 - name: install grafana rpm from a local file
   yum:
     name: "{{ grafana_dest }}/{{ grafana_filename }}"
