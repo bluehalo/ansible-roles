@@ -1,4 +1,15 @@
 ---
+- name: Update InfluxDB Directory Permissions
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ influxdb_user }}"
+    group: "{{ influxdb_user }}"
+    mode: "0755"
+  loop:
+    - "{{ influxdb_log_dir }}"
+    - "{{ influxdb_lib_dir }}"
+
 - name: copy startup scripts
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner="root" group="root" mode='0755'
   with_items:
