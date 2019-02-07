@@ -1,6 +1,6 @@
 ---
 - name: Download InfluxDB
-  when: influxdb_download | default(false)
+  when: influxdb_download
   get_url:
     url: "https://dl.influxdata.com/influxdb/releases/influxdb-{{ influxdb_version }}.x86_64.rpm"
     dest: "{{ influxdb_dest }}"
