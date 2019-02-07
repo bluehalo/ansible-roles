@@ -1,5 +1,5 @@
 ---
-download_from_s3: false
+grafana_retrieve_from_s3: false
 grafana_version: 5.0.4
 grafana_app_mode: production
 grafana_filename: "grafana-{{ grafana_version }}-1.x86_64.rpm"

@@ -1,6 +1,6 @@
 ---
 - name: Download InfluxDB
-  when: not download_from_s3 | default(false)
+  when: not influxdb_retrieve_from_s3 | default(false)
   get_url:
     url: "https://dl.influxdata.com/influxdb/releases/influxdb-{{ influxdb_version }}.x86_64.rpm"
     dest: "{{ influxdb_dest }}"
