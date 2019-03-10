@@ -9,6 +9,7 @@
   loop:
     - "{{ influxdb_log_dir }}"
     - "{{ influxdb_lib_dir }}"
+    - "{{ influxdb_data_dir }}"
 
 - name: copy startup scripts
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner="root" group="root" mode='0755'
@@ -16,7 +17,7 @@
     - { src: 'influxdb.sh.j2', dest: "/etc/init.d/influxdb" }
 
 - name: copy influxdb configs
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ influxdb_user }}" group="{{ influxdb_user }}" mode='0640'
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ influxdb_user }}" group="{{ influxdb_user }}" mode='0644'
   with_items:
     - { src: 'influxdb.conf.j2', dest: "{{influxdb_conf_dir}}/influxdb.conf" }
   notify:
