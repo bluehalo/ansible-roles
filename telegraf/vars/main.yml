@@ -1,0 +1,5 @@
+---
+# vars file for telegraf
+telegraf_user: telegraf
+telegraf_conf_dir: /etc/telegraf
+telegraf_log_dir: /var/log/telegraf

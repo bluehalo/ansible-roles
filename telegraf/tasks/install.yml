@@ -1,0 +1,12 @@
+---
+- name: Download Telegraf
+  when: telegraf_download
+  get_url:
+    url: "https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_version }}-1.x86_64.rpm"
+    dest: /tmp
+    mode: 0755
+
+- name: install influx rpm from a local file
+  yum:
+    name: "/tmp/telegraf-{{ telegraf_version }}-1.x86_64.rpm"
+    state: present

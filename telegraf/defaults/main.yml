@@ -1,0 +1,9 @@
+---
+telegraf_download: true
+telegraf_version: 1.9.5
+telegraf_outputs_influxdb_host: 127.0.0.1
+telegraf_outputs_influxdb_port: 8086
+telegraf_outputs_influxdb_database: telegraf
+telegraf_outputs_influxdb_retention_policy: default
+
+telegraf_inputs_mongodb:

@@ -29,7 +29,7 @@
   # retention-autocreate = true
 
   # If log messages are printed for the meta service
-  # logging-enabled = true
+  logging-enabled = {{ influxdb_meta_logging_enabled | lower }}
 
 ###
 ### [data]
@@ -61,11 +61,11 @@
 
   # Trace logging provides more verbose output around the tsm engine. Turning
   # this on can provide more useful output for debugging tsm engine issues.
-  # trace-logging-enabled = false
+  # trace-logging-enabled = {{ influxdb_data_trace_logging_enabled | lower }}
 
   # Whether queries should be logged before execution. Very useful for troubleshooting, but will
   # log any sensitive data contained within a query.
-  # query-log-enabled = true
+  query-log-enabled = {{ influxdb_data_query_log_enabled | lower }}
 
   # Settings for the TSM engine
 
@@ -422,10 +422,10 @@
 
 [continuous_queries]
   # Determines whether the continuous query service is enabled.
-  # enabled = true
+  enabled = {{ influxdb_continuous_queries_enabled | lower }}
 
   # Controls whether queries are logged when executed by the CQ service.
-  # log-enabled = true
+  log-enabled = {{ influxdb_continuous_queries_log_enabled | lower }}
 
   # interval for how often continuous queries will be checked if they need to run
-  # run-interval = "1s"
+  run-interval = "{{ influxdb_continuous_queries_run_interval }}"

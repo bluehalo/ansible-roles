@@ -1,0 +1,8 @@
+---
+
+- name: copy telegraf configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ telegraf_user }}" group="{{ telegraf_user }}" mode='0644'
+  with_items:
+    - { src: 'telegraf.conf.j2', dest: "{{telegraf_conf_dir}}/telegraf.conf" }
+  notify:
+    - restart telegraf
