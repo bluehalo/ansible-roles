@@ -1,0 +1,8 @@
+---
+- name: copy kapacitor configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ kapacitor_user }}" group="{{ kapacitor_user }}" mode='0644'
+  with_items:
+    - { src: 'kapacitor.conf.j2', dest: "{{kapacitor_conf_dir}}/kapacitor.conf" }
+  notify:
+    - restart kapacitor
+  tags: [ config ]

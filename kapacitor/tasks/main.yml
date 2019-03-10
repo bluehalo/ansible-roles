@@ -1,7 +1,3 @@
 ---
-
 - import_tasks: install.yml
-  tags: [ install ]
-
 - import_tasks: config.yml
-  tags: [ config ]
