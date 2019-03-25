@@ -1,0 +1,27 @@
+---
+kapacitor_download: true
+kapacitor_version: 1.5.2
+
+kapacitor_hostname: localhost
+kapacitor_data_dir: /var/lib/kapacitor
+
+kapacitor_http_log_enabled: true
+kapacitor_http_write_tracing: false
+kapacitor_http_pprof_enabled: false
+
+kapacitor_logging_file: /var/log/kapacitor/kapacitor.log
+kapacitor_logging_level: INFO
+
+kapacitor_load_dir: /etc/kapacitor/load
+
+kapacitor_replay_dir: /var/lib/kapacitor/replay
+
+kapacitor_task_dir: /var/lib/kapacitor/tasks
+kapacitor_task_snapshot_interval: 60s
+
+kapacitor_storage_boltdb: /var/lib/kapacitor/kapacitor.db
+
+kapacitor_influxdb_name: localhost
+kapacitor_influxdb_urls: http://localhost:8086
+kapacitor_influxdb_username:
+kapacitor_influxdb_password:

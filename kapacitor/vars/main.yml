@@ -1,0 +1,5 @@
+---
+# vars file for kapacitor
+kapacitor_user: kapacitor
+kapacitor_conf_dir: /etc/kapacitor
+kapacitor_log_dir: /var/log/kapacitor

@@ -1,6 +1,6 @@
 ---
-- include_tasks: install.yml
+- import_tasks: install.yml
   tags: [ install ]
 
-- include_tasks: config.yml
+- import_tasks: config.yml
   tags: [ config ]
