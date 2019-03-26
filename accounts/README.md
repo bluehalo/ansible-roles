@@ -6,7 +6,8 @@ An Ansible role to create and delete user accounts.
 Requirements
 ------------
 
-Assumes a Unix/Linux OS, and has only been tested on the RedHat OS family
+Assumes a Unix/Linux OS, and has only been tested on the RedHat OS family.
+Requires ansible 2.6.x for new "include_task" syntax.
 
 Role Variables
 --------------
