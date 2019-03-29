@@ -19,6 +19,6 @@
     state: directory
     owner: "{{ service_user_name }}"
     group: "{{ service_user_group }}"
-    mode: 0755
+    mode: "{{ service_user_home_permissions }}"
   when: service_user_create_home
 

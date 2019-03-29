@@ -27,6 +27,8 @@ Optional variables and their default values:
     # create user's home directory if it does not exist
     service_user_create_home: true
 
+    service_user_home_permissions: 0755
+
 Example Playbook
 ----------------
 
