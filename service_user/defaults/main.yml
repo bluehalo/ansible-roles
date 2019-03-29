@@ -2,3 +2,6 @@
 # defaults file for service_user
 
 service_user_group: "{{ service_user_name }}"
+
+# create user's home directory if it does not exist
+service_user_create_home: true
