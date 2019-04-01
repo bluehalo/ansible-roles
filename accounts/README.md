@@ -48,7 +48,7 @@ them are as follows.
     # default shell for all users
     accounts_shell: /bin/bash
     # default umask
-    accounts_umask: 022
+    accounts_umask: "022"
     # optional: override to add a prefix to users' prompts (enclosed square brackets and followed by a space)
     #accounts_prompt_prefix: 
     # whether to create a home directory for the user
@@ -87,7 +87,7 @@ Create user accounts with a more restrictive umask:
       roles:
         - name: Configure User Accounts
           role: accounts
-          accounts_umask: 077
+          accounts_umask: "077"
 
 License
 -------
