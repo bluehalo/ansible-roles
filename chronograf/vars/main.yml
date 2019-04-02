@@ -1,0 +1,5 @@
+---
+# vars file for chronograf
+chronograf_user: chronograf
+chronograf_conf_dir: /etc/kapacitor
+chronograf_log_dir: /var/log/chronograf
