@@ -10,8 +10,8 @@
     name: "{{ service_user_name }}"
     group: "{{ service_user_group }}"
     shell: /sbin/nologin
-    home: "{{ service_user_home }}"
-    createhome: yes
+    home: "{{ service_user_home | default(omit) }}"
+    createhome: "{{ service_user_create_home }}"
 
 - name: Ensure user home directory exists with proper permissions
   file:
@@ -19,5 +19,6 @@
     state: directory
     owner: "{{ service_user_name }}"
     group: "{{ service_user_group }}"
-    mode: 0755
+    mode: "{{ service_user_home_permissions }}"
+  when: service_user_create_home
 
