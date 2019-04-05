@@ -1,6 +1,6 @@
 ---
 grafana_download: true
-grafana_version: 6.0.0
+grafana_version: 6.1.1
 grafana_app_mode: production
 grafana_filename: "grafana-{{ grafana_version }}-1.x86_64.rpm"
 grafana_dest: /tmp
