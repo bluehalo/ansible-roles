@@ -1,0 +1,14 @@
+---
+- name: Download Chronograf
+  when: chronograf_download
+  get_url:
+    url: "https://dl.influxdata.com/chronograf/releases/chronograf-{{ chronograf_version }}.x86_64.rpm"
+    dest: /tmp
+    mode: 0755
+  tags: [ download ]
+
+- name: install Chronograf RPM from a local file
+  yum:
+    name: "/tmp/chronograf-{{ chronograf_version }}.x86_64.rpm"
+    state: present
+  tags: [ install, yum ]

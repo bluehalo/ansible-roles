@@ -1,0 +1,8 @@
+---
+- name: copy chronograf configs
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ chronograf_user }}" group="{{ chronograf_user }}" mode='0644'
+  with_items:
+    - { src: 'chronograf.conf.j2', dest: "/etc/default/chronograf" }
+  notify:
+    - restart chronograf
+  tags: [ config ]
