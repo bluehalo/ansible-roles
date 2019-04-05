@@ -16,13 +16,18 @@ Required variables:
     # user's name
     service_user_name:
 
-    # user's home directory
-    service_user_home:
-
 Optional variables and their default values:
 
     # user's group
     service_user_group: "{{ service_user_name }}"
+
+    # user's home directory (optional)
+    service_user_home:
+
+    # create user's home directory if it does not exist
+    service_user_create_home: true
+
+    service_user_home_permissions: 0755
 
 Example Playbook
 ----------------
