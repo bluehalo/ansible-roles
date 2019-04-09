@@ -6,7 +6,7 @@
     dest: "{{ influxdb_dest }}"
     mode: 0755
 
-- name: install influx rpm from a local file
+- name: Install InfluxDB rpm from local file
   yum:
     name: "{{ influxdb_dest }}/{{ influxdb_filename }}"
     state: present

@@ -11,14 +11,23 @@
     - "{{ influxdb_lib_dir }}"
     - "{{ influxdb_data_dir }}"
 
-- name: copy startup scripts
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="root" group="root" mode='0755'
-  with_items:
-    - { src: 'influxdb.sh.j2', dest: "/etc/init.d/influxdb" }
+- name: Copy InfluxDB initd script
+  template:
+    src: influxdb.sh.j2
+    dest: /etc/init.d/influxdb
+    owner: root
+    group: root
+    mode: '0755'
+  when: ansible_distribution == "Amazon" or (ansible_distribution == "CentOS" and ansible_distribution_major_version < "7")
+  notify:
+    - restart influxdb
 
-- name: copy influxdb configs
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ influxdb_user }}" group="{{ influxdb_user }}" mode='0644'
-  with_items:
-    - { src: 'influxdb.conf.j2', dest: "{{influxdb_conf_dir}}/influxdb.conf" }
+- name: Copy InfluxDB config
+  template:
+    src: influxdb.conf.j2
+    dest: "{{ influxdb_conf_dir }}/influxdb.conf"
+    owner: "{{ influxdb_user }}"
+    group: "{{ influxdb_user }}"
+    mode: '0644'
   notify:
     - restart influxdb
