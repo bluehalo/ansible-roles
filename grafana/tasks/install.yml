@@ -6,7 +6,7 @@
     dest: "{{ grafana_dest }}"
     mode: 0755
 
-- name: install grafana rpm from a local file
+- name: Install Grafana rpm from local file
   yum:
     name: "{{ grafana_dest }}/{{ grafana_filename }}"
     state: present

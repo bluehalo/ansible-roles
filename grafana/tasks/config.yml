@@ -1,12 +1,21 @@
 ---
-- name: copy startup scripts
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="root" group="root" mode='0755'
-  with_items:
-    - { src: 'grafana.sh.j2', dest: "/etc/init.d/grafana" }
+- name: Copy Grafana initd script
+  template:
+    src: grafana.sh.j2
+    dest: /etc/init.d/grafana
+    owner: root
+    group: root
+    mode: '0755'
+  when: ansible_distribution == "Amazon" or (ansible_distribution == "CentOS" and ansible_distribution_major_version < "7")
+  notify:
+    - restart grafana
 
-- name: copy grafana configs
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ grafana_user }}" group="{{ grafana_user }}" mode='0640'
-  with_items:
-    - { src: 'grafana.ini.j2', dest: "{{grafana_conf_dir}}/grafana.ini" }
+- name: Copy Grafana config
+  template:
+    src: grafana.ini.j2
+    dest: "{{ grafana_conf_dir }}/grafana.ini"
+    owner: "{{ grafana_user }}"
+    group: "{{ grafana_user }}"
+    mode: '0640'
   notify:
     - restart grafana
