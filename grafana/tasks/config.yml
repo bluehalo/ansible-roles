@@ -1,5 +1,5 @@
 ---
-- name: Copy Granafa initd script
+- name: Copy Grafana initd script
   template:
     src: grafana.sh.j2
     dest: /etc/init.d/grafana
