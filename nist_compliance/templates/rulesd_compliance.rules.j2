@@ -64,8 +64,8 @@
 -a always,exit -F arch=b32 -S open -F exit=-EPERM -k SYS_open
 
 ## Unsuccessful close
--a always,exit -F arch=b64 -S close -F exit=-EACCESS -k SYS_close
--a always,exit -F arch=b32 -S close -F exit=-EACCESS -k SYS_close
+-a always,exit -F arch=b64 -S close -F exit=-EACCES -k SYS_close
+-a always,exit -F arch=b32 -S close -F exit=-EACCES -k SYS_close
 
 ## Unsuccessful modifications
 -a always,exit -F arch=b64 -S rename -S truncate -S ftruncate -F exit=-EACCES -k SYS_mods
