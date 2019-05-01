@@ -80,25 +80,9 @@
   template: src="system-auth-ac.j2" dest="/etc/pam.d/system-auth-ac" owner='root' group='root' mode='0644'
   tags: [compliance, pamd]
 
-#- name: Remove previous system-auth link or file from /etc/pam.d
-#  file: path="/etc/pam.d/system-auth" state=absent
-#  tags: [compliance, pamd]
-
-#- name: Create symlink from /etc/pam.d/system-auth to /etc/pam.d/system-auth-ac
-#  file: src="/etc/pam.d/system-auth-ac" dest="/etc/pam.d/system-auth" state=link
-#  tags: [compliance, pamd]
-
 - name: Ensure /etc/pam.d/password-auth-ac file
   template: src="password-auth-ac.j2" dest="/etc/pam.d/password-auth-ac" owner='root' group='root' mode='0644'
   tags: [compliance, pamd]
-
-#- name: Remove previous password-auth link or file from /etc/pam.d
-#  file: path="/etc/pam.d/password-auth" state=absent
-#  tags: [compliance, pamd]
-
-#- name: Create symlink from /etc/pam.d/password-auth to /etc/pam.d/passsword-auth-ac
-#  file: src="/etc/pam.d/password-auth-ac" dest="/etc/pam.d/password-auth" state=link
-#  tags: [compliance, pamd]
 
 - name: Check for /etc/bashrc
   stat: path=/etc/bashrc
