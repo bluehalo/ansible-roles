@@ -286,7 +286,7 @@ editors_can_admin = true
 
 #################################### SMTP / Emailing ##########################
 [smtp]
-;enabled = false
+enabled = {{ grafana_smtp_enabled|lower }}
 ;host = localhost:25
 ;user =
 # If the password contains # or ; you have to wrap it with trippel quotes. Ex """#password;"""
@@ -295,7 +295,7 @@ editors_can_admin = true
 ;key_file =
 ;skip_verify = false
 ;from_address = admin@grafana.localhost
-;from_name = Grafana
+from_name = {{ grafana_smtp_display_name }}
 
 [emails]
 ;welcome_email_on_sign_up = false
