@@ -17,3 +17,4 @@ grafana_external_image_storage_s3_bucket_url: ''
 
 grafana_smtp_enabled: false
 grafana_smtp_display_name: "Grafana"
+grafana_smtp_host: "localhost:25"

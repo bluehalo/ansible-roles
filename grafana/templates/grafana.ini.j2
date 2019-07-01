@@ -287,7 +287,10 @@ editors_can_admin = true
 #################################### SMTP / Emailing ##########################
 [smtp]
 enabled = {{ grafana_smtp_enabled|lower }}
-;host = localhost:25
+{% if grafana_smtp_enabled %}
+host = {{ grafana_smtp_host }}
+{% endif %}
+
 ;user =
 # If the password contains # or ; you have to wrap it with trippel quotes. Ex """#password;"""
 ;password =
