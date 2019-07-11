@@ -1,7 +1,7 @@
 ---
-- name: Ensure latest java-1.8.0 is installed
+- name: Ensure latest {{ openjdk_package_name }} is installed
   yum:
-    name: java-1.8.0
+    name: "{{ openjdk_package_name }}"
     state: latest
     update_cache: yes
   tags: [ install, yum ]

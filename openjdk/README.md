@@ -11,7 +11,9 @@ Assumes a Unix/Linux OS, and has only been tested on the RedHat OS family
 Role Variables
 --------------
 
-None
+    # based on available yum packages
+    # values include: 1.6.0, 1.7.0, 1.8.0, 11, latest
+    openjdk_version: 1.8.0
 
 Example Playbook
 ----------------
@@ -21,6 +23,7 @@ Example Playbook
       roles:
         - name: Install openjdk
           role: openjdk
+          openjdk_version: 1.8.0
 
 License
 -------
