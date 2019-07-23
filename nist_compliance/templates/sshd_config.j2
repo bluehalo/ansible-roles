@@ -143,3 +143,9 @@ Subsystem sftp	/usr/libexec/openssh/sftp-server
 
 UseDNS no
 AllowUsers {% if privileged_user is defined %}{{ privileged_user }} {% endif %}{{ accounts_create_users|map(attribute='username')|sort|join(' ') }}
+
+# BEGIN ANSIBLE MANAGED BLOCK
+Match Group allowpass
+PasswordAuthentication yes
+Match User *
+# END ANSIBLE MANAGED BLOCK

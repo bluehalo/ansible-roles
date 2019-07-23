@@ -89,6 +89,11 @@
   template: src="password-auth-ac.j2" dest="/etc/pam.d/password-auth-ac" owner='root' group='root' mode='0644'
   tags: [compliance, pamd]
 
+- name: create allowpass group for users that can use passwords
+  group:
+    name: allowpass
+    state: present
+
 - name: Check for /etc/bashrc
   stat: path=/etc/bashrc
   register: bashrc_stat
