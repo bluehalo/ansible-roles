@@ -5,13 +5,32 @@
   group: name="{{ item.username }}"
   with_items: "{{ accounts_create_users }}"
 
+# Any user in the allowpass group is allowed to login with a password.
+# If you have a user that requires a password, add "allow_password: yes"
+# to their accounts entry in group_vars/.../accounts.
+- name: create allowpass group for users that can use passwords
+  group:
+    name: allowpass
+    state: present
+
+- name: allow password auth in sshd_config for pword group
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      Match Group allowpass
+      PasswordAuthentication yes
+      Match User *
+  notify:
+    - restart sshd
+
 - name: create users
   user: name="{{ item.username }}"
         uid="{{ item.uid | default(omit) }}"
         group="{{ item.username }}"
-        groups="{{ (item.groups | default([])) | join(',') }}"
+        groups="{{ ( (["allowpass"] if (item.allow_password | default(False)) else [] ) + (item.groups | default([])) ) | join(',') }}"
         shell="{{ item.shell if item.shell is defined else accounts_shell }}"
         password="{{ item.password if item.password is defined else '!' }}"
+        update_password="on_create"
         comment="{{ item.name | default(omit) }}"
         home="{{item.home if item.home is defined else accounts_home_root+item.username}}"
         createhome="{{ accounts_createhome }}"
