@@ -11,7 +11,7 @@ Assumes RedHat OS family and access to the Internet (or access to local Pypi ser
 Role Variables
 --------------
 
-    ansible_version: 2.6.5
+    version: 2.6.5
 
 Example Playbook
 ----------------

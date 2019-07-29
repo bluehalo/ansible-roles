@@ -11,6 +11,7 @@ Assumes RedHat OS family, and internet connectivity
 Role Variables
 --------------
 
+    install_with_script: no
     pip_url: https://bootstrap.pypa.io/get-pip.py
     pip_script: get-pip.py
     pip_download_dir: /tmp

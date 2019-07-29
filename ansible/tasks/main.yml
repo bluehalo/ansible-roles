@@ -3,4 +3,4 @@
 
 - name: Install Ansible
   pip: 
-    name: "ansible=={{ ansible_version }}"
+    name: "ansible=={{ version }}"
