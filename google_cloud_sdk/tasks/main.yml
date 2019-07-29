@@ -1,0 +1,21 @@
+---
+# tasks file for google_cloud_sdk
+
+- name: Add Google Cloud yum repository
+  yum_repository:
+    name: google-cloud-sdk
+    description: Google Cloud SDK
+    baseurl: "{{ gcloud_yum_repo_url }}"
+    priority: 10
+    gpgkey: "{{ gcloud_yum_gpg_keys }}"
+    gpgcheck: yes
+    sslverify: no
+  when: ansible_os_family == 'RedHat'
+  tags: [yum, gcloud]
+
+- name: Install Google Cloud SDK using yum
+  yum:
+    name: google-cloud-sdk
+    state: present
+  tags: [gcloud]
+

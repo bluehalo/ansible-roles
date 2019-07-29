@@ -1,0 +1,5 @@
+---
+# defaults file for google_cloud_sdk
+
+gcloud_yum_repo_url: https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64
+gcloud_yum_gpg_keys: "https://packages.cloud.google.com/yum/doc/yum-key.gpg, https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
