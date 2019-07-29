@@ -7,7 +7,7 @@
   tags: [python, pip]
 
 - name: Install pip using easy_install
-  command: /usr/bin/easy_install pip
+  shell: umask 0022 && /usr/bin/easy_install pip
   args:
     creates: /usr/bin/pip
   tags: [pip]

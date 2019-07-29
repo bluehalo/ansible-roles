@@ -9,7 +9,7 @@
   when: install_with_script
 
 - name: Install pip using downloaded script
-  shell: "python {{ pip_download_dir }}/{{ pip_script }}"
+  shell: "umask 0022 && python {{ pip_download_dir }}/{{ pip_script }}"
   changed_when: false
   when: install_with_script
 

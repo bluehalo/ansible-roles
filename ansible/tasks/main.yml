@@ -2,5 +2,7 @@
 # tasks file for ansible
 
 - name: Install Ansible
-  pip: 
+  pip:
     name: "ansible=={{ version }}"
+    umask: "0022"
+  tags: [ansible]
