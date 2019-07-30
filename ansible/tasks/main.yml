@@ -3,6 +3,6 @@
 
 - name: Install Ansible
   pip:
-    name: "ansible=={{ version }}"
+    name: "ansible=={{ ansible_install_version }}"
     umask: "0022"
   tags: [ansible]

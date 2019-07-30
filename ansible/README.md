@@ -1,7 +1,7 @@
 ansible
 ===
 
-An Ansible role to install Ansible.
+An Ansible role to install Ansible via Pip
 
 Requirements
 ------------
@@ -11,7 +11,7 @@ Assumes RedHat OS family and access to the Internet (or access to local Pypi ser
 Role Variables
 --------------
 
-    version: 2.6.5
+    ansible_install_version: 2.6.5
 
 Example Playbook
 ----------------
