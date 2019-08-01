@@ -1,0 +1,28 @@
+---
+# tasks file for packer
+
+- name: Ensure unzip is installed (Debian/Ubuntu)
+  apt:
+    pkg:
+      - unzip
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags: [terraform, unzip]
+
+- name: Ensure unzip is installed (Centos/Amazon)
+  yum:
+    name: unzip
+    state: present
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Amazon'
+  tags: [packer, unzip]
+
+- name: "Unarchive packer to {{ packer_installation_dir }}"
+  unarchive:
+    remote_src: yes
+    src: "https://releases.hashicorp.com/packer/{{ packer_version }}/packer_{{ packer_version }}_linux_amd64.zip"
+    dest: "{{ packer_installation_dir }}"
+    creates: "{{ packer_installation_dir }}/packer"
+    mode: "0755"
+  tags: [packer]
+

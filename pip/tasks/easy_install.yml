@@ -1,0 +1,13 @@
+---
+
+- name: Ensure python is installed
+  yum:
+    name: [ python ]
+    state: present
+  tags: [python, pip]
+
+- name: Install pip using easy_install
+  shell: umask 0022 && /usr/bin/easy_install pip
+  args:
+    creates: /usr/bin/pip
+  tags: [pip]

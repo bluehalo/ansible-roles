@@ -6,7 +6,23 @@
     url: "{{ pip_url }}"
     dest: "{{ pip_download_dir }}/{{ pip_script }}"
     validate_certs: no
+  when: install_with_script
 
-- name: Install pip
-  shell: "python {{ pip_download_dir }}/{{ pip_script }}"
+- name: Install pip using downloaded script
+  shell: "umask 0022 && python {{ pip_download_dir }}/{{ pip_script }}"
   changed_when: false
+  when: install_with_script
+
+- name: Install pip using apt-get (Debian/Ubuntu)
+  apt:
+    pkg:
+      - python-pip
+    state: present
+    update_cache: yes
+  when: install_with_script == False and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+  tags: [pip]
+
+- name: Install pip using easy_install (Centos/Amazon)
+  include_tasks: easy_install.yml
+  when: install_with_script == False and (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Amazon')
+  tags: [pip]

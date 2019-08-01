@@ -1,0 +1,4 @@
+---
+# defaults file for ansible
+
+ansible_install_version: 2.6.5

@@ -1,5 +1,8 @@
 ---
 # tasks file for aws_cli
 
-- name: Install awscli
-  pip: name=awscli
+- name: Install awscli using pip
+  pip:
+    name: awscli
+    umask: "0022"
+  tags: [aws]

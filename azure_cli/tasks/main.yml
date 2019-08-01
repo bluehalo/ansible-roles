@@ -1,0 +1,26 @@
+---
+# tasks file for azure_cli
+
+- name: Install Microsoft yum repo key
+  rpm_key:
+    state: present
+    key: "{{ ms_repo_key }}"
+  tags: [yum, azure]
+
+- name: Add Microsoft Azure CLI yum repository
+  yum_repository:
+    name: azure-cli
+    description: Azure CLI
+    baseurl: "{{ azure_yum_repo_url }}"
+    priority: 10
+    gpgcheck: yes
+    sslverify: no
+  when: ansible_os_family == 'RedHat'
+  tags: [yum, azure]
+
+- name: Install Azure CLI using yum
+  yum:
+    name: azure-cli
+    state: present
+  tags: [azure]
+

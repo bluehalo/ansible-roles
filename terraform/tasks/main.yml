@@ -1,0 +1,28 @@
+---
+# tasks file for terraform
+
+- name: Ensure unzip is installed (Debian/Ubuntu)
+  apt:
+    pkg:
+      - unzip
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags: [terraform, unzip]
+
+- name: Ensure unzip is installed (Centos/Amazon)
+  yum:
+    name: unzip
+    state: present
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Amazon'
+  tags: [terraform, unzip]
+
+- name: "Unarchive terraform to {{ tf_installation_dir }}"
+  unarchive:
+    remote_src: yes
+    src: "https://releases.hashicorp.com/terraform/{{ tf_version }}/terraform_{{ tf_version }}_linux_amd64.zip"
+    dest: "{{ tf_installation_dir }}"
+    creates: "{{ tf_installation_dir }}/terraform"
+    mode: "0755"
+  tags: [terraform]
+

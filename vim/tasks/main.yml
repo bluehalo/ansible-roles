@@ -1,0 +1,18 @@
+---
+# tasks file for vim
+
+- name: Install vim using apt-get (Debian/Ubuntu)
+  apt:
+    pkg:
+      - vim
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags: [pip]
+
+- name: Install vim using yum (Centos/Amazon)
+  yum:
+    name: vim
+    state: present
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Amazon'
+  tags: [vim]

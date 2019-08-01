@@ -1,0 +1,5 @@
+---
+# defaults file for terraform
+
+tf_version: "0.11.14"
+tf_installation_dir: /usr/bin
