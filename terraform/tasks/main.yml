@@ -20,7 +20,7 @@
 - name: "Unarchive terraform to {{ tf_installation_dir }}"
   unarchive:
     remote_src: yes
-    src: "{{ tf_zip_url }}"
+    src: "https://releases.hashicorp.com/terraform/{{ tf_version }}/terraform_{{ tf_version }}_linux_amd64.zip"
     dest: "{{ tf_installation_dir }}"
     creates: "{{ tf_installation_dir }}/terraform"
     mode: "0755"

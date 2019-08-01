@@ -11,7 +11,7 @@ Target host must have unzip installed and access to the download URL
 Role Variables
 --------------
 
-    tf_zip_url: https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
+    tf_version: Version of Terraform to install (default: 0.11.14)
     tf_installation_dir: /usr/bin
 
 Example Playbook

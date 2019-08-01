@@ -20,7 +20,7 @@
 - name: "Unarchive packer to {{ packer_installation_dir }}"
   unarchive:
     remote_src: yes
-    src: "{{ packer_zip_url }}"
+    src: "https://releases.hashicorp.com/packer/{{ packer_version }}/packer_{{ packer_version }}_linux_amd64.zip"
     dest: "{{ packer_installation_dir }}"
     creates: "{{ packer_installation_dir }}/packer"
     mode: "0755"

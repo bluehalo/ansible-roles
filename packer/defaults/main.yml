@@ -1,5 +1,4 @@
 ---
 # defaults file for packer
-
-packer_zip_url: https://releases.hashicorp.com/packer/1.4.2/packer_1.4.2_linux_amd64.zip
+packer_version: "1.4.2"
 packer_installation_dir: /usr/bin
