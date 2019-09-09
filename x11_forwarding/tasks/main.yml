@@ -5,26 +5,26 @@
   yum:
     name: epel-release
     state: present
-  when: ansible_distribution == 'CentOS'
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
   tags: [centos, repo]
 
 - name: Install mate desktop on CentOS
   yum:
     name: "@mate-desktop"
     state: present
-  when: ansible_distribution == 'CentOS'
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
   tags: [centos, mate]
 
 - name: Check CentOS runlevel
   command: systemctl get-default
   register: runlevel
   changed_when: false
-  when: ansible_distribution == 'CentOS'
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
   tags: [centos, runlevel]
 
 - name: Set CentOS graphical runlevel
   command: systemctl set-default graphical.target
-  when: ansible_distribution == 'CentOS' and runlevel.stdout != "graphical.target"
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == "7" and runlevel.stdout != "graphical.target"
   tags: [centos, runlevel]
 
 - name: Add amazon-linux-extras package
