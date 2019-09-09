@@ -1,0 +1,43 @@
+---
+# tasks file for x11_forwarding role
+
+- name: Add EPEL repo on CentOS
+  yum:
+    name: epel-release
+    state: present
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+  tags: [centos, repo]
+
+- name: Install mate desktop on CentOS
+  yum:
+    name: "@mate-desktop"
+    state: present
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+  tags: [centos, mate]
+
+- name: Check CentOS runlevel
+  command: systemctl get-default
+  register: runlevel
+  changed_when: false
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+  tags: [centos, runlevel]
+
+- name: Set CentOS graphical runlevel
+  command: systemctl set-default graphical.target
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == "7" and runlevel.stdout != "graphical.target"
+  tags: [centos, runlevel]
+
+- name: Add amazon-linux-extras package
+  yum:
+    name: amazon-linux-extras
+    state: present
+  when: ansible_distribution == 'Amazon' and ansible_distribution_version == '2'
+  tags: [amazonlinux2, repo]
+
+- name: Install mate desktop on Amazon Linux 2
+  shell: "amazon-linux-extras install {{ mate_version }} -y"
+  args:
+    creates: /usr/bin/mate-session
+  when: ansible_distribution == 'Amazon' and ansible_distribution_version == '2'
+  tags: [amazonlinux2, mate]
+

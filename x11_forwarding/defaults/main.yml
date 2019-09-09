@@ -1,0 +1,4 @@
+---
+# vars file for x11_forwarding
+
+mate_version: mate-desktop1.x=latest
