@@ -1,7 +1,7 @@
 x11_forwarding
 ===
 
-An Ansible role to allow x11 forwarding on CentOS and Amazon Linux 2
+An Ansible role to allow x11 forwarding on CentOS 7 and Amazon Linux 2
 
 Requirements
 ------------
