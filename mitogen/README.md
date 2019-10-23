@@ -11,7 +11,7 @@ Target host must be able to reach yum repositories, pip repository, and be a sup
 Role Variables
 --------------
 
-    set_umask: umask to set mitogen installatio path (Default: "0022"). Default allows all users to use mitogen.
+    set_umask: umask to set mitogen installation path (Default: "0022"). Default allows all users to use mitogen.
 
 Example Playbook
 ----------------
