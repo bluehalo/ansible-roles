@@ -1,0 +1,5 @@
+---
+dependencies:
+  - name: install pip
+    role: pip
+    tags: [ pip, dependency ]
