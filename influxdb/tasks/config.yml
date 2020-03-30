@@ -7,6 +7,7 @@
     group: "{{ influxdb_user }}"
     mode: "0755"
   loop:
+    - "{{ influxdb_pid_dir }}"
     - "{{ influxdb_log_dir }}"
     - "{{ influxdb_lib_dir }}"
     - "{{ influxdb_data_dir }}"

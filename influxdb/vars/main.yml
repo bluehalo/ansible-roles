@@ -3,3 +3,4 @@
 influxdb_user: influxdb
 influxdb_conf_dir: /etc/influxdb
 influxdb_log_dir: /var/log/influxdb
+influxdb_pid_dir: /var/run/influxdb
