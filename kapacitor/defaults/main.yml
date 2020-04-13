@@ -1,6 +1,6 @@
 ---
 kapacitor_download: true
-kapacitor_version: 1.5.2
+kapacitor_version: 1.5.4
 
 kapacitor_hostname: localhost
 kapacitor_data_dir: /var/lib/kapacitor
@@ -25,3 +25,4 @@ kapacitor_influxdb_name: localhost
 kapacitor_influxdb_urls: http://localhost:8086
 kapacitor_influxdb_username:
 kapacitor_influxdb_password:
+kapacitor_default_retention_policy:

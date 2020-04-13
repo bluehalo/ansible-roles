@@ -42,7 +42,7 @@ fi
 CONFIG={{ influxdb_conf_dir }}/influxdb.conf
 
 # PID file for the daemon
-PIDFILE=/var/run/influxdb/influxd.pid
+PIDFILE={{ influxdb_pid_dir }}/influxd.pid
 PIDDIR=`dirname $PIDFILE`
 if [ ! -d "$PIDDIR" ]; then
     mkdir -p $PIDDIR

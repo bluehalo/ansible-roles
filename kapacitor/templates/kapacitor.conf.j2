@@ -12,7 +12,7 @@ skip-config-overrides = false
 # Default retention-policy, if a write is made to Kapacitor and
 # it does not have a retention policy associated with it,
 # then the retention policy will be set to this value
-default-retention-policy = ""
+default-retention-policy = "{{ kapacitor_default_retention_policy }}"
 
 [http]
   # HTTP API Server for Kapacitor
