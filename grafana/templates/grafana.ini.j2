@@ -203,6 +203,10 @@ editors_can_admin = true
 # Set to true to disable (hide) the login form, useful if you use OAuth, defaults to false
 ;disable_login_form = false
 
+{% if grafana_signout_redirect_enabled %}
+signout_redirect_url = {{ grafana_signout_redirect_url }}
+{% endif %}
+
 # Set to true to disable the signout link in the side menu. useful if you use auth.proxy, defaults to false
 ;disable_signout_menu = false
 
@@ -267,10 +271,12 @@ editors_can_admin = true
 
 #################################### Auth Proxy ##########################
 [auth.proxy]
-;enabled = false
-;header_name = X-WEBAUTH-USER
-;header_property = username
-;auto_sign_up = true
+enabled = {{ grafana_auth_proxy_enabled|lower }}
+{% if grafana_auth_proxy_enabled %}
+header_name = {{ grafana_auth_proxy_header_name }}
+header_property = {{ grafana_auth_proxy_header_property }}
+auto_sign_up = {{ grafana_auth_proxy_auto_sign_up|lower }}
+{% endif %}
 ;ldap_sync_ttl = 60
 ;whitelist = 192.168.1.1, 192.168.2.1
 

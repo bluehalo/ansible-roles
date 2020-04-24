@@ -18,3 +18,10 @@ grafana_external_image_storage_s3_bucket_url: ''
 grafana_smtp_enabled: false
 grafana_smtp_display_name: "Grafana"
 grafana_smtp_host: "localhost:25"
+
+grafana_auth_proxy_enabled: false
+grafana_auth_proxy_header_name: "X-WEBAUTH-USER"
+grafana_auth_proxy_header_property: "username"
+grafana_auth_proxy_auto_sign_up: true
+grafana_signout_redirect_enabled: false
+grafana_signout_redirect_url: ""
