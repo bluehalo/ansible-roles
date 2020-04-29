@@ -25,7 +25,7 @@
 
 - name: Copy InfluxDB config
   template:
-    src: influxdb.conf.j2
+    src: "influxdb_{{ influxdb_major_version }}.conf.j2"
     dest: "{{ influxdb_conf_dir }}/influxdb.conf"
     owner: "{{ influxdb_user }}"
     group: "{{ influxdb_user }}"

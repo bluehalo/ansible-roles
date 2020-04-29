@@ -1,6 +1,8 @@
 ---
 influxdb_download: true
 influxdb_version: 1.7.4
+influxdb_major_version: "{{ influxdb_version | splitext | first }}"
+influxdb_reporting_disabled: false
 
 influxdb_meta_dir: "/var/lib/influxdb/meta"
 influxdb_meta_logging_enabled: false
@@ -13,7 +15,11 @@ influxdb_index_version: "inmem"
 influxdb_wal_dir: "/var/lib/influxdb/wal"
 influxdb_lib_dir: "/var/lib/influxdb"
 influxdb_retention_check_interval: "30m"
+
 influxdb_http_log_enabled: false
+influxdb_http_flux_enabled: false
+influxdb_http_flux_log_enabled: false
+
 influxdb_max_select_point: 0
 influxdb_query_timeout: "0"
 influxdb_filename: "influxdb-{{ influxdb_version }}.x86_64.rpm"
