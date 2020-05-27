@@ -36,7 +36,7 @@ plugins = {{ grafana_plugins_dir }}
 ;http_port = 3000
 
 # The public facing domain name used to access grafana from a browser
-;domain = localhost
+domain = {{ grafana_server_domain }}
 
 # Redirect to correct domain if host header does not match domain
 # Prevents DNS rebinding attacks
