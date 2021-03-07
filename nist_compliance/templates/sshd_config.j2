@@ -34,11 +34,11 @@ Protocol 2
 # obsoletes QuietMode and FascistLogging
 #SyslogFacility AUTH
 SyslogFacility AUTHPRIV
-#LogLevel INFO
+LogLevel INFO
 
 # Authentication:
 
-#LoginGraceTime 2m
+LoginGraceTime 60
 #PermitRootLogin yes
 #StrictModes yes
 #MaxAuthTries 6
@@ -122,11 +122,9 @@ X11Forwarding yes
 #ChrootDirectory none
 
 #### Settings found AWAY
-{% if compliance_show_ssh_banner %}
-Banner /etc/issue
-{% endif %}
+Banner /etc/issue.net
 #AddressFamily inet
-ClientAliveInterval 900
+ClientAliveInterval 300
 ClientAliveCountMax 0
 PermitEmptyPasswords no
 PermitUserEnvironment no
@@ -136,16 +134,14 @@ IgnoreRhosts yes
 #GatewayPorts no
 PrintLastLog yes
 HostbasedAuthentication no
-MaxAuthTries 6
+MaxAuthTries 4
 
 # override default of no subsystems
 Subsystem sftp	/usr/libexec/openssh/sftp-server
 
-UseDNS no
-AllowUsers {% if privileged_user is defined %}{{ privileged_user }} {% endif %}{{ accounts_create_users|map(attribute='username')|sort|join(' ') }}
+# Algorithms
+MACs umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1,hmac-sha1-etm@openssh.com
+KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
 
-# BEGIN ANSIBLE MANAGED BLOCK
-Match Group allowpass
-PasswordAuthentication yes
-Match User *
-# END ANSIBLE MANAGED BLOCK
+UseDNS no
+AllowUsers {% if privileged_user is defined %}{{ privileged_user }} {% endif %}{{ users|map(attribute='username')|sort|join(' ') }}
