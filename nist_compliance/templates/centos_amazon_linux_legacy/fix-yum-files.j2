@@ -1,0 +1,1 @@
+2 * * * * root cd / && grep -l gpgcheck=0 /etc/yum.repos.d/* | xargs sed -i -e 's/gpgcheck=0/gpgcheck=1/g'

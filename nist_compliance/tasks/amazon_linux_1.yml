@@ -1,0 +1,408 @@
+---
+- name: Compliance task OS
+  debug:
+    msg: "Amazon Linux 1, version {{ hostvars[inventory_hostname].ansible_distribution_version }}"
+
+- name: Remove packages for compliance 
+  yum:
+    name: ['acpid', 'ntp', 'ntpdate', 'portreserve', 'rpcbind', 'sysstat']
+    state: absent
+  tags: [ compliance, yum ]
+
+- name: Disable dhclient and rpcbind processes
+  command: "pkill {{ item }}"
+  with_items: ['rpcbind']
+  ignore_errors: true
+  tags: [ compliance, yum ]
+
+- name: Install packages for compliance
+  yum: 
+    name: ['aide', 'chrony', 'libsemanage', 'libsemanage-python', 'libselinux', 'libselinux-devel', 'libselinux-python', 'libselinux-utils', 'libsepol', 'libsepol-devel', 'policycoreutils', 'postfix', 'psacct', 'selinux-policy', 'policycoreutils-python', 'policycoreutils-restorecond', 'selinux-policy-targeted', 'yum-plugin-priorities']
+    state: present
+  tags: [ compliance, yum ]
+
+- name: Check for gpgcheck=0 in yum repos
+  find: 
+    paths: /etc/yum.repos.d 
+    contains: 'gpgcheck=0'
+  register: repofiles
+  tags: [ compliance, yum ]
+
+- name: Set gpgcheck=1 in yum repos
+  replace:
+    dest: "{{ item.path }}"
+    regexp: 'gpgcheck=0'
+    replace: 'gpgcheck=1'
+  with_items: "{{ repofiles.files }}"
+  tags: [ compliance, yum ]
+
+- name: Ensure gpgcheck cron
+  template: 
+    src: fix-yum-files.j2
+    dest: /etc/cron.d/fix-yum-files
+    owner: root
+    group: root
+    mode: 0600
+  tags: [ compliance, yum ]
+  notify:
+    - restart crond
+
+- name: Check if selinux allows chrony to run
+  shell: semanage permissive -l | grep -c "chronyd_t"
+  args:
+    warn: no
+  register: chrony_status
+  ignore_errors: true
+  changed_when: false
+  tags: [ compliance, chrony ]
+  
+- name: Ensure that selinux allows chrony to run
+  command: 'semanage permissive -a chronyd_t'
+  args:
+    warn: no
+  ignore_errors: true
+  when: chrony_status.stdout == "0"
+  tags: [ compliance, chrony ] 
+
+- name: Configure chrony
+  template: 
+    src: chrony.conf.j2 
+    dest: "/etc/chrony.conf" 
+    owner: root 
+    group: root 
+    mode: 0644
+  tags: [ compliance, chrony ]
+
+- name: Ensure chrony is running
+  service: 
+    name: chronyd 
+    enabled: yes 
+    state: started
+  tags: [ compliance, chrony ]
+
+- name: Ensure tmpfs mount options
+  mount: 
+    src: tmpfs 
+    path: /dev/shm 
+    fstype: tmpfs 
+    opts: rw,nodev,noexec,nosuid 
+    state: present
+  tags: [ compliance, tmpfs ]
+
+- name: Check if AIDE db exists
+  stat:
+    path: /var/lib/aide/aide.db.gz
+  register: aide_db_check_result
+  changed_when: false
+  tags: [ compliance, aide ]
+
+- name: Initiate the AIDE db
+  shell: aide --init && mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+  when: not aide_db_check_result.stat.exists
+  tags: [ compliance, aide ]
+
+- name: Ensure aide cron
+  template: 
+    src: aide-check.j2 
+    dest: /etc/cron.d/aide-check
+    owner: root
+    group: root
+    mode: 0600
+  tags: [ compliance, aide ]
+  notify:
+    - restart crond
+
+- name: Ensure aide log dir
+  file: 
+    path: /var/log/aide 
+    state: directory 
+    owner: root
+    group: root
+    mode: 0700
+  tags: [ compliance, aide ]
+
+- name: Check for dbus-daemon-launcher-helper file
+  stat:
+    path: /lib64/dbus-1/dbus-daemon-launch-helper
+  register:  dbus_daemon
+  changed_when: false
+  tags: [ compliance, dbus ]
+
+- name: Ensure setgid and setuid are not set for /lib64/dbus file
+  file: 
+    path: /lib64/dbus-1/dbus-daemon-launch-helper 
+    mode: 0750
+  when: dbus_daemon.stat.exists == true
+  tags: [ compliance, dbus ]
+
+- name: Remove ttyS0 from /etc/securetty
+  lineinfile: 
+    dest: /etc/securetty 
+    state: absent
+    regexp: '^ttyS0$'
+  tags: [ compliance, tty ]
+
+- name: Ensure /etc/sysconfig/init has SINGLE=/sbin/sulogin
+  lineinfile: 
+    dest: /etc/sysconfig/init
+    state: present 
+    regexp: 'SINGLE=.*' 
+    line: 'SINGLE=/sbin/sulogin'
+  tags: [ compliance, sysconfig ]
+
+- name: Disable rebooting with ctrl-alt-del
+  template: 
+    src: control-alt-delete.override.j2 
+    dest: /etc/init/control-alt-delete.override
+    owner: root
+    group: root
+    mode: 0644
+  tags: [ compliance, ctrl-alt-del ]
+
+- name: Ensure /etc/pam.d/system-auth-ac file exists
+  template: 
+    src: system-auth-ac.j2
+    dest: /etc/pam.d/system-auth-ac
+    owner: root
+    group: root
+    mode: 0644
+  tags: [ compliance, pamd ]
+
+- name: Symlink /etc/pam.d/system-auth to /etc/pam.d/system-auth-ac
+  file: 
+    src: /etc/pam.d/system-auth-ac
+    dest: /etc/pam.d/system-auth
+    state: link
+    force: yes
+  tags: [ compliance, pamd ]
+
+- name: Ensure /etc/pam.d/password-auth-ac file
+  template: 
+    src: password-auth-ac.j2
+    dest: /etc/pam.d/password-auth-ac
+    owner: root
+    group: root
+    mode: 0644
+  tags: [ compliance, pamd ]
+
+- name: Symlink /etc/pam.d/password-auth to /etc/pam.d/passsword-auth-ac
+  file: 
+    src: /etc/pam.d/password-auth-ac
+    dest: /etc/pam.d/password-auth
+    state: link
+    force: yes
+  tags: [ compliance, pamd ]
+
+- name: Check for /etc/bashrc
+  stat: 
+    path: /etc/bashrc
+  register: bashrc_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/csh.cshrc
+  stat: 
+    path: /etc/csh.cshrc
+  register: csh_cshrc_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/login.defs
+  stat: 
+    path: /etc/login.defs
+  register: login_defs_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/profile
+  stat: 
+    path: /etc/profile
+  register: profile_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/profile.d/local.csh
+  stat: 
+    path: /etc/profile.d/local.csh
+  register: local_csh_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/profile.d/local.sh
+  stat: 
+    path: /etc/profile.d/local.sh
+  register: local_sh_stat
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/bashrc if exists
+  replace: 
+    path: "{{ bashrc_stat.stat.path }}" 
+    regexp: 'umask 002$'
+    replace: 'umask 077'
+  when: bashrc_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/csh.cshrc if exists
+  replace: 
+    path: "{{ csh_cshrc_stat.stat.path }}"
+    regexp: 'umask 002$' 
+    replace: 'umask 077'
+  when: csh_cshrc_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/login.defs if exists
+  replace: 
+    path: "{{ login_defs_stat.stat.path }}"
+    regexp: 'UMASK.*' 
+    replace: 'UMASK 077'
+  when: login_defs_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/profile if exists
+  replace: 
+    path: "{{ profile_stat.stat.path }}"
+    regexp: 'umask 002$' 
+    replace: 'umask 077'
+  when: profile_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/profile.d/local.csh if exists
+  replace: 
+    path: "{{ local_csh_stat.stat.path }}"
+    regexp: 'umask 0027' 
+    replace: 'umask 0077'
+  when: local_csh_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/profile.d/local.sh if exists
+  replace: 
+    path: "{{ local_sh_stat.stat.path }}"
+    regexp: 'umask 0027' 
+    replace: 'umask 0077'
+  when: local_sh_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Disable periodic anacron runs
+  replace: 
+    path: /etc/anacrontab 
+    regexp: '^(.*run-parts.*)$'
+    replace: '\1'
+  tags: [ compliance, anacron ]
+
+- name: Set syslog plugin for audisp to active
+  replace: 
+    path: /etc/audisp/plugins.d/syslog.conf 
+    regexp: 'active = no' 
+    replace: 'active = yes'
+  tags: [ compliance, audisp ]
+
+- name: Ensure auditd runs augenrules on startup
+  lineinfile: 
+    path: /etc/sysconfig/auditd 
+    state: present 
+    regexp: 'USE_AUGENRULES=.*' 
+    line: 'USE_AUGENRULES=\"yes\"'
+  tags: [ compliance, audit ]
+  notify:
+    - reload auditd
+
+- name: Ensure audit email alias is set
+  lineinfile: 
+    path: /etc/aliases 
+    state: present 
+    regexp: 'audit:.*'
+    line: "audit:\t{{ compliance_email_sysadmin }}"
+  tags: [ compliance, audit ]
+  notify:
+    - newaliases
+
+- name: Configure auditd
+  template: 
+    src: auditd.conf.j2 
+    dest: /etc/audit/auditd.conf
+    owner: root 
+    group: root 
+    mode: 0640
+  tags: [ compliance, audit ]
+  notify:
+    - reload auditd
+
+- name: Set audit rules for compliance
+  template: 
+    src: rulesd_compliance.rules.j2
+    dest: /etc/audit/rules.d/compliance.rules 
+    owner: root
+    group: root 
+    mode: 0640
+  tags: [ compliance, audit ]
+  notify:
+    - reload auditd
+
+- name: Ensure audit log dir exists
+  file: 
+    path: /var/log/audit 
+    state: directory 
+    owner: root
+    group: root
+    mode: 0755
+  tags: [ compliance, audit ]
+
+- name: Ensure SELINUX is enforcing
+  lineinfile: 
+     dest: /etc/selinux/config 
+     state: present 
+     regexp: 'SELINUX=.*' 
+     line: 'SELINUX=enforcing'
+  tags: [ compliance, selinux ]
+
+- name: Make selinux kernel changes
+  replace:
+    path: /boot/grub/menu.lst
+    regexp: 'selinux=0'
+    replace: 'selinux=1 security=selinux'
+  tags: [ compliance, selinux ]
+
+- name: Ensure sshd_config
+  template: 
+    src: sshd_config.j2 
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root 
+    mode: 0644
+  notify:
+    - restart sshd
+  tags: [ compliance, sshd ]
+
+- name: Remove MOTD parts stating or hinting the OS
+  file:
+    path: "/etc/update-motd.d/{{ item }}"
+    state: absent
+  with_items:
+    - 30-banner
+    - 75-system-update
+  tags: [ compliance, sshd, motd ]
+
+- name: Replace MOTD part that specifies yum-based OS
+  copy:
+    group: root
+    owner: root
+    mode: 0755
+    src: 70-available-updates
+    dest: /etc/update-motd.d/70-available-updates
+  tags: [ compliance, sshd, motd ] 
+
+- name: Regenerate the MOTD
+  command: "update-motd"
+  tags: [ compliance, sshd, motd ]
+
+- name: Replace /etc/issue* banners
+  copy:
+    group: root
+    owner: root
+    mode: 0644
+    src: banner
+    dest: "{{ item }}"
+  with_items:
+    - '/etc/issue'
+    - '/etc/issue.net'
+  tags: [ compliance, sshd, banner ] 
+
+- name: Restore default SELinux security contexts
+  shell: restorecon -r -v /var/log && restorecon -r -v /etc/audit
+  changed_when: false
+  tags: [ compliance, selinux ]

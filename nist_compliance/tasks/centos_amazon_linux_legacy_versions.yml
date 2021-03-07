@@ -1,0 +1,230 @@
+---
+- name: ensure tmpfs mount options
+  mount: src=tmpfs name=/dev/shm fstype=tmpfs opts=rw,nodev,noexec,nosuid state=present
+  tags: [ compliance, tmpfs ]
+
+- name: Ensure additional security packages installed
+  yum:
+    name:
+      - aide
+      - psacct
+      - postfix
+    state: installed
+  tags: [ compliance, yum ]
+
+- name: Ensure additional security packages installed
+  yum:
+    name:
+      - selinux-policy
+      - selinux-policy-targeted
+      - policycoreutils-python
+      - policycoreutils-restorecond
+    state: installed
+  tags: [ compliance, yum ]
+
+- name: Ensure Aide init
+  shell: /usr/sbin/aide --init && mv -f /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz creates=/var/lib/aide/aide.db.gz
+  tags: [ compliance, aide, aide-init ]
+
+- name: Ensure Aide Cron
+  template: src="aide-check.j2" dest="/etc/cron.d/aide-check" owner='root' group='root' mode='0600'
+  tags: [ compliance, aide, aide-cron ]
+  notify:
+    - restart crond
+
+- name: Ensure Aide log dir exists
+  file: path=/var/log/aide state=directory owner='root' group='root' mode=0700
+  tags: [ compliance, aide, aide-log ]
+
+- name: Ensure setgid and setuid are not set for /lib64/bus file
+  shell: chmod --silent 0750 /lib64/dbus-1/dbus-daemon-launch-helper
+  args:
+    removes: /lib64/dbus-1/dbus-daemon-launch-helper
+    warn: false
+  changed_when: false
+  tags: [ compliance, gid, uid ]
+
+- name: Find remote yum repo files containing gpgcheck=0
+  find: paths=/etc/yum.repos.d contains='gpgcheck=0'
+  register: repofiles
+  tags: [ compliance, yum ]
+
+- name: Ensure yum repository definitions do not have gpgcheck=0
+  replace:
+    dest: "{{ item.path }}"
+    regexp: "gpgcheck=0"
+    replace: "gpgcheck=1"
+  with_items: "{{ repofiles.files }}"
+  tags: [ compliance, yum ]
+
+- name: Ensure cron to enable gpgcheck for yum repos
+  template: src="fix-yum-files.j2" dest="/etc/cron.d/fix-yum-files" owner='root' group='root' mode='0600'
+  tags: [ compliance, yum ]
+  notify:
+    - restart crond
+
+- name: Remove ttyS0 from /etc/securetty file
+  lineinfile: dest=/etc/securetty state=absent regexp="^ttyS0$"
+  tags: [ compliance, tty ]
+
+- name: Ensure /etc/sysconfig/init has SINGLE=/sbin/sulogin
+  lineinfile: dest=/etc/sysconfig/init state=present regexp="SINGLE=.*" line="SINGLE=/sbin/sulogin"
+  tags: [ compliance, sysconfig ]
+
+- name: Upload control-alt-delete.override to disable rebooting with ctrl-alt-del
+  template: src="control-alt-delete.override.j2" dest="/etc/init/control-alt-delete.override" owner='root' group='root' mode='0644'
+  when: ansible_distribution == "Amazon"
+  tags: [ compliance, ctrl-alt-del ]
+
+- name: Upload control-alt-delete.override to disable rebooting with ctrl-alt-del
+  template: src="control-alt-delete.override.j2" dest="/etc/inittab" owner='root' group='root' mode='0644'
+  when: ansible_distribution == "CentOS"
+  tags: [ compliance, ctrl-alt-del ]
+
+- name: Ensure /etc/pam.d/system-auth-ac file
+  template: src="system-auth-ac.j2" dest="/etc/pam.d/system-auth-ac" owner='root' group='root' mode='0644'
+  tags: [compliance, pamd]
+
+- name: Ensure /etc/pam.d/password-auth-ac file
+  template: src="password-auth-ac.j2" dest="/etc/pam.d/password-auth-ac" owner='root' group='root' mode='0644'
+  tags: [compliance, pamd]
+
+- name: create allowpass group for users that can use passwords
+  group:
+    name: allowpass
+    state: present
+
+- name: Check for /etc/bashrc
+  stat: path=/etc/bashrc
+  register: bashrc_stat
+  tags: [ compliance, umask ]
+- name: Check for /etc/csh.cshrc
+  stat: path=/etc/csh.cshrc
+  register: csh_cshrc_stat
+  tags: [ compliance, umask ]
+- name: Check for /etc/login.defs
+  stat: path=/etc/login.defs
+  register: login_defs_stat
+  tags: [ compliance, umask ]
+- name: Check for /etc/profile
+  stat: path=/etc/profile
+  register: profile_stat
+  tags: [ compliance, umask ]
+- name: Check for /etc/profile.d/local.csh
+  stat: path=/etc/profile.d/local.csh
+  register: local_csh_stat
+  tags: [ compliance, umask ]
+- name: Check for /etc/profile.d/local.sh
+  stat: path=/etc/profile.d/local.sh
+  register: local_sh_stat
+  tags: [ compliance, umask ]
+- name: Set default umask in /etc/bashrc if exists
+  replace: dest={{bashrc_stat.stat.path}} regexp="umask 002$" replace="umask 077"
+  when: bashrc_stat.stat.exists
+  tags: [ compliance, umask ]
+- name: Set default umask in /etc/csh.cshrc if exists
+  replace: dest={{csh_cshrc_stat.stat.path}} regexp="umask 002$" replace="umask 077"
+  when: csh_cshrc_stat.stat.exists
+  tags: [ compliance, umask ]
+- name: Set default umask in /etc/login.defs if exists
+  replace: dest={{login_defs_stat.stat.path}} regexp="UMASK.*" replace="UMASK 077"
+  when: login_defs_stat.stat.exists
+  tags: [ compliance, umask ]
+- name: Set default umask in /etc/profile if exists
+  replace: dest={{profile_stat.stat.path}} regexp="umask 002$" replace="umask 077"
+  when: profile_stat.stat.exists
+  tags: [ compliance, umask ]
+- name: Set default umask in /etc/profile.d/local.csh if exists
+  replace: dest={{local_csh_stat.stat.path}} regexp="umask 0027" replace="umask 0077"
+  when: local_csh_stat.stat.exists
+  tags: [ compliance, umask ]
+- name: Set default umask in /etc/profile.d/local.sh if exists
+  replace: dest={{local_sh_stat.stat.path}} regexp="umask 0027" replace="umask 0077"
+  when: local_sh_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Disable anacron services (comments out the periodic runs)
+  replace: dest=/etc/anacrontab regexp="^(?!#)(.*run-parts.*)$" replace="#\1"
+  tags: [ compliance, cron ]
+
+- name: Set syslog plugin for audisp to active
+  replace: dest=/etc/audisp/plugins.d/syslog.conf regexp="active = no" replace="active = yes"
+  tags: [ compliance, log ]
+
+- name: Ensure auditd runs augenrules on startup
+  lineinfile: dest=/etc/sysconfig/auditd state=present regexp="USE_AUGENRULES=.*" line="USE_AUGENRULES=\"yes\""
+  when: ansible_distribution == "Amazon"
+  tags: [ compliance, audit, audit-rules ]
+  notify:
+    - restart auditd
+
+- name: Ensure audit email alias is set
+  lineinfile: dest=/etc/aliases state=present regexp="audit:.*" line="audit:\t{{ compliance_email_sysadmin }}"
+  tags: [ compliance, audit, postfix ]
+  notify:
+    - newaliases
+
+- name: Configure auditd
+  template: src="auditd.conf.j2" dest="/etc/audit/auditd.conf" owner="root" group="root" mode="0640"
+  tags: [ compliance, audit ]
+  notify:
+    - restart auditd
+
+- name: Set Audit rules as required for compliance
+  template: src="rulesd_compliance.rules.j2" dest="/etc/audit/rules.d/compliance.rules" owner='root' group='root' mode='0640'
+  tags: [ compliance, audit, audit-rules ]
+  notify:
+    - restart auditd
+
+- name: Ensure audit log dir exists
+  file: path=/var/log/audit state=directory owner='root' group='root' mode=0755
+  tags: [ compliance, audit, audit-log ]
+
+- name: Ensure SELINUX is enforcing
+  lineinfile: dest=/etc/selinux/config state=present regexp="SELINUX=.*" line="SELINUX=enforcing"
+  tags: [ compliance, selinux ]
+
+- name: make kernel changes
+  replace:
+    path: /boot/grub/menu.lst
+    regexp: 'selinux=0'
+    replace: 'selinux=1 security=selinux'
+
+- name: Restore default SELinux security contexts
+  shell: restorecon -r -v /var/log && restorecon -r -v /etc/audit
+  changed_when: false
+  tags: [ compliance, selinux, audit ]
+
+- name: Check whether services to be disabled are installed
+  stat: path=/etc/init.d/{{item}}
+  with_items: "{{ compliance_disabled_services }}"
+  register: service_stat
+  tags: [ compliance, chkconfig ]
+
+- name: Disable certain services that are installed
+  shell: chkconfig --level 0123456 {{ item.item }} off
+  with_items: "{{ service_stat.results }}"
+  when: item.stat.exists
+  changed_when: false
+  tags: [ compliance, chkconfig ]
+
+- name: Enable certain services on boot
+  shell: chkconfig --level 2345 {{ item }} on
+  with_items:
+    # psacct installed above so no need to check for it here
+    - psacct
+    - restorecond
+  changed_when: false
+  tags: [ compliance, chkconfig ]
+
+- name: Ensure certain services are running
+  service: name=psacct state=started
+  with_items:
+    - psacct
+  tags: [ compliance, chkconfig ]
+
+- name: Ensure sshd_config
+  template: src="sshd_config.j2" dest="/etc/ssh/sshd_config" owner='root' group='root' mode='0644'
+  notify:
+    - restart sshd
+  tags: [ compliance, sshd ]

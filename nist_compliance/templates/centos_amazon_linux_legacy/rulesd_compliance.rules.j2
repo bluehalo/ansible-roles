@@ -1,0 +1,112 @@
+# This file contains the auditctl rules that are loaded
+# whenever the audit daemon is started via the initscripts.
+# The rules are simply the parameters that would be passed
+# to auditctl.
+
+# First rule - delete all
+-D
+
+# Increase the buffers to survive stress events.
+# Make this bigger for busy systems
+-b 16394
+
+## Get rid of all anonymous and daemon junk that clogs logs
+-a exit,never -F auid>2147483645
+-a exit,never -F auid!=0 -F auid<500
+
+##
+## Security Scan Items: ##
+##
+-w /etc/audit/audit.rules -p wa
+-w /etc/libaudit.conf -p wa
+-w /etc/sysconfig/auditd -p wa
+-w /var/log/audit/ -p a
+-w /var/log/audit/audit.log -p a
+-w /usr/bin/yum -p wa
+-w /usr/sbin/rpm -p wa
+-w /var/log/btmp -p wa -k session
+-w /var/log/wtmp -p wa -k session
+-w /var/run/utmp -p wa -k session
+-w /sbin/insmod -p x
+-w /sbin/modprobe -p x
+-w /sbin/rmmod -p x
+
+-a always,exit -F path=/usr/bin/curl -F perm=x -F auid>=500 -F auid!=4294967295 -k retrieve_url
+-a always,exit -F path=/usr/bin/wget -F perm=x -F auid>=500 -F auid!=4294967295 -k retrieve_url
+
+## Time stuff
+-a always,exit -F arch=b64 -S adjtimex -S settimeofday -S clock_settime -k SYS_audit_time_rules
+-a always,exit -F arch=b64 -S adjtimex -S settimeofday -S stime -k audit_time_rules
+-a always,exit -F arch=b32 -S adjtimex -S clock_settime -S settimeofday -k SYS_audit_time_rules
+-a always,exit -F arch=b32 -S adjtimex -S stime -S settimeofday -k audit_time_rules
+-w /etc/localtime -p wa -k time-change
+
+## System Locale
+-a always,exit -F arch=b64 -S sethostname -k SYS_system-locale
+-a always,exit -F arch=b64 -S setdomainname -k SYS_system-locale
+-a always,exit -F arch=b32 -S sethostname -k SYS_system-locale
+-a always,exit -F arch=b32 -S setdomainname -k SYS_system-locale
+
+## Unsuccessful creation
+-a always,exit -F arch=b64 -S creat -S mkdir -S mknod -S link -S symlink -F exit=-EACCES -k SYS_creation
+-a always,exit -F arch=b64 -S mkdirat -S mknodat -S linkat -S symlinkat -F exit=-EACCES -k SYS_creation
+-a always,exit -F arch=b32 -S creat -S mkdir -S mknod -S link -S symlink -F exit=-EACCES -k SYS_creation
+-a always,exit -F arch=b32 -S mkdirat -S mknodat -S linkat -S symlinkat -F exit=-EACCES -k SYS_creation
+
+## Unsuccessful open
+-a always,exit -F arch=b64 -S openat -F exit=-EACCES -k SYS_open
+-a always,exit -F arch=b64 -S open -F exit=-EACCES -k SYS_open
+-a always,exit -F arch=b64 -S openat -F exit=-EPERM -k SYS_open
+-a always,exit -F arch=b64 -S open -F exit=-EPERM -k SYS_open
+-a always,exit -F arch=b32 -S openat -F exit=-EACCES -k SYS_open
+-a always,exit -F arch=b32 -S open -F exit=-EACCES -k SYS_open
+-a always,exit -F arch=b32 -S openat -F exit=-EPERM -k SYS_open
+-a always,exit -F arch=b32 -S open -F exit=-EPERM -k SYS_open
+
+## Unsuccessful close
+-a always,exit -F arch=b64 -S close -F exit=-EACCES -k SYS_close
+-a always,exit -F arch=b32 -S close -F exit=-EACCES -k SYS_close
+
+## Unsuccessful modifications
+-a always,exit -F arch=b64 -S rename -S truncate -S ftruncate -F exit=-EACCES -k SYS_mods
+-a always,exit -F arch=b64 -S renameat -F exit=-EACCES -k SYS_mods
+-a always,exit -F arch=b32 -S rename -S truncate -S ftruncate -F exit=-EACCES -k SYS_mods
+-a always,exit -F arch=b32 -S renameat -F exit=-EACCES -k SYS_mods
+-a always,exit -F perm=a -F exit=-EACCES -k SYS_mods
+-a always,exit -F perm=a -F exit=-EPERM -k SYS_mods
+
+## Unsuccessful deletion
+-a always,exit -F arch=b64 -S rmdir -S unlink -F exit=-EACCES -k SYS_delete
+-a always,exit -F arch=b64 -S unlinkat -F exit=-EACCES -k SYS_delete
+-a always,exit -F arch=b32 -S rmdir -S unlink -F exit=-EACCES -k SYS_delete
+-a always,exit -F arch=b32 -S unlinkat -F exit=-EACCES -k SYS_delete
+
+## Mount options
+-a always,exit -F arch=b32 -S mount -S umount2 -k SYS_mount
+
+## Permissions auditing
+-a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -F auid>=500 -k SYS_perm_mod
+-a always,exit -F arch=b64 -S chown -S fchown -S fchownat -S lchown -F auid>=500 -k SYS_perm_mod
+-a always,exit -F arch=b64 -S chown -S setxattr -S fsetxattr -S removexattr -S fremovexattr -F auid>=500 -k perm_mod
+-a always,exit -F arch=b64 -S chown -S lsetxattr -S lremovexattr -F auid>=500 -k perm_mod
+-a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=500 -k SYS_perm_mod
+-a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F auid>=500 -k SYS_perm_mod
+-a always,exit -F arch=b32 -S chown -S setxattr -S fsetxattr -S removexattr -S fremovexattr -F auid>=500 -k perm_mod
+-a always,exit -F arch=b32 -S chown -S lsetxattr -S lremovexattr -F auid>=500 -k perm_mod
+
+## Other items required by security scan
+-a always,exit -F arch=b64 -S truncate -S ftruncate -F exit=-EACCES -F auid>=500 -F auid!=4294967295 -k access
+-a always,exit -F arch=b64 -S truncate -S ftruncate -F exit=-EPERM -F auid>=500 -F auid!=4294967295 -k access
+-a always,exit -F arch=b64 -S init_module -S delete_module -F exit=-EACCES -F auid>=500 -F auid!=4294967295 -k access
+-a always,exit -F arch=b64 -S init_module -S delete_module -F exit=-EPERM -F auid>=500 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S truncate -S ftruncate -F exit=-EACCES -F auid>=500 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S truncate -S ftruncate -F exit=-EPERM -F auid>=500 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S init_module -S delete_module -F exit=-EACCES -F auid>=500 -F auid!=4294967295 -k access
+-a always,exit -F arch=b32 -S init_module -S delete_module -F exit=-EPERM -F auid>=500 -F auid!=4294967295 -k access
+
+## Once you enable the following line, auditd can no longer be shut down or modified
+## without a reboot. Make sure your rules are the way you want them before enabling
+## this.
+
+# -e 2
+
