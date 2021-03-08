@@ -1,9 +1,13 @@
 ---
 
+- name: Compliance task OS
+  debug:
+    msg: "Linux Distribution: {{ ansible_distribution }} {{ ansible_distribution_major_version }}, version {{ ansible_distribution_version }}"
+
 - include: amazon_linux_1.yml
-  when: (ansible_distribution == "Amazon" and ansible_distribution_version == "2018.03") or
+  when: (ansible_distribution == "Amazon" and ansible_distribution_major_version == "1") or
         (ansible_distribution == "CentOS" and ansible_distribution_version == "6")
 
 - include: amazon_linux_2.yml
-  when: (ansible_distribution == "Amazon" and ansible_distribution_version == "(Karoo)") or
+  when: (ansible_distribution == "Amazon" and ansible_distribution_major_version == "2") or
         (ansible_distribution == "CentOS" and ansible_distribution_version == "7")

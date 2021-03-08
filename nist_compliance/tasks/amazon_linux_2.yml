@@ -1,8 +1,4 @@
 ---
-- name: Compliance task OS
-  debug:
-    msg: "Amazon Linux 2, version {{ hostvars[inventory_hostname].ansible_distribution_version }}"
-
 - name: Remove packages for compliance 
   yum:
     name: ['acpid', 'ntp', 'ntpdate', 'portreserve', 'rpcbind', 'sysstat']
