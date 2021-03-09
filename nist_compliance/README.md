@@ -12,10 +12,18 @@ Role Variables
 --------------
 
 Other variables that can be passed to this role and a brief description about
-them are as follows. These variables should be configured as group_vars.
+them are as follows. We recommend reconfiguring these variables as group_vars.
 
-    # email to send system warnings to
+    # Email to send system warnings to
     compliance_email_sysadmin: <username>@<domain>
+    # Pool of public NTP servers for chrony template
+    ntp_pool: <ntp_server_pool>
+    # Local NTP servers for chrony template
+    ntp_servers: <local_ntp_servers>
+    # Repos to exclude from gpgcheck setting updates
+    team_repo_name: <repo>
+    # System users for use in sshd_config template
+    users: <users>
 
 Example Playbook
 ----------------
