@@ -731,9 +731,10 @@
   tags: [ compliance, cron, umask ]
   notify:
     - restart crond
+    
 
-# BW Compliance Updates 
-########################
+# Items found specific to BW Compliance 
+#######################################
 
 - name: Set watches for the following audit rules
   lineinfile: 
@@ -901,12 +902,4 @@
     state: present
   tags: [ login, password ]
   
-  #############################
-
-
-  #HELIOS updates seen away
-  #############################
-
-
-
-  ##############################
+  #######################################
