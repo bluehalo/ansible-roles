@@ -39,7 +39,7 @@
   find: 
     paths: /etc/yum.repos.d 
     contains: 'gpgcheck\s+=\s+0'
-    excludes: "{{ team_repo_name }}"
+    excludes: "{{ compliance_team_repo_name }}"
   register: repofiles
   tags: [ compliance, yum ]
 
@@ -731,7 +731,7 @@
   tags: [ compliance, cron, umask ]
   notify:
     - restart crond
-    
+
 
 # Items found specific to BW Compliance 
 #######################################

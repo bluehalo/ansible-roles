@@ -1,7 +1,7 @@
 ---
-compliance_email_sysadmin: "{{ compliance_email_sysadmin }}"
-ntp_pool: "{{ ntp_pool }}"
-ntp_servers: "{{ ntp_servers }}"
-team_repo_name: " {{ team_repo_name }}"
-users: "{{ users }}"
-
+required_vars:
+  - compliance_email_sysadmin
+  - compliance_ntp_pool
+  - compliance_ntp_servers
+  - compliance_team_repo_name
+  - compliance_users

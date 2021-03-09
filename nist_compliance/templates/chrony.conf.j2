@@ -1,11 +1,11 @@
 # use the local instance NTP service, if available
-{% for server in ntp_servers %}
+{% for server in compliance_ntp_servers %}
 {{ server }}
 {% endfor %}
 
 # Use public servers from the pool.ntp.org project.
 # Please consider joining the pool (http://www.pool.ntp.org/join.html).
-{{ ntp_pool }}
+{{ compliance_ntp_pool }}
 
 # Record the rate at which the system clock gains/losses time.
 driftfile /var/lib/chrony/drift
