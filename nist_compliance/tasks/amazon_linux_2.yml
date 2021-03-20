@@ -422,6 +422,7 @@
     owner: root 
     group: root 
     mode: 0640
+  when: compliance_configure_auditd | default(true)
   tags: [ compliance, audit ]
   notify:
     - reload auditd
@@ -433,6 +434,7 @@
     owner: root
     group: root 
     mode: 0640
+  when: compliance_configure_auditd | default(true)
   tags: [ compliance, audit ]
   notify:
     - reload auditd
@@ -531,6 +533,12 @@
     - rescue
   tags: [ compliance, emergency, rescue, single_user ]
 
+- name: Check if /etc/update-motd.d exists
+  stat:
+    path: /etc/update-motd.d
+  register: update_motd_exists
+  tags: [ compliance, sshd, motd ]
+
 - name: Remove MOTD parts stating or hinting the OS
   file:
     path: "/etc/update-motd.d/{{ item }}"
@@ -538,12 +546,14 @@
   with_items:
     - 30-banner
     - 75-system-update
+  when: update_motd_exists.stat.exists
   tags: [ compliance, sshd, motd ]
 
 - name: Remove existing MOTD to replace
   file:
     path: /var/lib/update-motd/motd
     state: absent
+  when: update_motd_exists.stat.exists
   tags: [ compliance, sshd, motd ]
 
 - name: Replace MOTD part that specifies yum-based OS
@@ -553,10 +563,12 @@
     mode: 0755
     src: 70-available-updates
     dest: /etc/update-motd.d/70-available-updates
+  when: update_motd_exists.stat.exists
   tags: [ compliance, sshd, motd ] 
 
 - name: Regenerate the MOTD
   command: "update-motd"
+  when: update_motd_exists.stat.exists
   tags: [ compliance, sshd, motd ]
 
 - name: Replace /etc/issue* banners
