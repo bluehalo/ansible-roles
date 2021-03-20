@@ -13,9 +13,9 @@
 - include: amazon_linux_1.yml
   when: (ansible_distribution == "Amazon" and 
           (ansible_distribution_major_version == "1" or ansible_distribution_version == "2018.03")) or
-        (ansible_distribution == "CentOS" and ansible_distribution_version == "6")
+        (ansible_distribution is regex('^CentOS.*') and ansible_distribution_version is regex('^6.*'))
 
 - include: amazon_linux_2.yml
   when: (ansible_distribution == "Amazon" and 
           (ansible_distribution_major_version == "2" or ansible_distribution_version == "(Karoo)")) or
-        (ansible_distribution == "CentOS" and ansible_distribution_version == "7")
+        (ansible_distribution is regex('^CentOS.*') and ansible_distribution_version is regex('^7.*'))
