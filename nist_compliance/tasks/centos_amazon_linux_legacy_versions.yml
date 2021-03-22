@@ -52,7 +52,7 @@
 - name: Ensure yum repository definitions do not have gpgcheck=0
   replace:
     dest: "{{ item.path }}"
-    regexp: "gpgcheck=0"
+    regexp: 'gpgcheck=0'
     replace: "gpgcheck=1"
   with_items: "{{ repofiles.files }}"
   tags: [ compliance, yum ]
@@ -64,11 +64,11 @@
     - restart crond
 
 - name: Remove ttyS0 from /etc/securetty file
-  lineinfile: dest=/etc/securetty state=absent regexp="^ttyS0$"
+  lineinfile: dest=/etc/securetty state=absent regexp='^ttyS0$'
   tags: [ compliance, tty ]
 
 - name: Ensure /etc/sysconfig/init has SINGLE=/sbin/sulogin
-  lineinfile: dest=/etc/sysconfig/init state=present regexp="SINGLE=.*" line="SINGLE=/sbin/sulogin"
+  lineinfile: dest=/etc/sysconfig/init state=present regexp='SINGLE=.*' line="SINGLE=/sbin/sulogin"
   tags: [ compliance, sysconfig ]
 
 - name: Upload control-alt-delete.override to disable rebooting with ctrl-alt-del
@@ -119,47 +119,47 @@
   register: local_sh_stat
   tags: [ compliance, umask ]
 - name: Set default umask in /etc/bashrc if exists
-  replace: dest={{bashrc_stat.stat.path}} regexp="umask 002$" replace="umask 077"
+  replace: dest={{bashrc_stat.stat.path}} regexp='umask 002$' replace="umask 077"
   when: bashrc_stat.stat.exists
   tags: [ compliance, umask ]
 - name: Set default umask in /etc/csh.cshrc if exists
-  replace: dest={{csh_cshrc_stat.stat.path}} regexp="umask 002$" replace="umask 077"
+  replace: dest={{csh_cshrc_stat.stat.path}} regexp='umask 002$' replace="umask 077"
   when: csh_cshrc_stat.stat.exists
   tags: [ compliance, umask ]
 - name: Set default umask in /etc/login.defs if exists
-  replace: dest={{login_defs_stat.stat.path}} regexp="UMASK.*" replace="UMASK 077"
+  replace: dest={{login_defs_stat.stat.path}} regexp='UMASK.*' replace="UMASK 077"
   when: login_defs_stat.stat.exists
   tags: [ compliance, umask ]
 - name: Set default umask in /etc/profile if exists
-  replace: dest={{profile_stat.stat.path}} regexp="umask 002$" replace="umask 077"
+  replace: dest={{profile_stat.stat.path}} regexp='umask 002$' replace="umask 077"
   when: profile_stat.stat.exists
   tags: [ compliance, umask ]
 - name: Set default umask in /etc/profile.d/local.csh if exists
-  replace: dest={{local_csh_stat.stat.path}} regexp="umask 0027" replace="umask 0077"
+  replace: dest={{local_csh_stat.stat.path}} regexp='umask 0027' replace="umask 0077"
   when: local_csh_stat.stat.exists
   tags: [ compliance, umask ]
 - name: Set default umask in /etc/profile.d/local.sh if exists
-  replace: dest={{local_sh_stat.stat.path}} regexp="umask 0027" replace="umask 0077"
+  replace: dest={{local_sh_stat.stat.path}} regexp='umask 0027' replace="umask 0077"
   when: local_sh_stat.stat.exists
   tags: [ compliance, umask ]
 
 - name: Disable anacron services (comments out the periodic runs)
-  replace: dest=/etc/anacrontab regexp="^(?!#)(.*run-parts.*)$" replace="#\1"
+  replace: dest=/etc/anacrontab regexp='^(?!#)(.*run-parts.*)$' replace="#\1"
   tags: [ compliance, cron ]
 
 - name: Set syslog plugin for audisp to active
-  replace: dest=/etc/audisp/plugins.d/syslog.conf regexp="active = no" replace="active = yes"
+  replace: dest=/etc/audisp/plugins.d/syslog.conf regexp='active = no' replace="active = yes"
   tags: [ compliance, log ]
 
 - name: Ensure auditd runs augenrules on startup
-  lineinfile: dest=/etc/sysconfig/auditd state=present regexp="USE_AUGENRULES=.*" line="USE_AUGENRULES=\"yes\""
+  lineinfile: dest=/etc/sysconfig/auditd state=present regexp='USE_AUGENRULES=.*' line="USE_AUGENRULES=\"yes\""
   when: ansible_distribution == "Amazon"
   tags: [ compliance, audit, audit-rules ]
   notify:
     - restart auditd
 
 - name: Ensure audit email alias is set
-  lineinfile: dest=/etc/aliases state=present regexp="audit:.*" line="audit:\t{{ compliance_email_sysadmin }}"
+  lineinfile: dest=/etc/aliases state=present regexp='audit:.*' line="audit:\t{{ compliance_email_sysadmin }}"
   tags: [ compliance, audit, postfix ]
   notify:
     - newaliases
@@ -181,7 +181,7 @@
   tags: [ compliance, audit, audit-log ]
 
 - name: Ensure SELINUX is enforcing
-  lineinfile: dest=/etc/selinux/config state=present regexp="SELINUX=.*" line="SELINUX=enforcing"
+  lineinfile: dest=/etc/selinux/config state=present regexp='SELINUX=.*' line="SELINUX=enforcing"
   tags: [ compliance, selinux ]
 
 - name: make kernel changes
