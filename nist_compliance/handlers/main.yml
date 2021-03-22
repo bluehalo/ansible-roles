@@ -7,7 +7,7 @@
 - name: reload auditd
   service: 
     name:  auditd 
-    state: reloaded
+    state: restarted
     use: service
 
 - name: restart sshd
