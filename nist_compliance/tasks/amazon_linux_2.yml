@@ -451,7 +451,7 @@
 - name: Set FileCreateMode in /etc/rsyslog.conf to 640
   lineinfile: 
     dest: /etc/rsyslog.conf
-    regexp: "FileCreateMode"
+    regexp: 'FileCreateMode'
     line: "$FileCreateMode 0640"
   tags: [ compliance, audit, rsyslog ]
 
@@ -465,7 +465,7 @@
 - name: Set FileCreateMode in all confs inside /etc/rsyslog.d to 640
   lineinfile: 
     dest: "{{ item.path }}"
-    regexp: "FileCreateMode"
+    regexp: 'FileCreateMode'
     line: "$FileCreateMode 0640"
   with_items: "{{ rsyslog_confs.files }}"
   tags: [ compliance, audit, rsyslog ]
@@ -751,7 +751,7 @@
 - name: Set watches for the following audit rules
   lineinfile: 
     path: /etc/audit/audit.rules
-    regexp: "^-w\\s+{{ item }}\\s+-p\\s+wa"
+    regexp: '^-w\\s+{{ item }}\\s+-p\\s+wa'
     line: "-w {{ item }} -p wa"
     state: present
   with_items:
@@ -793,14 +793,14 @@
 - name: Restrict virtual console root login
   lineinfile:
     path: /etc/securetty
-    regexp: "vc\/\\d+" 
+    regexp: 'vc\/\\d+'
     state: absent
   tags: [ securetty, vc ]
 
 - name: Restrict serial port root logins
   lineinfile:
     path: /etc/securetty
-    regexp: "ttyS\\d+" 
+    regexp: 'ttyS\\d+'
     state: absent
   tags: [ securetty, ttyS ]
 
