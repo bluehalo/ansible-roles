@@ -8,6 +8,7 @@
   service: 
     name:  auditd 
     state: reloaded
+    use: service
 
 - name: restart sshd
   service: 
