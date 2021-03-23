@@ -1,5 +1,5 @@
 #%PAM-1.0
-# This file is supplied by the WILDFIRE project via ansible
+# This file is supplied via ansible
 # Any manual changes will be overwritten during the next WILDFIRE deployment
 auth        required      pam_env.so
 auth        sufficient    pam_unix.so nullok try_first_pass
