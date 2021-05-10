@@ -1,0 +1,122 @@
+---
+- name: Install epel from AL2 extras
+  command: amazon-linux-extras install epel -y
+  tags: [ clamav ]
+
+- name: Ensure ClamAV packages are installed.
+  package: 
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ clamav_packages }}"
+  register: clamav_packages_install
+  tags: [ clamav ]
+
+- name: Ensure clamav log directory
+  file: 
+    path: /var/log/clamav 
+    state: directory 
+    owner: clamscan
+    group: clamscan
+    mode: 0700
+  tags: [ clamav ]
+
+- name: Run freshclam after ClamAV packages change.
+  command: freshclam
+  when: clamav_packages_install.changed
+  register: freshclam_result
+  notify: restart clamav daemon
+  failed_when:
+    - freshclam_result is failed
+    - freshclam_result.stderr.find('locked by another process') != -1
+  tags: [ clamav, freshclam ]
+
+- name: Ensure Freshclam service is available.
+  template:
+    src: clamd-freshclam.service.j2
+    dest: /lib/systemd/system/clamd-freshclam.service
+    mode: 0644
+  register: freshclam_service_template
+  tags: [ clamav, freshclam ]
+
+- name: Reload systemd after adding freshclam service.
+  systemd:
+    state: stopped
+    daemon_reload: true
+    name: "{{ clamav_freshclam_daemon }}"
+  when: freshclam_service_template.changed
+  tags: [ clamav, freshclam ]
+
+- name: Ensure clamav config file is in place
+  template:
+    src: scan.conf.j2
+    dest: /etc/clamd.d/scan.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags: [ clamav ]
+
+- name: Ensure ClamAV OnAccess service is available.
+  template:
+    src: clamav-clamonacc.service.j2
+    dest: /lib/systemd/system/clamav-clamonacc.service
+    mode: 0644
+  register: clamonacc_service_template
+  tags: [ clamav, clamonacc ]
+
+- name: Reload systemd after adding clamonacc service.
+  systemd:
+    state: stopped
+    daemon_reload: true
+    name: "{{ clamav_clamonacc_daemon }}"
+  when: clamonacc_service_template.changed
+  tags: [ clamav, clamonacc ]
+
+- name: Ensure ClamAV daemon is running (if configured).
+  service:
+    name: "{{ clamav_daemon }}"
+    state: "{{ clamav_daemon_state }}"
+    enabled: "{{ clamav_daemon_enabled }}"
+  tags: [ clamav ]
+
+- name: Ensure ClamAV OnAccess daemon is running (if configured).
+  service:
+    name: "{{ clamav_clamonacc_daemon }}"
+    state: "{{ clamav_clamonacc_daemon_state }}"
+    enabled: "{{ clamav_clamonacc_daemon_enabled }}"
+  tags: [ clamav, clamonacc ]
+
+- name: Ensure ClamAV freshclam daemon is running (if configured).
+  service:
+    name: "{{ clamav_freshclam_daemon }}"
+    state: "{{ clamav_freshclam_daemon_state }}"
+    enabled: "{{ clamav_freshclam_daemon_enabled }}"
+  tags: [ clamav, freshclam ]
+
+- name: Enable Weekly ClamAV Scan Cron
+  template:
+    src: clamscan_weekly.sh.j2
+    dest: /etc/cron.weekly/clamscan_weekly
+    owner: root
+    group: root
+    mode: 0700
+  tags: [ clamav ]
+  notify:
+    - restart crond
+
+- name: Ensure CloudWatch event clear script
+  template:
+    src: cloudwatch_virusalarm_clear.sh.j2
+    dest: /etc/clamd.d/cloudwatch_virusalarm_clear.sh
+    owner: "{{ clamav_cloudwatch_script_owner }}"
+    group: "{{ clamav_cloudwatch_script_group }}"
+    mode: 0700
+  tags: [ clamav ]
+
+- name: Ensure CloudWatch event trigger script
+  template:
+    src: cloudwatch_virusalarm_trigger.sh.j2
+    dest: /etc/clamd.d/cloudwatch_virusalarm_trigger.sh
+    owner: "{{ clamav_cloudwatch_script_owner }}"
+    group: "{{ clamav_cloudwatch_script_group }}"
+    mode: 0700
+  tags: [ clamav ]
