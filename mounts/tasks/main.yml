@@ -27,7 +27,7 @@
   when:
     - selinux_enabled | default(true)
     - mounted_result.changed
-    - item.name == mounts_log_directory
+    - item.name in mounts_log_directories
   with_items: "{{ mounts_devices }}"
   tags: selinux
 
@@ -37,5 +37,5 @@
     state: restarted
   when:
     - mounted_result.changed
-    - item.name == mounts_log_directory
+    - item.name in mounts_log_directories
   with_items: "{{ mounts_devices }}"

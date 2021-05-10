@@ -8,7 +8,7 @@ mounts_devices: []
 # the filesystem for the named devices
 mounts_mounted: []
 
-mounts_log_directory: /var/log
+mounts_log_directories: ['/var', '/var/log', '/var/log/audit']
 
 # these defaults are used if not specified in mounts_devices
 mounts_default_opts: defaults
