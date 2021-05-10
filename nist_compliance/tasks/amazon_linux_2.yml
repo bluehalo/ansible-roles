@@ -745,8 +745,8 @@
     - restart crond
 
 
-# Items found specific to BW Compliance 
-#######################################
+# Items found specific to Customer Env Compliance 
+#################################################
 
 - name: Set watches for the following audit rules
   lineinfile: 
@@ -766,7 +766,7 @@
     - /etc/sysconfig/network
     - /etc/selinux
     - /etc/audit/auditd.conf
-  tags: [ audit ]
+  tags: [ compliance, audit ]
 
 - name: Add checks for 64-bit syscall mounts
   lineinfile:
@@ -774,7 +774,7 @@
     regexp: '^-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+mount'
     line: '-a always,exit -F arch=b64 -S mount -S umount2 -k SYS_mount'
     state: present
-  tags: [ audit ]
+  tags: [ compliance, audit ]
 
 - name: Ensure audit rules are locked after adding all audit rules
   lineinfile:
@@ -782,27 +782,27 @@
     regexp: '^-e\s+2'
     line: '-e 2'
     state: present
-  tags: [ audit ]
+  tags: [ compliance, audit ]
 
 - name: Ensure cron for logwatch does not exists since no server is central log server
   file:
     path: /etc/cron.daily/0logwatch
     state: absent
-  tags: [ logwatch ]
+  tags: [ compliance, logwatch ]
 
 - name: Restrict virtual console root login
   lineinfile:
     path: /etc/securetty
     regexp: 'vc\/\\d+'
     state: absent
-  tags: [ securetty, vc ]
+  tags: [ compliance, securetty, vc ]
 
 - name: Restrict serial port root logins
   lineinfile:
     path: /etc/securetty
     regexp: 'ttyS\\d+'
     state: absent
-  tags: [ securetty, ttyS ]
+  tags: [ compliance, securetty, ttyS ]
 
 - name: Set password retry at 3
   lineinfile:
@@ -810,7 +810,7 @@
     regexp: '^password\s+pam_pwquality'
     line: 'password   pam_pwquality retry=3'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password minlen
   lineinfile: 
@@ -818,7 +818,7 @@
     regexp: '^minlen'
     line: 'minlen = 14'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password minclass
   lineinfile: 
@@ -826,7 +826,7 @@
     regexp: '^minclass'
     line: 'minclass = 4'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password maxrepeat
   lineinfile: 
@@ -834,7 +834,7 @@
     regexp: '^maxrepeat'
     line: 'maxrepeat = 3'
     state: present
-  tags: [ ia-5_1, login, password ]
+  tags: [ compliance, ia-5_1, login, password ]
 
 - name: Set password maxclassrepeat
   lineinfile: 
@@ -842,7 +842,7 @@
     regexp: '^maxclassrepeat'
     line: 'maxclassrepeat = 3'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password dcredit
   lineinfile: 
@@ -850,7 +850,7 @@
     regexp: '^dcredit'
     line: 'dcredit = -1'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password ucredit
   lineinfile: 
@@ -858,7 +858,7 @@
     regexp: '^ucredit'
     line: 'ucredit = -1'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password ocredit
   lineinfile: 
@@ -866,7 +866,7 @@
     regexp: '^ocredit'
     line: 'ocredit = -1'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password lcredit
   lineinfile: 
@@ -874,7 +874,7 @@
     regexp: '^lcredit'
     line: 'lcredit = -1'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set password difok
   lineinfile: 
@@ -882,7 +882,7 @@
     regexp: '^difok'
     line: 'difok = 4'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set default=die action for authfail
   lineinfile: 
@@ -893,7 +893,7 @@
   with_items:
     - system
     - password
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set sufficient action for authsucc
   lineinfile: 
@@ -904,7 +904,7 @@
   with_items:
     - system
     - password
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
 
 - name: Set remember=10 for passwords in system-auth
   lineinfile: 
@@ -912,6 +912,6 @@
     regexp: '^password\s+sufficient\s+pam_unix.so '
     line: 'password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=10'
     state: present
-  tags: [ login, password ]
+  tags: [ compliance, login, password ]
   
   #######################################
