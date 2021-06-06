@@ -38,7 +38,6 @@
 -a always,exit -F arch=b64 -S adjtimex -S settimeofday -S clock_settime -k SYS_audit_time_rules
 -a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k audit_time_rules
 -a always,exit -F arch=b32 -S adjtimex -S clock_settime -S settimeofday -k SYS_audit_time_rules
--a always,exit -F arch=b32 -S adjtimex -S stime -S settimeofday -k audit_time_rules
 -w /etc/localtime -p wa -k time-change
 
 ## System Locale
@@ -64,8 +63,8 @@
 -a always,exit -F arch=b32 -S open -F exit=-EPERM -k SYS_open
 
 ## Unsuccessful close
--a always,exit -F arch=b64 -S close -F exit=-EACCESS -k SYS_close
--a always,exit -F arch=b32 -S close -F exit=-EACCESS -k SYS_close
+-a always,exit -F arch=b64 -S close -F exit=-EACCES -k SYS_close
+-a always,exit -F arch=b32 -S close -F exit=-EACCES -k SYS_close
 
 ## Unsuccessful modifications
 -a always,exit -F arch=b64 -S rename -S truncate -S ftruncate -F exit=-EACCES -k SYS_mods
@@ -103,6 +102,10 @@
 -a always,exit -F arch=b32 -S truncate -S ftruncate -F exit=-EPERM -F auid>=500 -F auid!=4294967295 -k access
 -a always,exit -F arch=b32 -S init_module -S delete_module -F exit=-EACCES -F auid>=500 -F auid!=4294967295 -k access
 -a always,exit -F arch=b32 -S init_module -S delete_module -F exit=-EPERM -F auid>=500 -F auid!=4294967295 -k access
+
+## Execution of executables
+-a always,exit -F arch=b32 -S execve -k executables
+-a always,exit -F arch=b64 -S execve -k executables
 
 ## Once you enable the following line, auditd can no longer be shut down or modified
 ## without a reboot. Make sure your rules are the way you want them before enabling
