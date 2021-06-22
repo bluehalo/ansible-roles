@@ -13,10 +13,11 @@
   listen: "reload auditd"
 
 - name: reload auditd for Amazon Linux
-  service:
-    name: auditd
+  systemd:
+    name: auditd.service
     state: reloaded
   when: ansible_distribution == "Amazon"
+  become: yes
   listen: "reload auditd"
 
 - name: restart sshd
