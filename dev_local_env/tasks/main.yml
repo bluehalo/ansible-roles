@@ -1,0 +1,8 @@
+---
+- name: Display ansible_distribution
+  debug:
+    msg: OS detected as "{{ ansible_distribution }}"
+
+- include: macosx.yml
+  when: ansible_distribution == "MacOSX"
+
