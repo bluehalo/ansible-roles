@@ -30,6 +30,9 @@ To deactivate a virtual environment, run the following
 
 ## Makefile
     PROJECT_NAME: The project/team name for the group
+    PYTHON_VERSION: The version of python to install
+    PYENV_VERSION: The version of python virtual environment to install
+    requirements.txt: This file can be updated to include specific pip based software/versions
 
 ## Ansible
     project_name: The project/team name for the group

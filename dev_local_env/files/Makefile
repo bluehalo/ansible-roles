@@ -1,24 +1,25 @@
 SHELL:=/bin/bash
-PYENV_VERSION="2.7.16"
-PYTHON_VERSION="2.7"
+export PROJECT_NAME=------Insert Project Name Here------
+export PYTHON_VERSION=2.7
+export PYENV_VERSION=2.7.16
 
 define PYENV_INIT
-export PROJECT_NAME="---- Enter team name here ----"
-#### Begin $$PROJECT_NAME Makefile Changes ####
+#### Begin ${PROJECT_NAME} Makefile Changes ####
 alias ll='ls -la'
 eval "$$(pyenv init --path)"
 eval "$$(pyenv init -)"
 eval "$$(pyenv virtualenv-init -)"
 export PYENV_VIRTUALENV_DISABLE_PROMPT=1
-pyenv activate $$PROJECT_NAME
-##### End $$PROJECT_NAME Makefile Changes ####
+pyenv activate ${PROJECT_NAME}
+##### End ${PROJECT_NAME} Makefile Changes ####
 endef
 export PYENV_INIT
 
 init:
-	( grep -q $$PROJECT_NAME ~/.bash_profile || \
+	echo "$$PYENV_INIT" && \
+	( grep -q '${PROJECT_NAME}' ~/.bash_profile || \
 	echo "$$PYENV_INIT" >> ~/.bash_profile ) && \
-	( grep -q $$PROJECT_NAME ~/.zshrc || \
+	( grep -q '${PROJECT_NAME}' ~/.zshrc || \
 	echo "$$PYENV_INIT" >> ~/.zshrc ) && \
 	brew ls --versions git || brew install git && \
 	brew ls --versions pyenv || brew install pyenv && \
