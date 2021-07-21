@@ -1,0 +1,31 @@
+# use the local instance NTP service, if available
+{% for server in compliance_ntp_servers %}
+{{ server }}
+{% endfor %}
+
+# Use public servers from the pool.ntp.org project.
+# Please consider joining the pool (http://www.pool.ntp.org/join.html).
+{{ compliance_ntp_pool }}
+
+# Record the rate at which the system clock gains/losses time.
+driftfile /var/lib/chrony/drift
+
+# Allow the system clock to be stepped in the first three updates
+# if its offset is larger than 1 second.
+makestep 1.0 3
+
+# Allow NTP client access from local network.
+#allow 192.168.0.0/16
+
+# Specify file containing keys for NTP authentication.
+keyfile /etc/chrony.keys
+
+# Specify directory for log files.
+logdir /var/log/chrony
+
+# Select which information is logged.
+#log measurements statistics tracking
+
+# save data between restarts for fast re-load
+dumponexit
+dumpdir /var/run/chrony

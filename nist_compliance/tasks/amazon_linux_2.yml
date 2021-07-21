@@ -1,0 +1,917 @@
+---
+- name: Remove packages for compliance 
+  yum:
+    name: ['acpid', 'ntp', 'ntpdate', 'portreserve', 'rpcbind', 'sysstat']
+    state: absent
+  tags: [ compliance, yum ]
+
+- name: Disable dhclient and rpcbind processes
+  command: "pkill {{ item }}"
+  with_items: ['rpcbind']
+  ignore_errors: true
+  tags: [ compliance, yum ]
+
+- name: Install packages for compliance
+  yum: 
+    name: 
+      - aide
+      - chrony
+      - libsemanage
+      - libsemanage-python
+      - libselinux
+      - libselinux-devel
+      - libselinux-python
+      - libselinux-utils
+      - libsepol
+      - libsepol-devel
+      - policycoreutils
+      - postfix
+      - psacct
+      - selinux-policy
+      - policycoreutils-python
+      - policycoreutils-restorecond
+      - selinux-policy-targeted
+      - yum-plugin-priorities
+    state: present
+  tags: [ compliance, yum ]
+
+- name: Check for gpgcheck=0 in yum repos
+  find: 
+    paths: /etc/yum.repos.d 
+    contains: 'gpgcheck\s+=\s+0'
+    excludes: "{{ compliance_team_repo_name }}"
+  register: repofiles
+  tags: [ compliance, yum ]
+
+- name: Set gpgcheck=1 in yum.conf
+  replace:
+    dest: /etc/yum.conf
+    regexp: 'gpgcheck\s+=\s+0'
+    replace: 'gpgcheck=1'
+  tags: [ compliance, yum ]
+
+- name: Set gpgcheck=1 in yum repos
+  replace:
+    dest: "{{ item.path }}"
+    regexp: 'gpgcheck\s+=\s+0'
+    replace: 'gpgcheck=1'
+  with_items: "{{ repofiles.files }}"
+  tags: [ compliance, yum ]
+
+- name: Ensure gpgcheck cron
+  template: 
+    src: fix-yum-files.j2
+    dest: /etc/cron.d/fix-yum-files
+    owner: root
+    group: root
+    mode: 0600
+  tags: [ compliance, yum ]
+  notify:
+    - restart crond
+
+- name: Check if selinux allows chrony to run
+  shell: semanage permissive -l | grep -c "chronyd_t"
+  args:
+    warn: no
+  register: chrony_status
+  ignore_errors: true
+  changed_when: false
+  tags: [ compliance, chrony ]
+  
+- name: Ensure that selinux allows chrony to run
+  command: 'semanage permissive -a chronyd_t'
+  args:
+    warn: no
+  ignore_errors: true
+  when: chrony_status.stdout == "0"
+  tags: [ compliance, chrony ] 
+
+- name: Configure chrony
+  template: 
+    src: chrony.conf.j2 
+    dest: "/etc/chrony.conf" 
+    owner: root 
+    group: root 
+    mode: 0644
+  tags: [ compliance, chrony ]
+
+- name: Configure chrony options
+  copy:
+    group: root
+    owner: root
+    mode: 0644
+    src: chronyd
+    dest: /etc/sysconfig/chronyd
+  tags: [ compliance, chrony ] 
+
+- name: Ensure chrony is running
+  systemd:
+    name: chronyd
+    state: started
+    enabled: yes
+  tags: [ compliance, chrony ]
+
+- name: Ensure tmpfs mount options
+  mount: 
+    src: tmpfs 
+    path: /dev/shm 
+    fstype: tmpfs 
+    opts: rw,nodev,noexec,nosuid 
+    state: present
+  tags: [ compliance, tmpfs ]
+
+- name: Check if AIDE db exists
+  stat:
+    path: /var/lib/aide/aide.db.gz
+  register: aide_db_check_result
+  changed_when: false
+  tags: [ compliance, aide ]
+
+- name: Initiate the AIDE db
+  shell: aide --init && mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+  when: not aide_db_check_result.stat.exists
+  tags: [ compliance, aide ]
+
+- name: Ensure aide cron
+  cron:
+    name: "aide check"
+    minute: "0"
+    hour: "5"
+    job: "/usr/sbin/aide --check"
+  tags: [ compliance, aide ]
+  notify:
+    - restart crond
+
+- name: Ensure aide log dir
+  file: 
+    path: /var/log/aide 
+    state: directory 
+    owner: root
+    group: root
+    mode: 0700
+  tags: [ compliance, aide ]
+
+- name: Check for dbus-daemon-launcher-helper file
+  stat:
+    path: /lib64/dbus-1/dbus-daemon-launch-helper
+  register:  dbus_daemon
+  changed_when: false
+  tags: [ compliance, dbus ]
+
+- name: Ensure setgid and setuid are not set for /lib64/dbus file
+  file: 
+    path: /lib64/dbus-1/dbus-daemon-launch-helper 
+    mode: 0750
+  when: dbus_daemon.stat.exists == true
+  tags: [ compliance, dbus ]
+
+- name: Remove ttyS0 from /etc/securetty
+  lineinfile: 
+    dest: /etc/securetty 
+    state: absent
+    regexp: '^ttyS0$'
+  tags: [ compliance, tty ]
+
+- name: Ensure /etc/sysconfig/init has SINGLE=/sbin/sulogin
+  lineinfile: 
+    dest: /etc/sysconfig/init
+    state: present 
+    regexp: 'SINGLE=.*' 
+    line: 'SINGLE=/sbin/sulogin'
+  tags: [ compliance, sysconfig ]
+
+- name: Check if ctrl-alt-del.target is already masked
+  command: systemctl status ctrl-alt-del.target
+  args:
+    warn: no
+  register: cad_mask_check
+  changed_when: False
+  failed_when: cad_mask_check.rc not in [0,3]
+  tags: [ compliance, ctrl-alt-del ]
+
+- name: Disable rebooting with ctrl-alt-del
+  shell: 'systemctl mask ctrl-alt-del.target'
+  when: cad_mask_check.rc != 3
+  tags: [ compliance, ctrl-alt-del ]  
+
+- name: Ensure /etc/pam.d/system-auth file exists
+  template: 
+    src: system-auth.j2
+    dest: /etc/pam.d/system-auth
+    owner: root
+    group: root
+    mode: 0644
+  tags: [ compliance, pamd ]
+
+- name: Ensure /etc/pam.d/password-auth file
+  template: 
+    src: password-auth.j2
+    dest: /etc/pam.d/password-auth
+    owner: root
+    group: root
+    mode: 0644
+  tags: [ compliance, pamd ]
+
+- name: Add no_pass_expiry to pam.d to avoid lockout for not using passwords
+  copy:
+    group: root
+    owner: root
+    mode: 0644
+    src: pamd_sshd
+    dest: /etc/pam.d/sshd
+  tags: [ compliance, pamd ] 
+
+- name: Adding lines to /etc/pam.d/su for wheel group
+  lineinfile: 
+    dest: /etc/pam.d/su
+    line: "auth           required        pam_wheel.so use_uid"
+
+- name: Check for /etc/bashrc
+  stat: 
+    path: /etc/bashrc
+  register: bashrc_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/csh.cshrc
+  stat: 
+    path: /etc/csh.cshrc
+  register: csh_cshrc_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/login.defs
+  stat: 
+    path: /etc/login.defs
+  register: login_defs_stat
+  tags: [ compliance, umask ]
+
+- name: Changing /etc/login.defs MAX days for users
+  lineinfile:
+    path: /etc/login.defs
+    state: present
+    regexp: 'PASS_MAX_DAYS'
+    line: 'PASS_MAX_DAYS 90'
+  tags: [ compliance, login, password ]
+    
+- name: Changing /etc/login.defs MIN days for users
+  lineinfile:
+    path: /etc/login.defs
+    state: present
+    regexp: 'PASS_MIN_DAYS'
+    line: 'PASS_MIN_DAYS 7'
+  tags: [ compliance, login, password ]
+
+- name: Changing /etc/default/useradd chage setting
+  lineinfile:
+    path: /etc/default/useradd
+    state: present
+    regexp: 'INACTIVE'
+    line: 'INACTIVE=30'
+  tags: [ compliance, password ]
+
+- name: Add lines to pwquality
+  lineinfile: 
+    dest: /etc/security/pwquality.conf
+    line: '{{ item }}'
+  with_items:
+    - 'minlen = 14'
+    - 'dcredit = -1'
+    - 'ucredit = -1'
+    - 'ocredit = -1'
+    - 'lcredit = -1'
+
+- name: Check for /etc/profile
+  stat: 
+    path: /etc/profile
+  register: profile_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/profile.d/local.csh
+  stat: 
+    path: /etc/profile.d/local.csh
+  register: local_csh_stat
+  tags: [ compliance, umask ]
+
+- name: Check for /etc/profile.d/local.sh
+  stat: 
+    path: /etc/profile.d/local.sh
+  register: local_sh_stat
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/bashrc if exists
+  replace: 
+    path: "{{ bashrc_stat.stat.path }}" 
+    regexp: 'umask\s+0[0-2][0-6]'
+    replace: 'umask 027'
+  when: bashrc_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/csh.cshrc if exists
+  replace: 
+    path: "{{ csh_cshrc_stat.stat.path }}"
+    regexp: 'umask\s+0[0-2][0-6]'
+    replace: 'umask 027'
+  when: csh_cshrc_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/login.defs if exists
+  replace: 
+    path: "{{ login_defs_stat.stat.path }}"
+    regexp: 'UMASK.*' 
+    replace: 'UMASK 077'
+  when: login_defs_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/profile if exists
+  replace: 
+    path: "{{ profile_stat.stat.path }}"
+    regexp: 'umask\s+0[0-2][0-6]'
+    replace: 'umask 027'
+  when: profile_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/profile.d/local.csh if exists
+  replace: 
+    path: "{{ local_csh_stat.stat.path }}"
+    regexp: 'umask 0027' 
+    replace: 'umask 0077'
+  when: local_csh_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: Set default umask in /etc/profile.d/local.sh if exists
+  replace: 
+    path: "{{ local_sh_stat.stat.path }}"
+    regexp: 'umask 0027' 
+    replace: 'umask 0077'
+  when: local_sh_stat.stat.exists
+  tags: [ compliance, umask ]
+
+- name: seting /etc/sysctl conf template
+  template:
+    src: sysctl.j2
+    dest: /etc/sysctl.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags: [ compliance, security, sysctl ]
+
+- name: adjust default sysctl values
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.conf
+    state: present
+  with_items:
+    - { name: net.ipv4.icmp_echo_ignore_broadcasts, value: 1 }
+    - { name: fs.suid_dumpable, value: 0 }
+    - { name: net.ipv4.route.flush, value: 1 }
+    - { name: net.ipv4.icmp_ignore_bogus_error_responses, value: 1 }
+    - { name: net.ipv4.tcp_syncookies, value: 1 }
+    - { name: net.ipv4.ip_forward, value: 1 }
+    - { name: net.ipv6.conf.all_forwarding, value: 0 }
+    - { name: net.ipv4.route_flush, value: 1 }
+    - { name: net.ipv6.route_flush, value: 1 }
+    - { name: net.ipv4.conf.all.send_redirects, value: 0 }   
+    - { name: net.ipv4.conf.default.send_redirects, value: 0 }
+    - { name: net.ipv4.conf.all.accept_source_route, value: 0 }
+    - { name: net.ipv6.conf.all.accept_source_route, value: 0 }
+    - { name: net.ipv4.conf.default.accept_source_route, value: 0 }
+    - { name: net.ipv6.conf.default.accept_source_route, value: 0 }
+    - { name: net.ipv4.conf.all.accept_redirects, value: 0 }
+    - { name: net.ipv6.conf.all.accept_redirects, value: 0 }
+    - { name: net.ipv4.conf.default.accept_redirects, value: 0 }
+    - { name: net.ipv6.conf.default.accept_redirects, value: 0 }
+    - { name: net.ipv4.conf.all.secure_redirects, value: 0 }
+    - { name: net.ipv4.conf.default.secure_redirects, value: 0 }
+    - { name: net.ipv4.conf.all.log_martians, value: 1 }
+    - { name: net.ipv4.conf.default.log_martians, value: 1 }
+    - { name: net.ipv4.conf.all.rp_filter, value: 1 }
+    - { name: net.ipv4.conf.default.rp_filter, value: 1 }
+    - { name: net.ipv6.conf.all.accept_ra, value: 0 }
+    - { name: net.ipv6.conf.default.accept_ra, value: 0 }
+  ignore_errors: True
+  tags: [ compliance, security, sysctl ]
+
+- name: Disable periodic anacron runs
+  replace: 
+    path: /etc/anacrontab 
+    regexp: '^(.*run-parts.*)$'
+    replace: '\1'
+  tags: [ compliance, anacron ]
+
+- name: Set syslog plugin for audisp to active
+  replace: 
+    path: /etc/audisp/plugins.d/syslog.conf 
+    regexp: 'active = no' 
+    replace: 'active = yes'
+  tags: [ compliance, audisp ]
+
+- name: Ensure audit email alias is set
+  lineinfile: 
+    path: /etc/aliases 
+    state: present 
+    regexp: 'audit:.*'
+    line: "audit:\t{{ compliance_email_sysadmin }}"
+  tags: [ compliance, audit ]
+  notify:
+    - newaliases
+
+- name: Configure auditd
+  template: 
+    src: auditd.conf.j2 
+    dest: /etc/audit/auditd.conf
+    owner: root 
+    group: root 
+    mode: 0640
+  when: compliance_configure_auditd | default(true)
+  tags: [ compliance, audit ]
+  notify:
+    - reload auditd
+
+- name: Set audit rules for compliance
+  template: 
+    src: rulesd_compliance.rules.j2
+    dest: /etc/audit/rules.d/compliance.rules 
+    owner: root
+    group: root 
+    mode: 0640
+  when: compliance_configure_auditd | default(true)
+  tags: [ compliance, audit ]
+  notify:
+    - reload auditd
+
+- name: Ensure audit log dir exists
+  file: 
+    path: /var/log/audit 
+    state: directory 
+    owner: root
+    group: root
+    mode: 0755
+  tags: [ compliance, audit ]
+
+- name: Set FileCreateMode in /etc/rsyslog.conf to 640
+  lineinfile: 
+    dest: /etc/rsyslog.conf
+    regexp: 'FileCreateMode'
+    line: "$FileCreateMode 0640"
+  tags: [ compliance, audit, rsyslog ]
+
+- name: Find all of the files inside /etc/rsyslog.d
+  find:
+    paths: /etc/rsyslog.d/
+    patterns: "*.conf"
+  register: rsyslog_confs
+  tags: [ compliance, audit, rsyslog ]
+
+- name: Set FileCreateMode in all confs inside /etc/rsyslog.d to 640
+  lineinfile: 
+    dest: "{{ item.path }}"
+    regexp: 'FileCreateMode'
+    line: "$FileCreateMode 0640"
+  with_items: "{{ rsyslog_confs.files }}"
+  tags: [ compliance, audit, rsyslog ]
+
+- name: Ensure SELINUX is enforcing
+  lineinfile: 
+     dest: /etc/selinux/config 
+     state: present 
+     regexp: 'SELINUX=.*' 
+     line: 'SELINUX=enforcing'
+  tags: [ compliance, selinux ]
+
+- name: Check if kernel contains selinux
+  shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "selinux=1 security=selinux enforcing=1"
+  register: kernel_status
+  changed_when: false
+  ignore_errors: true
+  tags: [ compliance, selinux ]
+
+- name: Enable selinux kernel changes
+  lineinfile: 
+    path: /etc/default/grub
+    regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"' 
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 selinux=1 security=selinux enforcing=1"' 
+    backrefs: yes
+  when: kernel_status.stdout == "0"
+  tags: [ compliance, selinux ]
+
+- name: Rebuild grub config                                                                                                                 
+  command: grub2-mkconfig -o /boot/grub2/grub.cfg
+  when: kernel_status.stdout == "0"
+  tags: [ compliance, selinux ]
+
+# If there is an error with psacct, need to run `/sbin/restorecon -Rv  /var`,
+# which is normally run in the mounts playbook (run with 'selinux' tag)
+- name: Enable certain services on boot
+  service: 
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - psacct
+    - restorecond
+  tags: [ compliance, services ]
+
+- name: Ensure sshd_config
+  template: 
+    src: sshd_config.j2 
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root 
+    mode: 0600
+  notify:
+    - restart sshd
+  tags: [ compliance, sshd ]
+
+- name: Change sulogin for rescue and emergency services
+  lineinfile: 
+    path: "/usr/lib/systemd/system/{{ item }}.service"
+    state: present
+    regexp: 'ExecStart=.*'
+    line: 'ExecStart=-/bin/sh -c "/sbin/sulogin; /usr/bin/systemctl --fail --no-block default"'
+  with_items:
+    - emergency
+    - rescue
+  tags: [ compliance, emergency, rescue, single_user ]
+
+- name: Check if /etc/update-motd.d exists
+  stat:
+    path: /etc/update-motd.d
+  register: update_motd_exists
+  tags: [ compliance, sshd, motd ]
+
+- name: Remove MOTD parts stating or hinting the OS
+  file:
+    path: "/etc/update-motd.d/{{ item }}"
+    state: absent
+  with_items:
+    - 30-banner
+    - 75-system-update
+  when: update_motd_exists.stat.exists
+  tags: [ compliance, sshd, motd ]
+
+- name: Remove existing MOTD to replace
+  file:
+    path: /var/lib/update-motd/motd
+    state: absent
+  when: update_motd_exists.stat.exists
+  tags: [ compliance, sshd, motd ]
+
+- name: Replace MOTD part that specifies yum-based OS
+  copy:
+    group: root
+    owner: root
+    mode: 0755
+    src: 70-available-updates
+    dest: /etc/update-motd.d/70-available-updates
+  when: update_motd_exists.stat.exists
+  tags: [ compliance, sshd, motd ] 
+
+- name: Regenerate the MOTD
+  command: "update-motd"
+  when: update_motd_exists.stat.exists
+  tags: [ compliance, sshd, motd ]
+
+- name: Replace /etc/issue* banners
+  copy:
+    group: root
+    owner: root
+    mode: 0644
+    src: banner
+    dest: "{{ item }}"
+  with_items:
+    - '/etc/issue'
+    - '/etc/issue.net'
+    - '/etc/motd'
+  tags: [ compliance, sshd, banner ] 
+
+- name: Restore default SELinux security contexts
+  shell: restorecon -r -v /var/log && restorecon -r -v /etc/audit
+  changed_when: false
+  tags: [ compliance, selinux ]
+
+- name: Updates to /etc/security/limits.conf
+  lineinfile:
+    path: /etc/security/limits.conf
+    owner: root
+    group: root
+    mode: 0644
+    line: '* hard core 0'
+    state: present
+  tags: [ compliance, security ]
+
+- name: Ensure mounting of certain filesystems are disabled - modprobe
+  copy:
+    dest: "/etc/modprobe.d/disable.conf"
+    content: |
+      install cramfs /bin/true
+      install hfs /bin/true
+      install hfsplus /bin/true
+      install squashfs /bin/true
+      install udf /bin/true
+  tags: [ compliance, modprobe ]
+
+- name: Ensure certain protocols are disabled - modprobe
+  copy:
+    dest: "/etc/modprobe.d/CIS.conf"
+    content: |
+      install dccp /bin/true
+      install rds /bin/true
+      install sctp /bin/true
+      install tipc /bin/true
+  tags: [ compliance, modprobe ]
+
+- name: Remove unwanted kernel modules - modprobe
+  modprobe:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - cramfs
+    - dccp
+    - hfs
+    - hfsplus
+    - rds
+    - sctp
+    - squashfs
+    - tipc
+    - udf
+  tags: [ compliance, modprobe ]
+
+- name: Ensure permissions on bootloader config are configured
+  file:
+    path: /boot/grub2/grub.cfg
+    owner: root
+    group: root
+    mode: 0600
+  tags: [ compliance, grub, umask ]
+
+- name: Gather /var/log/ file list
+  find:
+    paths: /var/log/
+    recurse: yes
+  register: var_log_files
+  tags: [ compliance, umask, varlog ]
+
+- name: Ensure permissions on all log files are configured
+  file:
+    path: "{{ item.path }}"
+    mode: "g-wx,o-rwx"
+  when: var_log_files.matched > 0
+  with_items: "{{ var_log_files.files }}"
+  tags: [ compliance, umask, varlog ]
+
+- name: Set default user acl permissions for log file directories
+  acl:
+    path: '/var/log/'
+    state: present
+    etype: user
+    permissions: rwx
+    default: yes
+    recursive: yes
+  tags: [ compliance, umask, varlog ]
+
+- name: Set default group acl permissions for log file directories
+  acl:
+    path: '/var/log/'
+    state: present
+    etype: group
+    permissions: r
+    default: yes
+    recursive: yes
+  tags: [ compliance, umask, varlog ]
+
+- name: Set default other acl permissions for log file directories
+  acl:
+    path: '/var/log/'
+    state: present
+    etype: other
+    permissions: 000
+    default: yes
+    recursive: yes
+  tags: [ compliance, umask, varlog ]
+
+- name: Ensure files exist and permissions on at.allow/cron.allow and crontab are configured
+  file:
+    path: "{{ item }}"
+    state: touch
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - /etc/at.allow
+    - /etc/cron.allow
+    - /etc/crontab
+  tags: [ compliance, cron, umask ]
+  notify:
+    - restart crond
+
+- name: Ensure root user is listed in at.allow/cron.allow
+  lineinfile:
+    path: "{{ item }}"
+    state: present
+    line: root
+  with_items:
+    - /etc/at.allow
+    - /etc/cron.allow
+  tags: [ compliance, cron, umask ]
+  notify:
+    - restart crond
+
+- name: Ensure at/cron.deny does not exist
+  file: 
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/at.deny
+    - /etc/cron.deny
+  tags: [ compliance, cron ]
+  notify:
+    - restart crond    
+
+- name: Ensure permissions on /etc/cron.* directories are configured
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  with_items:
+    - /etc/cron.hourly
+    - /etc/cron.daily
+    - /etc/cron.weekly
+    - /etc/cron.monthly
+    - /etc/cron.d
+  tags: [ compliance, cron, umask ]
+  notify:
+    - restart crond
+
+
+# Items found specific to Customer Env Compliance 
+#################################################
+
+- name: Set watches for the following audit rules
+  lineinfile: 
+    path: /etc/audit/audit.rules
+    regexp: '^-w\\s+{{ item }}\\s+-p\\s+wa'
+    line: "-w {{ item }} -p wa"
+    state: present
+  with_items:
+    - /etc/group
+    - /etc/passwd
+    - /etc/gshadow
+    - /etc/shadow
+    - /etc/security/opasswd
+    - /etc/hosts
+    - /etc/issue
+    - /etc/issue.net
+    - /etc/sysconfig/network
+    - /etc/selinux
+    - /etc/audit/auditd.conf
+  tags: [ compliance, audit ]
+
+- name: Add checks for 64-bit syscall mounts
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: '^-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+mount'
+    line: '-a always,exit -F arch=b64 -S mount -S umount2 -k SYS_mount'
+    state: present
+  tags: [ compliance, audit ]
+
+- name: Ensure audit rules are locked after adding all audit rules
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: '^-e\s+2'
+    line: '-e 2'
+    state: present
+  tags: [ compliance, audit ]
+
+- name: Ensure cron for logwatch does not exists since no server is central log server
+  file:
+    path: /etc/cron.daily/0logwatch
+    state: absent
+  tags: [ compliance, logwatch ]
+
+- name: Restrict virtual console root login
+  lineinfile:
+    path: /etc/securetty
+    regexp: 'vc\/\\d+'
+    state: absent
+  tags: [ compliance, securetty, vc ]
+
+- name: Restrict serial port root logins
+  lineinfile:
+    path: /etc/securetty
+    regexp: 'ttyS\\d+'
+    state: absent
+  tags: [ compliance, securetty, ttyS ]
+
+- name: Set password retry at 3
+  lineinfile:
+    path: /etc/pam.d/passwd
+    regexp: '^password\s+pam_pwquality'
+    line: 'password   pam_pwquality retry=3'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password minlen
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^minlen'
+    line: 'minlen = 14'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password minclass
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^minclass'
+    line: 'minclass = 4'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password maxrepeat
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^maxrepeat'
+    line: 'maxrepeat = 3'
+    state: present
+  tags: [ compliance, ia-5_1, login, password ]
+
+- name: Set password maxclassrepeat
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^maxclassrepeat'
+    line: 'maxclassrepeat = 3'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password dcredit
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^dcredit'
+    line: 'dcredit = -1'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password ucredit
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^ucredit'
+    line: 'ucredit = -1'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password ocredit
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^ocredit'
+    line: 'ocredit = -1'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password lcredit
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^lcredit'
+    line: 'lcredit = -1'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set password difok
+  lineinfile: 
+    path: /etc/security/pwquality.conf
+    regexp: '^difok'
+    line: 'difok = 4'
+    state: present
+  tags: [ compliance, login, password ]
+
+- name: Set default=die action for authfail
+  lineinfile: 
+    path: "/etc/pam.d/{{ item }}-auth"
+    regexp: '^auth\s+[default=die]\s+pam_faillock.so\s+authfail'
+    line: 'auth        [default=die] pam_faillock.so authfail audit deny=3 unlock_time=900 fail_interval=900'
+    state: present
+  with_items:
+    - system
+    - password
+  tags: [ compliance, login, password ]
+
+- name: Set sufficient action for authsucc
+  lineinfile: 
+    path: "/etc/pam.d/{{ item }}-auth"
+    regexp: '^auth\s+sufficient\s+pam_faillock.so\s+authsucc'
+    line: 'auth        sufficient    pam_faillock.so authsucc audit deny=3 unlock_time=900 fail_interval=900'
+    state: present
+  with_items:
+    - system
+    - password
+  tags: [ compliance, login, password ]
+
+- name: Set remember=10 for passwords in system-auth
+  lineinfile: 
+    path: /etc/pam.d/system-auth
+    regexp: '^password\s+sufficient\s+pam_unix.so '
+    line: 'password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=10'
+    state: present
+  tags: [ compliance, login, password ]
+  
+  #######################################

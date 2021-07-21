@@ -1,4 +1,7 @@
 ---
-compliance_disabled_services: [ 'acpid', 'kdump', 'mdmonitor', 'messagebus', 'portreserve', 'atd' ]
-compliance_email_sysadmin: "{{ compliance_email_sysadmin }}"
-compliance_show_ssh_banner: false
+required_vars:
+  - compliance_email_sysadmin
+  - compliance_ntp_pool
+  - compliance_ntp_servers
+  - compliance_team_repo_name
+  - compliance_users

@@ -17,6 +17,11 @@
 ##
 ## Security Scan Items: ##
 ##
+-w /etc/audit/audit.rules -p wa
+-w /etc/libaudit.conf -p wa
+-w /etc/sysconfig/auditd -p wa
+-w /var/log/audit/ -p a
+-w /var/log/audit/audit.log -p a
 -w /usr/bin/yum -p wa
 -w /usr/sbin/rpm -p wa
 -w /var/log/btmp -p wa -k session
@@ -31,8 +36,9 @@
 
 ## Time stuff
 -a always,exit -F arch=b64 -S adjtimex -S settimeofday -S clock_settime -k SYS_audit_time_rules
--a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k audit_time_rules
+-a always,exit -F arch=b64 -S adjtimex -S settimeofday -S stime -k audit_time_rules
 -a always,exit -F arch=b32 -S adjtimex -S clock_settime -S settimeofday -k SYS_audit_time_rules
+-a always,exit -F arch=b32 -S adjtimex -S stime -S settimeofday -k audit_time_rules
 -w /etc/localtime -p wa -k time-change
 
 ## System Locale
@@ -98,79 +104,9 @@
 -a always,exit -F arch=b32 -S init_module -S delete_module -F exit=-EACCES -F auid>=500 -F auid!=4294967295 -k access
 -a always,exit -F arch=b32 -S init_module -S delete_module -F exit=-EPERM -F auid>=500 -F auid!=4294967295 -k access
 
-## Execution of executables
--a always,exit -F arch=b32 -S execve -k executables
--a always,exit -F arch=b64 -S execve -k executables
-
-## Privileged access
--w /etc/sudoers.d/ -p wa -k privileged_access
--w /bin/su -p x -k privileged_access
--w /usr/bin/sudo -p x -k privileged_access
--w /etc/sudoers -p rw -k privileged_access
--a always,exit -F arch=b64 -S execve -F euid=0 -F auid>=1000 -F auid!=-1 -F auid!=4294967295 -k privileged_access
--a always,exit -F arch=b32 -S execve -F euid=0 -F auid>=1000 -F auid!=-1 -F auid!=4294967295 -k privileged_access
--a exit,always -F arch=b64 -F euid=0 -S execve -k privileged_access
--a exit,always -F arch=b32 -F euid=0 -S execve -k privileged_access
-
-## System reset/reboot
--w /sbin/halt -p x -k reboot
--w /sbin/init -p x -k reboot
--w /sbin/poweroff -p x -k reboot
--w /sbin/reboot -p x -k reboot
--w /sbin/shutdown -p x -k reboot
-
-## Auditd config modification
--w /etc/audit/audit.rules -p wa -k audit_config
--w /etc/libaudit.conf -p wa -k audit_config
--w /etc/sysconfig/auditd -p wa -k audit_config
--w /var/log/audit/ -p wa -k audit_config
--w /var/log/audit/audit.log -p wa -k audit_config
--w /usr/lib/systemd/system/auditd.service -p wxa -k audit_config
-
-## Systemctl restarts
--w /bin/systemctl -p x -k systemctl
-
-## Printing
--w /etc/cups/ -p wa -k printing
--w /etc/printcap -p wa -k printing
--w /var/spool/cups/ -p wa -k printing
--w /var/spool/lpd/ -p wa -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/cancel -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/cupsaccept -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/cupsdisable -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/cupsenable -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/cupsreject -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lp -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lpadmin -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lpc -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lpd -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lpmove -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lpoptions -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lpr -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lprm -k printing
--a exit,always -F arch=b64 -S execve -F path=/sbin/lpq -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/cancel -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/cupsaccept -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/cupsdisable -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/cupsenable -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/cupsreject -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lp -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lpadmin -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lpc -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lpd -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lpmove -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lpoptions -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lpr -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lprm -k printing
--a exit,always -F arch=b32 -S execve -F path=/sbin/lpq -k printing
-
-## PowerShell use
--a exit,always -F arch=b32 -S execve -F path=/sbin/pwsh -k powershell
--a exit,always -F arch=b64 -S execve -F path=/sbin/pwsh -k powershell
-
-
 ## Once you enable the following line, auditd can no longer be shut down or modified
 ## without a reboot. Make sure your rules are the way you want them before enabling
 ## this.
 
 # -e 2
+

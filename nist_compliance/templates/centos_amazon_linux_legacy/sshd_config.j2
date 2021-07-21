@@ -34,11 +34,11 @@ Protocol 2
 # obsoletes QuietMode and FascistLogging
 #SyslogFacility AUTH
 SyslogFacility AUTHPRIV
-LogLevel INFO
+#LogLevel INFO
 
 # Authentication:
 
-LoginGraceTime 60
+#LoginGraceTime 2m
 #PermitRootLogin yes
 #StrictModes yes
 #MaxAuthTries 6
@@ -122,9 +122,11 @@ X11Forwarding yes
 #ChrootDirectory none
 
 #### Settings found AWAY
-Banner /etc/issue.net
+{% if compliance_show_ssh_banner %}
+Banner /etc/issue
+{% endif %}
 #AddressFamily inet
-ClientAliveInterval 300
+ClientAliveInterval 900
 ClientAliveCountMax 0
 PermitEmptyPasswords no
 PermitUserEnvironment no
@@ -134,14 +136,16 @@ IgnoreRhosts yes
 #GatewayPorts no
 PrintLastLog yes
 HostbasedAuthentication no
-MaxAuthTries 4
+MaxAuthTries 6
 
 # override default of no subsystems
 Subsystem sftp	/usr/libexec/openssh/sftp-server
 
-# Algorithms
-MACs umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1,hmac-sha1-etm@openssh.com
-KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
-
 UseDNS no
-AllowUsers {% if privileged_user is defined %}{{ privileged_user }} {% endif %}{{ compliance_users|map(attribute='username')|sort|join(' ') }}
+AllowUsers {% if privileged_user is defined %}{{ privileged_user }} {% endif %}{{ accounts_create_users|map(attribute='username')|sort|join(' ') }}
+
+# BEGIN ANSIBLE MANAGED BLOCK
+Match Group allowpass
+PasswordAuthentication yes
+Match User *
+# END ANSIBLE MANAGED BLOCK

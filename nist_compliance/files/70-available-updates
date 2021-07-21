@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Possible summaries include:
+# No packages needed for security; %d packages available
+# %d package(s) needed[ (+%d related)] for security, out of %d available
+# There are [[%d security update(s)[ out of ]%d total update(s)]] available
+LANG=C timeout 30s /usr/bin/yum \
+    --debuglevel 2 \
+    --security check-update 2>/dev/null \
+        | grep -P '(?<! 0 packages) available$'

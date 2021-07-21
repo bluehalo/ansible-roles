@@ -1,11 +1,35 @@
+---
 - name: restart crond
-  service: name=crond state=restarted
-- name: restart auditd
-  service: name=auditd state=restarted use=service
+  service: 
+    name: crond 
+    state: restarted
+
+- name: reload auditd for CentOS
+  service: 
+    name:  auditd 
+    state: restarted
+    use: service
+  when: ansible_distribution is regex('^CentOS.*')
+  listen: "reload auditd"
+
+- name: reload auditd for Amazon Linux
+  systemd:
+    name: auditd.service
+    state: reloaded
+  when: ansible_distribution == "Amazon"
+  become: yes
+  listen: "reload auditd"
+
 - name: restart sshd
-  service: name=sshd state=restarted
+  service: 
+    name: sshd 
+    state: restarted
+
 - name: restart postfix
-  service: name=postfix state=restarted
+  service: 
+    name: postfix 
+    state: restarted
+
 - name: newaliases
   command: newaliases
   notify: restart postfix
