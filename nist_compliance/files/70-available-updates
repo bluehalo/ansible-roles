@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 # Possible summaries include:
 # No packages needed for security; %d packages available
 # %d package(s) needed[ (+%d related)] for security, out of %d available

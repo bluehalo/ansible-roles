@@ -18,5 +18,5 @@ session    required     pam_namespace.so
 session    optional     pam_keyinit.so force revoke
 session    include      password-auth
 session    include      postlogin
-# Used with polkit to reauthorize users in remote sessions
+# Used with polkit to reauthorize users in remote sessions 
 -session   optional     pam_reauthorize.so prepare
