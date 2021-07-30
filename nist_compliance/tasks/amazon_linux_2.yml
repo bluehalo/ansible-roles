@@ -576,7 +576,7 @@
     group: root
     owner: root
     mode: 0644
-    src: banner
+    src: "{{ banner_file | default('banner') }}"
     dest: "{{ item }}"
   with_items:
     - '/etc/issue'
