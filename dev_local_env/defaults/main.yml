@@ -1,19 +1,11 @@
 ---
 project_name: ""
-openjdk_repo: "homebrew/cask-versions"
-openjdk_package: "adoptopenjdk"
-openjdk_version: '8'
-
-mongodb_repo: "mongodb/brew"
-mongodb_package: "mongodb-community"
-mongodb_version: "4.2"
-
 elasticsearch_version: "{{ versions.elastic }}"
-elasticsearch_repo: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ versions.elastic }}-darwin-x86_64.tar.gz"
-elasticsearch_install_dir: /usr/local/var
 
 nodejs_versions:
   - 10.16.3
+
+asdf_version: "{{ versions.asdf }}"
 
 asdf_plugins:
  - maven
@@ -34,17 +26,8 @@ npm_packages:
   - bunyan
   - yarn
 
-bashrc_location: "~/.bash_profile"
 zshrc_location: "~/.zshrc"
-path_value: "$JAVA_HOME:$MONGO_PATH:$PATH"
-
-additional_dev_packages:
-  - maven
-  - scala
-  - apache-spark
-  - gradle
-  - sbt
-  - awscli
+path_value: "$PYENV_ROOT/bin:$JAVA_HOME:$MONGO_PATH:$PATH"
 
 git_repo_dest: "~/team_repos"
 git_repo_sources:

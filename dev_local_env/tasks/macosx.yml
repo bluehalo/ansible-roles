@@ -71,7 +71,7 @@
         
     - name: Start MongoDB service
       command: "brew services start {{ mongodb_package }}"
-      when: start_mongodb  | default(false)
+      when: start_mongodb | default(false)
       tags: [ mongodb_start ]
   when: 
     - not mongodb_path_check.stat.exists
@@ -291,3 +291,7 @@
     - install_asdf | default(true)
     - not asdf_path_check.stat.exists
   tags: [ dev_local_env, asdf ]
+
+- name: Display completion message
+  debug:
+    msg: Installation complete!  Please exit your terminal and start a new session.

@@ -5,7 +5,8 @@ These instructions assume you are developing on mac-osx
 
 #### Python Virtual Environment
 Run the following make command to initialize your env. If
-prompted for password, enter your `sudo` password.
+prompted for password, enter your `sudo` password.  Close
+and reopen your terminal session upon completion
 
     make init
 
@@ -21,10 +22,30 @@ To deactivate a virtual environment, run the following
 ### Running unit tests
     make test
 
-### To finish configuring your local dev environment with ansible
+### To finish configuring your local dev environment with ansible (assumes that repo is cloned to ~/team_repos)
 
     cd ~/team_repos/$PROJECT_NAME/ansible
     ansible-playbook playbooks/dev_local_env.yml --limit localhost
+
+    NOTE: Additionally it may be necessary to specify the following options:
+      --vault-password   (specify a vault password file)
+      --ask-become-pass  (prompt for sudo password on execution)
+      --extra-vars "ansible_python_interpreter=/usr/bin/python2.7"
+
+    For AWS workspace instances running AL2:
+        cd ~/team_repos/$PROJECT_NAME/ansible-roles/dev_local_env/files/amazon_linux_2
+
+        make init
+            NOTE: May prompt for sudo login password
+        Close terminal and open a new session
+
+        cd ~/repos/$PROJECT_NAME/ansible/
+        Create a file containing the ansible vault password in ~/.ansible_vault_pass.txt
+
+        ansible-playbook playbooks/dev_local_env.yml --limit localhost --vault-password ~/.ansible_vault_pass.txt --ask-become-pass --extra-vars "ansible_python_interpreter=/usr/bin/python2.7"
+            NOTE: May prompt for sudo login password
+
+        Close terminal and open a new session
 
 ### Variables that can be configured as part of this role
 

@@ -1,0 +1,21 @@
+---
+openjdk_repo: "homebrew/cask-versions"
+openjdk_package: "adoptopenjdk"
+openjdk_version: '8'
+
+mongodb_repo: "mongodb/brew"
+mongodb_package: "mongodb-community"
+mongodb_version: "4.2"
+
+elasticsearch_repo: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ versions.elastic }}-darwin-x86_64.tar.gz"
+elasticsearch_install_dir: /usr/local/var
+
+bashrc_location: "~/.bash_profile"
+
+additional_dev_packages:
+  - maven
+  - scala
+  - apache-spark
+  - gradle
+  - sbt
+  - awscli

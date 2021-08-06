@@ -3,6 +3,20 @@
   debug:
     msg: OS detected as "{{ ansible_distribution }}"
 
+- name: Include all MacOSX vars when applicable
+  include_vars:
+    dir: vars
+    files_matching: macosx.yml
+  when: ansible_distribution == "MacOSX"
+
 - include: macosx.yml
   when: ansible_distribution == "MacOSX"
 
+- name: Include all Amazon Linux 2 vars when applicable
+  include_vars:
+    dir: vars
+    files_matching: amazon_linux_2.yml
+  when: ansible_distribution == "Amazon" and ansible_distribution_version == "(Karoo)"
+
+- include: amazon_linux_2.yml
+  when: ansible_distribution == "Amazon" and ansible_distribution_version == "(Karoo)"
