@@ -4,35 +4,35 @@
     path: /usr/local/Caskroom/{{ openjdk_package }}{{ openjdk_version }}
   register: adoptopenjdk_path_check
   when: install_openjdk | default(true)
-  tags: [ dev_local_env, openjdk ]
+  tags: [ dev_local_env, macosx, openjdk ]
 
 - name: Check if MongoDB is installed
   stat:
     path: "/usr/local/Cellar/{{ mongodb_package }}@{{ mongodb_version }}"
   register: mongodb_path_check
   when: install_mongodb | default(true)
-  tags: [ dev_local_env, mongodb ]
+  tags: [ dev_local_env, macosx, mongodb ]
 
 - name: Check if Elasticsearch is installed
   stat:
     path: "{{ elasticsearch_install_dir }}/elasticsearch-{{ elasticsearch_version }}"
   register: elasticsearch_path_check
   when: install_elasticsearch | default(true)
-  tags: [ dev_local_env, elasticsearch ]
+  tags: [ dev_local_env, macosx, elasticsearch ]
 
 - name: Check if nvm is installed
   stat:
     path: /usr/local/opt/nvm/
   register: nvm_path_check
   when: install_nvm | default(false)
-  tags: [ dev_local_env, nvm ]
+  tags: [ dev_local_env, macosx, nvm ]
 
 - name: Check if asdf is installed
   stat:
     path: /usr/local/opt/asdf/
   register: asdf_path_check
   when: install_asdf | default(true)
-  tags: [ dev_local_env, asdf ]
+  tags: [ dev_local_env, macosx, asdf ]
 
 - name: Configure local OpenJDK environment
   block:
@@ -49,13 +49,13 @@
   when: 
     - not adoptopenjdk_path_check.stat.exists
     - install_openjdk | default(true)
-  tags: [ dev_local_env, openjdk ]
+  tags: [ dev_local_env, macosx, openjdk ]
 
 - name: Install additional required dev packages
   homebrew:
     name: "{{ additional_dev_packages }}"
     state: present
-  tags: [ dev_local_env ]
+  tags: [ dev_local_env, macosx ]
 
 - name: Configure local MongoDB environment
   block:
@@ -76,7 +76,7 @@
   when: 
     - not mongodb_path_check.stat.exists
     - install_mongodb | default(true)
-  tags: [ dev_local_env, mongodb ]
+  tags: [ dev_local_env, macosx, mongodb ]
 
 - name: Stage bash_profile
   block:
@@ -102,7 +102,7 @@
         state: present
         regexp: 'export PATH=.*'
         line: 'export PATH={{ path_value }}'
-  tags: [ dev_local_env, bashrc ]
+  tags: [ dev_local_env, macosx, bashrc ]
 
 - name: Stage zshrc
   block:
@@ -128,7 +128,7 @@
         state: present
         regexp: 'export PATH=.*'
         line: 'export PATH={{ path_value }}'
-  tags: [ dev_local_env, zshrc ]
+  tags: [ dev_local_env, macosx, zshrc ]
 
 - name: Configure local Elasticsearch environment
   block:
@@ -162,12 +162,12 @@
   when: 
     - not elasticsearch_path_check.stat.exists
     - install_elasticsearch | default(true)
-  tags: [ dev_local_env, elasticsearch ]
+  tags: [ dev_local_env, macosx, elasticsearch ]
 
 - name: Configure team repos locally
   include: create_repos.yml
   with_items: "{{ git_repo_sources }}"
-  tags: [ dev_local_env, clone_repos ]
+  tags: [ dev_local_env, macosx, clone_repos ]
 
 - name: Configure nvm
   block:
@@ -222,7 +222,7 @@
   when: 
     - install_nvm | default(false)
     - not nvm_path_check.stat.exists
-  tags: [ dev_local_env, nodejs, nvm ]
+  tags: [ dev_local_env, macosx, nodejs, nvm ]
 
 - name: Configure asdf
   block:
@@ -290,7 +290,43 @@
   when:
     - install_asdf | default(true)
     - not asdf_path_check.stat.exists
-  tags: [ dev_local_env, asdf ]
+  tags: [ dev_local_env, macosx, asdf ]
+
+- name: Configure nifi-nars
+  block:
+    - name: Ensure .m2 dir exists
+      file: 
+        path: ~/.m2
+        state: directory
+
+    - name: Copy repo settings.xml into local .m2
+      copy:
+        src: "{{ git_repo_dest }}/{{ nifi_nars_repo }}/.m2/settings.xml"
+        dest: ~/.m2
+
+    - name: Add nexus username and password to bash_profile
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ bashrc ]
+
+    - name: Add nexus username and password to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ zshrc ]
+  when:
+    - install_nifi_nars | default(true)
+    - not nifi_nars_path_check.stat.exists
+  tags: [ dev_local_env, macosx, nifi_nars ]
 
 - name: Display completion message
   debug:

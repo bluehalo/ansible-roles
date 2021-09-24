@@ -84,6 +84,13 @@
   when: install_asdf | default(true)
   tags: [ dev_local_env, amazon_linux_2, asdf ]
 
+- name: Check if nifi-nars is installed
+  stat:
+    path: ~/.m2/
+  register: nifi_nars_path_check
+  when: install_nifi_nars | default(true)
+  tags: [ dev_local_env, amazon_linux_2, nifi_nars ]
+
 - name: Install additional required dev packages
   yum:
     name: "{{ additional_dev_packages }}"
@@ -355,6 +362,42 @@
     - install_asdf | default(true)
     - not asdf_path_check.stat.exists
   tags: [ dev_local_env, amazon_linux_2, asdf ]
+
+- name: Configure nifi-nars
+  block:
+    - name: Ensure .m2 dir exists
+      file: 
+        path: ~/.m2
+        state: directory
+
+    - name: Copy repo settings.xml into local .m2
+      copy:
+        src: "{{ git_repo_dest }}/{{ nifi_nars_repo }}/.m2/settings.xml"
+        dest: ~/.m2
+
+    - name: Add nexus username and password to bashrc
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ bashrc ]
+
+    - name: Add nexus username and password to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ zshrc ]
+  when:
+    - install_nifi_nars | default(true)
+    - not nifi_nars_path_check.stat.exists
+  tags: [ dev_local_env, amazon_linux_2, nifi_nars ]
 
 - name: Display completion message
   debug:

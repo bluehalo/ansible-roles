@@ -1,13 +1,16 @@
 ---
 - set_fact:
     git_repo_dest_subdir: "{{ item | regex_search('(?<=/)(.*)(?=.git)') | trim }}"
+  tags: [ clone_repos ]
 
 - name: Ensure team repos directory exists for {{ git_repo_dest_subdir }}
   file: 
     path: "{{ git_repo_dest }}/{{ git_repo_dest_subdir }}" 
-    state: directory 
+    state: directory
+  tags: [ clone_repos ]
 
 - name: Clone team repos for {{ git_repo_dest_subdir }}
   git:
     repo: "{{ item }}"
     dest: "{{ git_repo_dest }}/{{ git_repo_dest_subdir }}"
+  tags: [ clone_repos ]

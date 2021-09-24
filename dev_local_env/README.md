@@ -93,3 +93,7 @@ To deactivate a virtual environment, run the following
 
     git_repo_dest: Path to store locally cloned repos
     git_repo_sources: Remote repos to clone locally
+
+    nifi_nars_repo: Team repository used to store nifi-nars configs
+    nexus_password: Used for nifi-nars configuration.  It is recommended that this variable be encrypted within the ansible vault.
+    nexus_username: Used for nifi-nars configuration.  It is recommended that this variable be encrypted within the ansible vault.
