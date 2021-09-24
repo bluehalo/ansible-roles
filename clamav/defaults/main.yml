@@ -22,5 +22,3 @@ clamav_packages:
 clamav_cloudwatch_script_group: root
 clamav_cloudwatch_script_owner: root
 cloudwatch_clamav_alarm_name: cloudwatch-clamav-virus-found
-
-aws_region: us-east-1
