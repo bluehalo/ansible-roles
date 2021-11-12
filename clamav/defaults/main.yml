@@ -1,0 +1,24 @@
+---
+clamav_daemon: 'clamd@scan'
+clamav_daemon_state: started
+clamav_daemon_enabled: true
+
+clamav_freshclam_daemon: 'clamd-freshclam'
+clamav_freshclam_daemon_state: started
+clamav_freshclam_daemon_enabled: true
+
+clamav_clamonacc_daemon: 'clamav-clamonacc'
+clamav_clamonacc_daemon_state: started
+clamav_clamonacc_daemon_enabled: true
+
+clamav_daemon_localsocket: /var/run/clamd.scan/clamd.sock
+clamav_daemon_config_path: /etc/clamd.d/scan.conf
+clamav_packages:
+  - amazon-linux-extras
+  - clamav
+  - clamav-update
+  - clamd
+
+clamav_cloudwatch_script_group: root
+clamav_cloudwatch_script_owner: root
+cloudwatch_clamav_alarm_name: cloudwatch-clamav-virus-found

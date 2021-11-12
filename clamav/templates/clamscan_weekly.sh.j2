@@ -1,0 +1,32 @@
+#!/bin/bash
+LOGFILE="/var/log/clamav/clamscan-weekly-$(date +'%Y-%m-%d').log";
+ALERT_MSG="Virus Detected - Notification has been sent to Cloudwatch";
+DIRTOSCAN="/";
+
+#Stop the clamav daemons
+systemctl stop clamav-clamonacc
+systemctl stop clamd@scan
+
+for DIR in ${DIRTOSCAN}; do
+ DIRSIZE=$(du -sh "$DIR" 2>/dev/null | cut -f1);
+
+ echo "Starting a weekly scan of "$DIR" directory. 
+ Amount of data to be scanned is "$DIRSIZE"." > $LOGFILE;
+
+ clamscan -ri --remove=yes "$DIR" >> "$LOGFILE";
+
+ # get the value of "Infected lines"
+ MALWARE=$(tail "$LOGFILE"|grep Infected|cut -d" " -f3);
+
+ # if the value is not equal to zero, execute command to trigger alert in Cloudwatch
+ if [ $MALWARE -ne 0 ];then
+ echo $ALERT_MSG >> $LOGFILE
+ bash /etc/clam.d/cloudwatch_virusalarm_trigger.sh
+ fi
+done
+
+#Start the clamav daemon
+systemctl start clamd@scan
+systemctl start clamav-clamonacc
+
+exit 0

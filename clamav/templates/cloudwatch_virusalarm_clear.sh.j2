@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Sets the state of the clamav virus alarm in Cloudwatch to OK
+aws cloudwatch set-alarm-state --alarm-name {{ cloudwatch_clamav_alarm_name }} \
+--state-reason "System Administrator has investigated and determined the issue to be resolved" \
+--state-value OK --region {{ aws_region }}

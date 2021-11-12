@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Sets the state of the clamav virus alarm in Cloudwatch to ALARM
+aws cloudwatch set-alarm-state --alarm-name {{ cloudwatch_clamav_alarm_name }} \
+--state-reason "Virus event detected on $HOSTNAME.  Please investigate and execute /etc/clamd.d/cloudwatch_virusalarm_clear.sh once the issue is resolved." \
+--state-value ALARM --region {{ aws_region }}
