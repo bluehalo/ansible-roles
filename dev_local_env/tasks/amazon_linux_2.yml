@@ -1,0 +1,404 @@
+---
+- name: Retrieve the package manager facts
+  package_facts:
+    manager: "auto"
+  tags: [ dev_local_env, amazon_linux_2 ]
+
+- name: Ensure MongoDB repo file is staged
+  template: 
+    src: "{{ mongodb_package }}.repo.j2"
+    dest: "/etc/yum.repos.d/{{ mongodb_package }}-{{ mongodb_version }}.repo" 
+    owner: root 
+    group: root 
+    mode: 0644
+  become: yes
+  become_method: sudo
+  when: install_mongodb | default(true)
+  tags: [ dev_local_env, amazon_linux_2, mongodb ]
+
+- name: Ensure Elasticsearch repo file is staged
+  template: 
+    src: "elasticsearch.repo.j2"
+    dest: "/etc/yum.repos.d/elasticsearch.repo" 
+    owner: root 
+    group: root 
+    mode: 0644
+  become: yes
+  become_method: sudo
+  when: install_elasticsearch | default(true)
+  tags: [ dev_local_env, amazon_linux_2, elasticsearch ]
+
+- name: Ensure scala-sbt repo file is staged
+  template: 
+    src: "scala-sbt.repo.j2"
+    dest: "/etc/yum.repos.d/scala-sbt.repo" 
+    owner: root 
+    group: root 
+    mode: 0644
+  become: yes
+  become_method: sudo
+  when: install_scala_sbt | default(true)
+  tags: [ dev_local_env, amazon_linux_2, scala-sbt ]
+
+- name: Ensure epel repo file is staged
+  template: 
+    src: "epel.repo.j2"
+    dest: "/etc/yum.repos.d/epel.repo" 
+    owner: root 
+    group: root 
+    mode: 0644
+  become: yes
+  become_method: sudo
+  tags: [ dev_local_env, amazon_linux_2, epel ]
+
+- name: Install base developer rpms
+  yum:
+    name:
+      - "{{ openjdk_package }}"
+    state: present
+  become: yes
+  become_method: sudo
+  when: install_openjdk | default(true)
+  tags: [ dev_local_env, amazon_linux_2, mongodb, openjdk ]
+
+- name: Check if gradle is installed
+  stat:
+    path: /opt/gradle
+  register: gradle_path_check
+  become: yes
+  become_method: sudo
+  when: install_gradle | default(true)
+  tags: [ dev_local_env, amazon_linux_2, gradle ]
+
+- name: Check if nvm is installed
+  stat:
+    path: ~/.nvm/
+  register: nvm_path_check
+  when: install_nvm | default(false)
+  tags: [ dev_local_env, amazon_linux_2, nvm ]
+
+- name: Check if asdf is installed
+  stat:
+    path: ~/.asdf/
+  register: asdf_path_check
+  when: install_asdf | default(true)
+  tags: [ dev_local_env, amazon_linux_2, asdf ]
+
+- name: Check if nifi-nars is installed
+  stat:
+    path: ~/.m2/
+  register: nifi_nars_path_check
+  when: install_nifi_nars | default(true)
+  tags: [ dev_local_env, amazon_linux_2, nifi_nars ]
+
+- name: Install additional required dev packages
+  yum:
+    name: "{{ additional_dev_packages }}"
+    state: present
+    enablerepo:
+      - scala-sbt
+  become: yes
+  become_method: sudo
+  tags: [ dev_local_env, amazon_linux_2 ]
+
+- name: Configure local MongoDB environment
+  block: 
+    - name: Install MongoDB
+      yum:
+        name: "{{ mongodb_package }}"
+        state: present
+        enablerepo: "{{ mongodb_package }}-{{ mongodb_version }}"
+        
+    - name: Ensure MongoDB service is running
+      systemd:
+        name: mongod
+        state: started
+        enabled: yes
+  become: yes
+  become_method: sudo
+  when: install_mongodb | default(true)
+  tags: [ dev_local_env, amazon_linux_2, mongodb ]
+
+- name: Configure gradle locally
+  block:
+    - name: Create gradle directory
+      file: 
+        path: /opt/gradle 
+        state: directory 
+      become: yes
+      become_method: sudo
+      
+    - name: Extract gradle zip file
+      unarchive:
+        src: "https://services.gradle.org/distributions/{{ gradle_install_file }}"
+        dest: /opt/gradle/
+        remote_src: yes
+      become: yes
+      become_method: sudo
+
+    - name: Set GRADLE_HOME environment variable in bashrc
+      lineinfile: 
+        path: "{{ bashrc_location }}"
+        state: present
+        regexp: 'export GRADLE_HOME=.*'
+        line: "export GRADLE_HOME=/opt/gradle/{{ gradle_install_file }}/bin"
+        insertbefore: 'export PATH=.*'
+        firstmatch: yes
+
+    - name: Set GRADLE_HOME environment variable in zshrc
+      lineinfile: 
+        path: "{{ zshrc_location }}"
+        state: present
+        regexp: 'export GRADLE_HOME=.*'
+        line: "export GRADLE_HOME=/opt/gradle/{{ gradle_install_file }}/bin"
+        insertbefore: 'export PATH=.*'
+        firstmatch: yes
+
+    - set_fact:
+        path_value: "$GRADLE_HOME/bin:{{ path_value }}"
+  when: 
+    - not gradle_path_check.stat.exists
+    - install_gradle | default(true)
+  tags: [ dev_local_env, amazon_linux_2, gradle ]
+
+- name: Stage bash_rc
+  block:
+    - name: Set JAVA_HOME environment variable in bashrc
+      lineinfile: 
+        path: "{{ bashrc_location }}"
+        state: present
+        regexp: 'export JAVA_HOME=.*'
+        line: 'export JAVA_HOME=/usr/lib/jvm/java'
+        insertbefore: 'export PATH=.*'
+        firstmatch: yes
+      when: install_openjdk | default(true)
+
+    - name: Set MONGO_PATH environment variable in bashrc
+      lineinfile: 
+        path: "{{ bashrc_location }}"
+        state: present
+        regexp: 'export MONGO_PATH=.*'
+        line: 'export MONGO_PATH=/var/lib/mongo/bin'
+        insertbefore: 'export PATH=.*'
+        firstmatch: yes
+      when: install_mongodb | default(true)
+
+    - name: Set PATH environment variable in bashrc
+      lineinfile: 
+        path: "{{ bashrc_location }}"
+        state: present
+        regexp: 'export PATH=.*'
+        line: 'export PATH={{ path_value }}'
+  tags: [ dev_local_env, amazon_linux_2, bashrc ]
+
+- name: Stage zshrc
+  block:
+    - name: Set JAVA_HOME environment variable in zshrc
+      lineinfile: 
+        path: "{{ zshrc_location }}"
+        state: present
+        regexp: 'export JAVA_HOME=.*'
+        line: 'export JAVA_HOME=/usr/lib/jvm/java'
+        insertbefore: 'export PATH=.*'
+        firstmatch: yes
+      when: install_openjdk | default(true)
+
+    - name: Set MONGO_PATH environment variable in zshrc
+      lineinfile: 
+        path: "{{ zshrc_location }}"
+        state: present
+        regexp: 'export MONGO_PATH=.*'
+        line: 'export MONGO_PATH=/var/lib/mongo/bin'
+      when: install_mongodb | default(true)
+ 
+    - name: Set PATH environment variable in zshrc
+      lineinfile: 
+        path: "{{ zshrc_location }}"
+        state: present
+        regexp: 'export PATH=.*'
+        line: 'export PATH={{ path_value }}'
+  tags: [ dev_local_env, amazon_linux_2, zshrc ]
+
+- name: Configure Elasticsearch
+  block:
+    - name: Install Elasticsearch
+      yum:
+        name: "elasticsearch-{{ elasticsearch_version }}"
+        state: present
+        enablerepo: elasticsearch
+
+    - name: Ensure Elasticsearch service is running
+      systemd:
+        name: elasticsearch
+        state: started
+        enabled: yes
+  become: yes
+  become_method: sudo
+  when: install_elasticsearch | default(true)
+  tags: [ dev_local_env, amazon_linux_2, elasticsearch ]
+
+- name: Configure team repos locally
+  include: create_repos.yml
+  with_items: "{{ git_repo_sources }}"
+  tags: [ dev_local_env, amazon_linux_2, clone_repos ]
+
+- name: Configure nvm
+  block:
+    - name: Ensure nvm dir exists
+      file: 
+        path: ~/.nvm 
+        state: directory
+
+    - name: Install nvm
+      shell: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+      args:
+        warn: false
+  
+    - name: Add nvm source to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nvm"
+        block: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+      tags: [ zshrc ]
+
+    - name: Install node
+      shell: source {{ bashrc_location }} && nvm install {{ item }} 
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.nvm/versions/node/v{{ item }}"
+      loop: "{{ nodejs_versions }}"
+
+    - name: Install npm packages for nvm
+      shell: source {{ bashrc_location }} && nvm use {{ item.0 }} && npm install -g {{ item.1 }}
+      args:
+        executable: /bin/bash
+        chdir: "$HOME/.nvm"
+      with_nested:
+        - "{{ nodejs_versions }}"
+        - "{{ npm_packages }}"
+  when: 
+    - install_nvm | default(false)
+    - not nvm_path_check.stat.exists
+  tags: [ dev_local_env, amazon_linux_2, nodejs, nvm ]
+
+- name: Configure asdf
+  block:
+    - name: Ensure asdf dir exists
+      file: 
+        path: ~/.asdf
+        state: directory
+
+    - name: Install asdf
+      git:
+        repo: https://github.com/asdf-vm/asdf.git
+        dest: ~/.asdf
+        clone: yes
+        version: "{{ asdf_version }}"
+
+    - name: Install asdf dependencies
+      yum:
+        name: [ gpg, curl, gawk ]
+        state: present
+
+    - name: Add asdf source to bashrc
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK asdf"
+        block: |
+          . $HOME/.asdf/asdf.sh
+          . $HOME/.asdf/completions/asdf.bash
+      tags: [ bashrc ]
+
+    - name: Add asdf source to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK asdf"
+        block: |
+          . $HOME/.asdf/asdf.sh
+          . $HOME/.asdf/completions/asdf.bash
+      tags: [ zshrc ]
+
+    - name: Install asdf plugins
+      shell: source {{ bashrc_location }} && asdf plugin-add {{ item }} 
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/{{ item }}"
+      with_items: "{{ asdf_plugins }}"
+
+    - name: Install asdf packages
+      shell: |
+        source {{ bashrc_location }}
+        asdf install {{ item.package }} {{ item.version }}
+        asdf global {{ item.package }} {{ item.version }}
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/{{ item }}"
+      with_items: "{{ asdf_packages }}"
+
+    - name: Install nodejs with npm packages in asdf
+      shell: |
+        source {{ bashrc_location }}
+        asdf plugin-add nodejs
+        asdf install nodejs {{ item.0 }}
+        asdf global nodejs {{ item.0 }}
+        source {{ bashrc_location }}
+        npm install -g {{ item.1 }}
+      args:
+        executable: /bin/bash
+        chdir: "$HOME/.asdf"
+      with_nested: 
+        - "{{ nodejs_versions }}"
+        - "{{ npm_packages }}"
+  when:
+    - install_asdf | default(true)
+    - not asdf_path_check.stat.exists
+  tags: [ dev_local_env, amazon_linux_2, asdf ]
+
+- name: Configure nifi-nars
+  block:
+    - name: Ensure .m2 dir exists
+      file: 
+        path: ~/.m2
+        state: directory
+
+    - name: Copy repo settings.xml into local .m2
+      copy:
+        src: "{{ git_repo_dest }}/{{ nifi_nars_repo }}/.m2/settings.xml"
+        dest: ~/.m2
+
+    - name: Add nexus username and password to bashrc
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ bashrc ]
+
+    - name: Add nexus username and password to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ zshrc ]
+  when:
+    - install_nifi_nars | default(true)
+    - not nifi_nars_path_check.stat.exists
+  tags: [ dev_local_env, amazon_linux_2, nifi_nars ]
+
+- name: Display completion message
+  debug:
+    msg: Installation complete!  Please exit your terminal and start a new session.

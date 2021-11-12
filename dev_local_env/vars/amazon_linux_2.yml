@@ -1,0 +1,12 @@
+---
+openjdk_package: "java-1.8.0-openjdk-headless-1.8.0.282.b08-1.amzn2.0.1.x86_64"
+mongodb_package: "mongodb-org"
+mongodb_version: "4.2"
+elasticsearch_install_dir: /usr/share/elasticsearch
+gradle_install_file: gradle-7.1.1-bin.zip
+bashrc_location: "~/.bashrc"
+
+additional_dev_packages:
+  - maven
+  - sbt
+  - awscli

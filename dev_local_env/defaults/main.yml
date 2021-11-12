@@ -1,0 +1,34 @@
+---
+project_name: ""
+elasticsearch_version: "{{ versions.elastic }}"
+
+nodejs_versions:
+  - 10.16.3
+
+asdf_version: "{{ versions.asdf }}"
+
+asdf_plugins:
+ - maven
+ - gradle
+ - scala
+ - packer
+ - terraform
+
+asdf_packages:
+  - { package: 'maven', version: 3.6.3 }
+  - { package: 'gradle', version: 5.6.3 }
+  - { package: 'scala', version: 2.12.7 }
+  - { package: 'packer', version: 1.4.2 }
+  - { package: 'terraform', version: "{{ versions.terraform }}" }
+
+npm_packages:
+  - gulp
+  - bunyan
+  - yarn
+
+zshrc_location: "~/.zshrc"
+path_value: "$PYENV_ROOT/bin:$JAVA_HOME:$MONGO_PATH:$PATH"
+
+git_repo_dest: "~/team_repos"
+git_repo_sources:
+  - "git@bitbucket.org:asymmetrik/{{ project_name }}.git"

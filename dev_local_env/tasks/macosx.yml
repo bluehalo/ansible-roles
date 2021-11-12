@@ -1,0 +1,333 @@
+---
+- name: Check if OpenJDK is installed
+  stat:
+    path: /usr/local/Caskroom/{{ openjdk_package }}{{ openjdk_version }}
+  register: adoptopenjdk_path_check
+  when: install_openjdk | default(true)
+  tags: [ dev_local_env, macosx, openjdk ]
+
+- name: Check if MongoDB is installed
+  stat:
+    path: "/usr/local/Cellar/{{ mongodb_package }}@{{ mongodb_version }}"
+  register: mongodb_path_check
+  when: install_mongodb | default(true)
+  tags: [ dev_local_env, macosx, mongodb ]
+
+- name: Check if Elasticsearch is installed
+  stat:
+    path: "{{ elasticsearch_install_dir }}/elasticsearch-{{ elasticsearch_version }}"
+  register: elasticsearch_path_check
+  when: install_elasticsearch | default(true)
+  tags: [ dev_local_env, macosx, elasticsearch ]
+
+- name: Check if nvm is installed
+  stat:
+    path: /usr/local/opt/nvm/
+  register: nvm_path_check
+  when: install_nvm | default(false)
+  tags: [ dev_local_env, macosx, nvm ]
+
+- name: Check if asdf is installed
+  stat:
+    path: /usr/local/opt/asdf/
+  register: asdf_path_check
+  when: install_asdf | default(true)
+  tags: [ dev_local_env, macosx, asdf ]
+
+- name: Configure local OpenJDK environment
+  block:
+    - name: Tap Homebrew OpenJDK repo  
+      homebrew_tap:
+        name: "{{ openjdk_repo }}"
+        state: present
+    
+    - name: Install OpenJDK
+      homebrew:
+        name: "{{ openjdk_package }}{{ openjdk_version }}"
+        state: present
+      ignore_errors: yes
+  when: 
+    - not adoptopenjdk_path_check.stat.exists
+    - install_openjdk | default(true)
+  tags: [ dev_local_env, macosx, openjdk ]
+
+- name: Install additional required dev packages
+  homebrew:
+    name: "{{ additional_dev_packages }}"
+    state: present
+  tags: [ dev_local_env, macosx ]
+
+- name: Configure local MongoDB environment
+  block:
+    - name: Tap Homebrew MongoDB repo  
+      homebrew_tap:
+        name: "{{ mongodb_repo }}"
+        state: present
+    
+    - name: Install MongoDB
+      homebrew:
+        name: "{{ mongodb_package }}@{{ mongodb_version }}"
+        state: present
+        
+    - name: Start MongoDB service
+      command: "brew services start {{ mongodb_package }}"
+      when: start_mongodb | default(false)
+      tags: [ mongodb_start ]
+  when: 
+    - not mongodb_path_check.stat.exists
+    - install_mongodb | default(true)
+  tags: [ dev_local_env, macosx, mongodb ]
+
+- name: Stage bash_profile
+  block:
+    - name: Set JAVA_HOME environment variable in bashrc
+      lineinfile: 
+        path: "{{ bashrc_location }}"
+        state: present
+        regexp: 'export JAVA_HOME=.*'
+        line: 'export JAVA_HOME=/Library/Java/JavaVirtualMachines/{{ openjdk_package }}-{{ openjdk_version }}.jdk/Contents/Home'
+      when: install_openjdk | default(true)
+
+    - name: Set MONGO_PATH environment variable in bashrc
+      lineinfile: 
+        path: "{{ bashrc_location }}"
+        state: present
+        regexp: 'export MONGO_PATH=.*'
+        line: 'export MONGO_PATH=/usr/local/Cellar/{{ mongodb_package }}@{{ mongodb_version }}/*/bin/'
+      when: install_mongodb | default(true)
+
+    - name: Set PATH environment variable in bashrc
+      lineinfile: 
+        path: "{{ bashrc_location }}"
+        state: present
+        regexp: 'export PATH=.*'
+        line: 'export PATH={{ path_value }}'
+  tags: [ dev_local_env, macosx, bashrc ]
+
+- name: Stage zshrc
+  block:
+    - name: Set JAVA_HOME environment variable in zshrc
+      lineinfile: 
+        path: "{{ zshrc_location }}"
+        state: present
+        regexp: 'export JAVA_HOME=.*'
+        line: 'export JAVA_HOME=/Library/Java/JavaVirtualMachines/{{ openjdk_package }}-{{ openjdk_version }}.jdk/Contents/Home'
+      when: install_openjdk | default(true)
+
+    - name: Set MONGO_PATH environment variable in zshrc
+      lineinfile: 
+        path: "{{ zshrc_location }}"
+        state: present
+        regexp: 'export MONGO_PATH=.*'
+        line: 'export MONGO_PATH=/usr/local/Cellar/{{ mongodb_package }}@{{ mongodb_version }}/*/bin/'
+      when: install_mongodb | default(true)
+ 
+    - name: Set PATH environment variable in zshrc
+      lineinfile: 
+        path: "{{ zshrc_location }}"
+        state: present
+        regexp: 'export PATH=.*'
+        line: 'export PATH={{ path_value }}'
+  tags: [ dev_local_env, macosx, zshrc ]
+
+- name: Configure local Elasticsearch environment
+  block:
+    - name: Retrieve Elasticsearch install file
+      get_url:
+        url: "{{ elasticsearch_repo }}"
+        dest: "{{ elasticsearch_install_dir }}"
+        validate_certs: no
+    
+    - set_fact:
+        elasticsearch_install_file_gz: "{{ elasticsearch_repo | regex_search('([^/]+$)') | trim }}"
+
+    - set_fact:
+        elasticsearch_version_dir: "{{ elasticsearch_install_file_gz | regex_search('(.*)(?=-darwin)') | trim }}"
+
+    - name: Uncompress Elasticsearch tar file
+      command: "tar zxvf {{ elasticsearch_install_dir }}/{{ elasticsearch_install_file_gz }}"
+      args:
+        chdir: "{{ elasticsearch_install_dir }}"
+
+    - name: Create symlink for Elasticsearch
+      file:
+        src: "{{ elasticsearch_install_dir }}/{{ elasticsearch_version_dir }}"
+        dest: "{{ elasticsearch_install_dir }}/elasticsearch"
+        state: link
+    
+    - name: Remove Elasticsearch tar file
+      file: 
+        path: "{{ elasticsearch_install_dir }}/{{ elasticsearch_install_file_gz }}"
+        state: absent
+  when: 
+    - not elasticsearch_path_check.stat.exists
+    - install_elasticsearch | default(true)
+  tags: [ dev_local_env, macosx, elasticsearch ]
+
+- name: Configure team repos locally
+  include: create_repos.yml
+  with_items: "{{ git_repo_sources }}"
+  tags: [ dev_local_env, macosx, clone_repos ]
+
+- name: Configure nvm
+  block:
+    - name: Install nvm
+      homebrew:
+        name: nvm
+        state: present
+
+    - name: Ensure nvm dir exists
+      file: 
+        path: ~/.nvm 
+        state: directory 
+
+    - name: Add nvm source to bashrc
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nvm"
+        block: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+          [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+      tags: [ bashrc ]
+  
+    - name: Add nvm source to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nvm"
+        block: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+          [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && . "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+      tags: [ zshrc ]
+
+    - name: Install node
+      shell: source ~/.bash_profile && nvm install {{ item }} 
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.nvm/versions/node/v{{ item }}"
+      loop: "{{ nodejs_versions }}"
+
+    - name: Install npm packages for nvm
+      shell: source ~/.bash_profile && nvm use {{ item.0 }} && npm install -g {{ item.1 }}
+      args:
+        executable: /bin/bash
+        chdir: "$HOME/.nvm"
+      with_nested:
+        - "{{ nodejs_versions }}"
+        - "{{ npm_packages }}"
+  when: 
+    - install_nvm | default(false)
+    - not nvm_path_check.stat.exists
+  tags: [ dev_local_env, macosx, nodejs, nvm ]
+
+- name: Configure asdf
+  block:
+    - name: Install asdf
+      homebrew:
+        name: [ asdf, gawk, gpg ]
+        state: present
+
+    - name: Ensure asdf dir exists
+      file: 
+        path: ~/.asdf
+        state: directory
+
+    - name: Add asdf source to bashrc
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK asdf"
+        block: |
+          . $(brew --prefix asdf)/asdf.sh
+          . $(brew --prefix asdf)/etc/bash_completion.d/asdf.bash
+      tags: [ bashrc ]
+
+    - name: Add asdf source to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK asdf"
+        block: |
+          . $(brew --prefix asdf)/asdf.sh
+          . $(brew --prefix asdf)/etc/bash_completion.d/asdf.bash
+      tags: [ zshrc ]
+
+    - name: Install asdf plugins
+      shell: source ~/.bash_profile && asdf plugin-add {{ item }} 
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/{{ item }}"
+      with_items: "{{ asdf_plugins }}"
+
+    - name: Install asdf packages
+      shell: |
+        asdf install {{ item.package }} {{ item.version }}
+        asdf global {{ item.package }} {{ item.version }}
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/{{ item }}"
+      with_items: "{{ asdf_packages }}"
+
+    - name: Install nodejs with npm packages in asdf
+      shell: |
+        asdf plugin-add nodejs
+        asdf install nodejs {{ item.0 }}
+        asdf global nodejs {{ item.0 }}
+        source ~/.bash_profile
+        npm install -g {{ item.1 }}
+      args:
+        executable: /bin/bash
+        chdir: "$HOME/.asdf"
+      with_nested: 
+        - "{{ nodejs_versions }}"
+        - "{{ npm_packages }}"
+  when:
+    - install_asdf | default(true)
+    - not asdf_path_check.stat.exists
+  tags: [ dev_local_env, macosx, asdf ]
+
+- name: Configure nifi-nars
+  block:
+    - name: Ensure .m2 dir exists
+      file: 
+        path: ~/.m2
+        state: directory
+
+    - name: Copy repo settings.xml into local .m2
+      copy:
+        src: "{{ git_repo_dest }}/{{ nifi_nars_repo }}/.m2/settings.xml"
+        dest: ~/.m2
+
+    - name: Add nexus username and password to bash_profile
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ bashrc ]
+
+    - name: Add nexus username and password to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
+        block: |
+          export NEXUS_USR='{{ nexus_username }}'
+          export NEXUS_PSW='{{ nexus_password }}'
+      tags: [ zshrc ]
+  when:
+    - install_nifi_nars | default(true)
+    - not nifi_nars_path_check.stat.exists
+  tags: [ dev_local_env, macosx, nifi_nars ]
+
+- name: Display completion message
+  debug:
+    msg: Installation complete!  Please exit your terminal and start a new session.
