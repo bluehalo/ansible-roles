@@ -1,7 +1,7 @@
 SHELL:=/bin/bash
-export PROJECT_NAME=TODO ------Insert Project Name Here------
-export PYTHON_VERSION=2.7
-export PYENV_VERSION=2.7.16
+export PROJECT_NAME=dev
+export PYTHON_VERSION=3.7
+export PYENV_VERSION=3.7.10
 
 define PYENV_INIT
 #### Begin ${PROJECT_NAME} Makefile Changes ####

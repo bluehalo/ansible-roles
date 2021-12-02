@@ -1,9 +1,9 @@
 ---
-project_name: ""
+project_name: "{{ project_name }}"
 elasticsearch_version: "{{ versions.elastic }}"
 
 nodejs_versions:
-  - 10.16.3
+  - 12.22.3
 
 asdf_version: "{{ versions.asdf }}"
 
@@ -26,9 +26,10 @@ npm_packages:
   - bunyan
   - yarn
 
+pyenv_versions: "{{ versions.pyenv }}"
+
 zshrc_location: "~/.zshrc"
 path_value: "$PYENV_ROOT/bin:$JAVA_HOME:$MONGO_PATH:$PATH"
 
 git_repo_dest: "~/team_repos"
-git_repo_sources:
-  - "git@bitbucket.org:asymmetrik/{{ project_name }}.git"
+git_repo_sources: "{{ git_repo_sources }}"
