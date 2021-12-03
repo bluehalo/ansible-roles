@@ -5,3 +5,5 @@ required_vars:
   - compliance_ntp_servers
   - compliance_team_repo_name
   - compliance_users
+
+compliance_pam_umask: "0027"

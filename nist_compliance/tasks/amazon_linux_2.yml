@@ -225,6 +225,13 @@
   lineinfile:
     dest: /etc/pam.d/su
     line: "auth           required        pam_wheel.so use_uid"
+  tags: [ compliance, pamd ]
+
+- name: Adding lines to /etc/pam.d/sshd for wheel group
+  lineinfile:
+    dest: /etc/pam.d/sshd
+    line: "session    optional     pam_umask.so umask={{ compliance_pam_umask }}"
+  tags: [ compliance, pamd, umask ]
 
 - name: Check for /etc/bashrc
   stat:
