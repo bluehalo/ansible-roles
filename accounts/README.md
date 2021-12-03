@@ -74,6 +74,9 @@ them are as follows.
     # Whether to restore default SELinux security contexts on user home dir, default is true
     selinux_enabled: true
 
+    # Whether to update wheel group (sudo) related configs during role execution, default is true
+    update_wheel: true
+
 Example Playbook
 ----------------
 
