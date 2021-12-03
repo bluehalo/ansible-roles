@@ -1,15 +1,40 @@
 ---
 # tasks file for mounts
+# Works only with Mitogen >=0.2.9
 
-- name: make file system on block device
+- name: Ensure rsync is installed
+  yum:
+    name: rsync
+    state: latest
+  tags: [ yum ]
+
+- name: Make file system on block device
   filesystem:
     fstype: "{{ item.fstype }}"
     dev: "{{ item.src }}"
     force: no
-  when: item.src not in mounts_mounted
+  when: item.src not in mounts_mounted and 'bind' not in item.opts
   with_items: "{{ mounts_devices }}"
 
-- name: ensure devices mounted
+- name: Stop rsyslog process
+  service:
+    name: rsyslog
+    state: stopped
+
+- name: Make temporary directory for mounts_preserved_files
+  file:
+    path: "{{ mounts_tmp_directory }}"
+    state: directory
+
+- name: Copy mounts_preserved_files directories to backup
+  synchronize:
+    src: "{{ item.name }}" 
+    dest: "{{ mounts_tmp_directory }}"
+  delegate_to: "{{ inventory_hostname }}"
+  when: item.name in mounts_preserved_files
+  with_items: "{{ mounts_devices }}"
+
+- name: Ensure devices mounted
   mount:
     name: "{{ item.name }}"
     src: "{{ item.src }}"
@@ -22,20 +47,37 @@
   with_items: "{{ mounts_devices }}"
   register: mounted_result
 
-- name: restore /var/log
-  command: "/sbin/restorecon {{ item.name }}"
+- name: Copy back mounts_preserved_files directories
+  synchronize:
+    src: "{{ mounts_tmp_directory }}{{ item.name }}"
+    dest: '/' 
+  delegate_to: "{{ inventory_hostname }}"
+  when: item.name in mounts_preserved_files
+  with_items: "{{ mounts_devices }}"
+
+- name: Remove temporary directory
+  file:
+    path: "{{ mounts_tmp_directory }}"
+    state: absent
+
+- name: Mount /dev/shm as tmpfs
+  command: "mount -o remount,noexec /dev/shm"
+
+- name: Remove remnant lost+found directories
+  file:
+    path: "{{ item.name + '/lost+found' }}"
+    state: absent
+  with_items: "{{ mounts_devices }}"
+
+- name: Restore SELinux context in /home and /var recursively
+  command: "/sbin/restorecon -Rv {{ item.name }}"
   when:
     - selinux_enabled | default(true)
-    - mounted_result.changed
-    - item.name == mounts_log_directory
+    - item.name in mounts_preserved_files
   with_items: "{{ mounts_devices }}"
   tags: selinux
 
-- name: restart rsyslog
+- name: Restart rsyslog
   service:
     name: rsyslog
     state: restarted
-  when:
-    - mounted_result.changed
-    - item.name == mounts_log_directory
-  with_items: "{{ mounts_devices }}"
