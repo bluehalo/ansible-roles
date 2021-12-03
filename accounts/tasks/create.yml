@@ -48,6 +48,37 @@
   when: item.admin == True
   with_items: "{{ accounts_create_users }}"
 
+- name: Update wheel group related configs
+  block:
+  - name: Change wheel group to have root
+    lineinfile:
+      path: /etc/group
+      state: present
+      regexp: '^wheel:x:10:*'
+      line: 'wheel:x:10:root'
+
+  - name: Adding user to wheel group 
+    user: name="{{ item.username }}"
+          groups=wheel
+          append=yes
+    with_items: "{{ accounts_create_users }}"
+      
+  - name: changing /etc/sudoers file for wheel group
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      regexp: '^# %wheel'
+      line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+
+  - name: changing /etc/pam.d/su file for wheel group
+    lineinfile:
+      path: /etc/pam.d/su
+      state: present
+      regexp: '^#auth           required        pam_wheel.so use_uid'
+      line: 'auth           required        pam_wheel.so use_uid'
+  when: update_wheel | default(true)
+  tags: [ wheel ]
+
 - name: remove user from sudoers
   file: path="/etc/sudoers.d/{{ item.username }}" state=absent
   when: item.admin == False
