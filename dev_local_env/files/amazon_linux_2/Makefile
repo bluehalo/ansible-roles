@@ -35,8 +35,7 @@ init:
 	source ~/.bashrc && \
 	pip install --upgrade pip && \
 	( pip install -r ./requirements.txt || true ) && \
-	mkdir ~/.mitogen && \
-	( ln -s ~/.pyenv/versions/$$PYENV_VERSION/lib/python$$PYTHON_VERSION/site-packages/ansible_mitogen ~/.mitogen/ansible_mitogen || true ) && \
+	( ln -s ~/.pyenv/versions/$$PYENV_VERSION/lib/python$$PYTHON_VERSION/site-packages ~/.mitogen || true ) && \
 	printf "\n ---- MAKE INIT COMPLETE: PLEASE EXIT YOUR TERMINAL AND OPEN A NEW SESSION ----\n"
 
 test:

@@ -82,6 +82,15 @@
   when: install_gradle | default(true)
   tags: [ dev_local_env, amazon_linux_2, gradle ]
 
+- name: Check if mongo is installed
+  stat:
+    path: /var/lib/mongo
+  register: mongo_path_check
+  become: yes
+  become_method: sudo
+  when: install_mongo | default(true)
+  tags: [ dev_local_env, amazon_linux_2, mongo ]
+
 - name: Check if insomnia is installed
   stat:
     path: /opt/insomnia
@@ -136,6 +145,13 @@
         dest: /usr/local/etc/mongod.conf
         state: link
         
+    - name: Change mongo permissions
+      file: 
+        path: /var/lib/mongo
+        state: directory
+        owner: mongod
+        group: mongod
+
     - name: Ensure MongoDB service is running
       systemd:
         name: mongod
@@ -143,7 +159,9 @@
         enabled: yes
   become: yes
   become_method: sudo
-  when: install_mongodb | default(true)
+  when: 
+    - install_mongodb | default(true)
+    - not mongo_path_check.stat.exists
   tags: [ dev_local_env, amazon_linux_2, mongodb ]
 
 - name: Configure gradle locally
