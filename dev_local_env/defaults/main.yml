@@ -1,11 +1,11 @@
 ---
-project_name: "{{ project_name }}"
-elasticsearch_version: "{{ versions.elastic }}"
+project_name: "dev"
+elasticsearch_version: 7.9.1
 
 nodejs_versions:
   - 12.22.3
 
-asdf_version: "{{ versions.asdf }}"
+asdf_version: "v0.8.1"
 
 asdf_plugins:
  - maven
@@ -19,17 +19,19 @@ asdf_packages:
   - { package: 'gradle', version: 5.6.3 }
   - { package: 'scala', version: 2.12.7 }
   - { package: 'packer', version: 1.4.2 }
-  - { package: 'terraform', version: "{{ versions.terraform }}" }
+  - { package: 'terraform', version: 0.15.5 }
 
 npm_packages:
   - gulp
   - bunyan
   - yarn
 
-pyenv_versions: "{{ versions.pyenv }}"
+pyenv_versions:
+  - { name: 'dev', version: '3.7.10' }
 
 zshrc_location: "~/.zshrc"
 path_value: "$PYENV_ROOT/bin:$JAVA_HOME:$MONGO_PATH:$PATH"
 
 git_repo_dest: "~/team_repos"
-git_repo_sources: "{{ git_repo_sources }}"
+git_repo_sources:
+  - git@github.com:Asymmetrik/ansible-roles.git
