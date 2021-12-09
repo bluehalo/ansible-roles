@@ -35,3 +35,7 @@ path_value: "$PYENV_ROOT/bin:$JAVA_HOME:$MONGO_PATH:$PATH"
 git_repo_dest: "~/team_repos"
 git_repo_sources:
   - git@github.com:Asymmetrik/ansible-roles.git
+
+nexus_username: "nexus"
+nexus_password: "nexus"
+nifi_nars_repo: "nifi-nars"
