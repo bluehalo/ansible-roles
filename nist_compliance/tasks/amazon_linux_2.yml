@@ -165,11 +165,11 @@
   when: dbus_daemon.stat.exists == true
   tags: [ compliance, dbus ]
 
-- name: Remove anything but tty or vc/ from /etc/securetty
+- name: Prevent anonymous login through /etc/securetty
   lineinfile:
     dest: /etc/securetty
     state: absent
-    regexp: '^(?!tty[0-9]+|vc\/[0-9]+).*$'
+    regexp: '^(?!(^console|^tty[0-9]+|^vc\/[0-9]+)).*$'
   tags: [ compliance, securetty ]
 
 - name: Ensure /etc/sysconfig/init has SINGLE=/sbin/sulogin
