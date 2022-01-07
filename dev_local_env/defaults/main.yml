@@ -1,6 +1,6 @@
 ---
 project_name: "dev"
-elasticsearch_version: 7.16.1
+elasticsearch_version: 7.16.2
 
 nodejs_versions:
   - 12.22.3

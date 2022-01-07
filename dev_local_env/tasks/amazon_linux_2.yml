@@ -26,7 +26,7 @@
   become: yes
   become_method: sudo
   when: install_elasticsearch | default(true)
-  tags: [ dev_local_env, amazon_linux_2, elasticsearch ]
+  tags: [ dev_local_env, amazon_linux_2, elasticsearch, log4j ]
 
 - name: Ensure scala-sbt repo file is staged
   template: 
@@ -38,7 +38,7 @@
   become: yes
   become_method: sudo
   when: install_scala_sbt | default(true)
-  tags: [ dev_local_env, amazon_linux_2, scala-sbt ]
+  tags: [ dev_local_env, amazon_linux_2, scala-sbt, log4j ]
 
 - name: Ensure epel repo file is staged
   template: 
@@ -316,7 +316,7 @@
   become: yes
   become_method: sudo
   when: install_elasticsearch | default(true)
-  tags: [ dev_local_env, amazon_linux_2, elasticsearch ]
+  tags: [ dev_local_env, amazon_linux_2, elasticsearch, log4j ]
 
 - name: Configure Visual Studio Code
   block:
@@ -539,6 +539,36 @@
   become_method: sudo
   when: install_xrdp | default(true)
   tags: [ dev_local_env, amazon_linux_2, xrdp ]
+
+- name: log4j mitigations
+  block:
+    - name: Ensure sbt is using compliant version
+      yum:
+        name: sbt
+        state: latest
+        enablerepo:
+          - scala-sbt
+      become: yes
+      become_method: sudo
+
+    - name: Install asdf sbt plugins
+      shell: asdf plugin-add sbt
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+
+    - name: Install asdf sbt packages
+      shell: |
+        asdf install sbt 1.5.8
+        asdf global sbt 1.5.8
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+  ignore_errors: yes
+  when: log4j_mitigations | default(true)
+  tags: [ dev_local_env, amazon_linux_2, log4j ]
 
 - name: Display completion message
   debug:

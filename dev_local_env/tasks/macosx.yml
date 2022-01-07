@@ -18,7 +18,7 @@
     path: "{{ elasticsearch_install_dir }}/elasticsearch-{{ elasticsearch_version }}"
   register: elasticsearch_path_check
   when: install_elasticsearch | default(true)
-  tags: [ dev_local_env, macosx, elasticsearch ]
+  tags: [ dev_local_env, macosx, elasticsearch, log4j ]
 
 - name: Check if Insomnia is installed
   stat:
@@ -190,7 +190,7 @@
   when: 
     - not elasticsearch_path_check.stat.exists
     - install_elasticsearch | default(true)
-  tags: [ dev_local_env, macosx, elasticsearch ]
+  tags: [ dev_local_env, macosx, elasticsearch, log4j ]
 
 - name: Configure team repos locally
   include: create_repos.yml
@@ -395,6 +395,32 @@
     - install_pyenv | default(true)
     - not pyenv_path_check.stat.exists
   tags: [ dev_local_env, macosx, pyenv ]
+
+- name: log4j mitigations
+  block:
+    - name: Ensure sbt is using compliant version
+      homebrew:
+        name: sbt
+        state: latest
+
+    - name: Install asdf sbt plugins
+      shell: asdf plugin-add sbt
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+
+    - name: Install asdf sbt packages
+      shell: |
+        asdf install sbt 1.5.8
+        asdf global sbt 1.5.8
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+  ignore_errors: yes
+  when: log4j_mitigations | default(true)
+  tags: [ log4j ]
 
 - name: Display completion message
   debug:
