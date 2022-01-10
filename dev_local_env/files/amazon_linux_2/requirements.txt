@@ -3,7 +3,7 @@ bcrypt==3.1.7
 boto==2.49.0   
 boto3==1.10.8   
 botocore==1.13.8
-cryptography==2.8
+cryptography==3.3.2
 lxml==4.6.5
 mitogen==0.2.9
 pip==21.1
