@@ -15,8 +15,12 @@ Other variables that can be passed to this role and a brief description about th
 We recommend configuring these variables as group_vars (or at a minimum in defaults).
 The following variables are required:
 
+    # list of services to disable
+    compliance_disabled_services: [ 'acpid', 'kdump', 'mdmonitor', 'messagebus', 'portreserve', 'atd' ]
     # Email to send system warnings to
     compliance_email_sysadmin: <username>@<domain>
+    # whether to display login banner before login
+    compliance_show_ssh_banner: false
     # Pool of public NTP servers for chrony template
     compliance_ntp_pool: <ntp_server_pool>
     # Local NTP servers for chrony template
