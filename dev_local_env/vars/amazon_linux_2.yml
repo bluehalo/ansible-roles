@@ -4,9 +4,13 @@ mongodb_package: "mongodb-org"
 mongodb_version: "4.2"
 elasticsearch_install_dir: /usr/share/elasticsearch
 gradle_install_file: gradle-7.1.1-bin.zip
+insomnia_install_file: Insomnia.Core-2021.6.0
 bashrc_location: "~/.bashrc"
 
 additional_dev_packages:
   - maven
   - sbt
   - awscli
+
+xrdp_config_file: /etc/xrdp/xrdp.ini
+xrdp_packages: xrdp

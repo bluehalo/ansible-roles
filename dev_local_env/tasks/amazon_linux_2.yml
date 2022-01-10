@@ -26,7 +26,7 @@
   become: yes
   become_method: sudo
   when: install_elasticsearch | default(true)
-  tags: [ dev_local_env, amazon_linux_2, elasticsearch ]
+  tags: [ dev_local_env, amazon_linux_2, elasticsearch, log4j ]
 
 - name: Ensure scala-sbt repo file is staged
   template: 
@@ -38,7 +38,7 @@
   become: yes
   become_method: sudo
   when: install_scala_sbt | default(true)
-  tags: [ dev_local_env, amazon_linux_2, scala-sbt ]
+  tags: [ dev_local_env, amazon_linux_2, scala-sbt, log4j ]
 
 - name: Ensure epel repo file is staged
   template: 
@@ -50,6 +50,18 @@
   become: yes
   become_method: sudo
   tags: [ dev_local_env, amazon_linux_2, epel ]
+
+- name: Ensure Visual Studio Code repo file is staged
+  template: 
+    src: "vscode.repo.j2"
+    dest: "/etc/yum.repos.d/vscode.repo" 
+    owner: root 
+    group: root 
+    mode: 0644
+  become: yes
+  become_method: sudo
+  when: install_vscode | default(true)
+  tags: [ dev_local_env, amazon_linux_2, vscode ]
 
 - name: Install base developer rpms
   yum:
@@ -69,6 +81,24 @@
   become_method: sudo
   when: install_gradle | default(true)
   tags: [ dev_local_env, amazon_linux_2, gradle ]
+
+- name: Check if mongo is installed
+  stat:
+    path: /var/lib/mongo
+  register: mongo_path_check
+  become: yes
+  become_method: sudo
+  when: install_mongo | default(true)
+  tags: [ dev_local_env, amazon_linux_2, mongo ]
+
+- name: Check if insomnia is installed
+  stat:
+    path: /opt/insomnia
+  register: insomnia_path_check
+  become: yes
+  become_method: sudo
+  when: install_insomnia | default(true)
+  tags: [ dev_local_env, amazon_linux_2, insomnia ]
 
 - name: Check if nvm is installed
   stat:
@@ -108,7 +138,20 @@
         name: "{{ mongodb_package }}"
         state: present
         enablerepo: "{{ mongodb_package }}-{{ mongodb_version }}"
+
+    - name: Create symlink for Mongo conf
+      file:
+        src: /etc/mongod.conf
+        dest: /usr/local/etc/mongod.conf
+        state: link
         
+    - name: Change mongo permissions
+      file: 
+        path: /var/lib/mongo
+        state: directory
+        owner: mongod
+        group: mongod
+
     - name: Ensure MongoDB service is running
       systemd:
         name: mongod
@@ -116,7 +159,9 @@
         enabled: yes
   become: yes
   become_method: sudo
-  when: install_mongodb | default(true)
+  when: 
+    - install_mongodb | default(true)
+    - not mongo_path_check.stat.exists
   tags: [ dev_local_env, amazon_linux_2, mongodb ]
 
 - name: Configure gradle locally
@@ -160,6 +205,42 @@
     - not gradle_path_check.stat.exists
     - install_gradle | default(true)
   tags: [ dev_local_env, amazon_linux_2, gradle ]
+
+- name: Configure Insomnia locally
+  block:
+    - name: Create Insomnia directory
+      file: 
+        path: /opt/insomnia
+        state: directory 
+      become: yes
+      become_method: sudo
+      
+    - name: Extract Insomnia zip file
+      unarchive:
+        src: "https://github.com/Kong/insomnia/releases/download/core%402021.6.0/{{ insomnia_install_file }}.tar.gz"
+        dest: /opt/insomnia/
+        remote_src: yes
+      become: yes
+      become_method: sudo
+
+    - name: Create symlink for Insomnia
+      file:
+        src: "/opt/insomnia/{{ insomnia_install_file }}"
+        dest: /opt/insomnia/current
+        state: link
+        force: yes
+      become: yes
+      become_method: sudo
+
+    - name: Create Insomnia desktop icon
+      template: 
+        src: "insomnia.desktop.j2"
+        dest: ~/Desktop/insomnia.desktop
+        mode: 0755
+  when: 
+    - not insomnia_path_check.stat.exists
+    - install_insomnia | default(true)
+  tags: [ dev_local_env, amazon_linux_2, insomnia ]
 
 - name: Stage bash_rc
   block:
@@ -235,7 +316,25 @@
   become: yes
   become_method: sudo
   when: install_elasticsearch | default(true)
-  tags: [ dev_local_env, amazon_linux_2, elasticsearch ]
+  tags: [ dev_local_env, amazon_linux_2, elasticsearch, log4j ]
+
+- name: Configure Visual Studio Code
+  block:
+    - name: Install Visual Studio Code
+      yum:
+        name: code
+        state: present
+        enablerepo: code
+      become: yes
+      become_method: sudo
+
+    - name: Create Visual Studio Code desktop icon
+      template: 
+        src: "vscode.desktop.j2"
+        dest: ~/Desktop/vscode.desktop
+        mode: 0755
+  when: install_vscode | default(true)
+  tags: [ dev_local_env, amazon_linux_2, vscode ]
 
 - name: Configure team repos locally
   include: create_repos.yml
@@ -398,6 +497,78 @@
     - install_nifi_nars | default(true)
     - not nifi_nars_path_check.stat.exists
   tags: [ dev_local_env, amazon_linux_2, nifi_nars ]
+
+- name: Install xrdp
+  block:
+  - name: Install AL2 extras
+    yum:
+      name: amazon-linux-extras
+      state: latest
+    tags: [ epel ]
+
+  - name: Install epel from AL2 extras
+    command: amazon-linux-extras install epel -y
+    tags: [ epel ]
+
+  - name: Ensure xrdp packages are installed
+    yum:
+      name: "{{ xrdp_packages }}"
+      state: latest
+    register: xrdp_packages_install
+
+  - name: Set xrdp port in {{ xrdp_config_file }}
+    lineinfile: 
+      path: "{{ xrdp_config_file }}"
+      state: present
+      regexp: 'port=.*'
+      line: 'port=8443'
+      firstmatch: yes
+      insertbefore: 'use_vsock=.*'
+    notify: restart xrdp
+
+  - name: Start and enable xrdp
+    systemd:
+      name: xrdp
+      state: started
+      enabled: yes
+    register: xrdp_start_and_enable_xrdp
+    until:
+      - xrdp_start_and_enable_xrdp is succeeded
+    retries: 3
+  become: yes
+  become_method: sudo
+  when: install_xrdp | default(true)
+  tags: [ dev_local_env, amazon_linux_2, xrdp ]
+
+- name: log4j mitigations
+  block:
+    - name: Ensure sbt is using compliant version
+      yum:
+        name: sbt
+        state: latest
+        enablerepo:
+          - scala-sbt
+      become: yes
+      become_method: sudo
+
+    - name: Install asdf sbt plugins
+      shell: asdf plugin-add sbt
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+
+    - name: Install asdf sbt packages
+      shell: |
+        asdf install sbt 1.5.8
+        asdf global sbt 1.5.8
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+  ignore_errors: yes
+  when: log4j_mitigations | default(true)
+  tags: [ dev_local_env, amazon_linux_2, log4j ]
 
 - name: Display completion message
   debug:

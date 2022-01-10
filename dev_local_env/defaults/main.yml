@@ -1,11 +1,11 @@
 ---
-project_name: ""
-elasticsearch_version: "{{ versions.elastic }}"
+project_name: "dev"
+elasticsearch_version: 7.16.2
 
 nodejs_versions:
-  - 10.16.3
+  - 12.22.3
 
-asdf_version: "{{ versions.asdf }}"
+asdf_version: "v0.8.1"
 
 asdf_plugins:
  - maven
@@ -19,16 +19,23 @@ asdf_packages:
   - { package: 'gradle', version: 5.6.3 }
   - { package: 'scala', version: 2.12.7 }
   - { package: 'packer', version: 1.4.2 }
-  - { package: 'terraform', version: "{{ versions.terraform }}" }
+  - { package: 'terraform', version: 0.15.5 }
 
 npm_packages:
   - gulp
   - bunyan
   - yarn
 
+pyenv_versions:
+  - { name: 'dev', version: '3.7.10' }
+
 zshrc_location: "~/.zshrc"
 path_value: "$PYENV_ROOT/bin:$JAVA_HOME:$MONGO_PATH:$PATH"
 
 git_repo_dest: "~/team_repos"
 git_repo_sources:
-  - "git@bitbucket.org:asymmetrik/{{ project_name }}.git"
+  - git@github.com:Asymmetrik/ansible-roles.git
+
+nexus_username: "nexus"
+nexus_password: "nexus"
+nifi_nars_repo: "nifi-nars"

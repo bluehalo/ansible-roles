@@ -1,11 +1,12 @@
 SHELL:=/bin/bash
-export PROJECT_NAME=firehawk
-export PYTHON_VERSION=2.7
-export PYENV_VERSION=2.7.16
+export PROJECT_NAME=dev
+export PYTHON_VERSION=3.7
+export PYENV_VERSION=3.7.10
 
 define PYENV_INIT
 #### Begin ${PROJECT_NAME} Makefile Changes ####
 alias ll='ls -la'
+export DEV_FOLDER="$$HOME/team_repos"
 export PYENV_ROOT="$$HOME/.pyenv"
 export PATH="$$PYENV_ROOT/bin:$$PATH"
 eval "$$(pyenv init --path)"
@@ -34,8 +35,7 @@ init:
 	source ~/.bashrc && \
 	pip install --upgrade pip && \
 	( pip install -r ./requirements.txt || true ) && \
-	mkdir ~/.mitogen && \
-	( ln -s ~/.pyenv/versions/$$PYENV_VERSION/lib/python$$PYTHON_VERSION/site-packages/ansible_mitogen ~/.mitogen/ansible_mitogen || true ) && \
+	( ln -s ~/.pyenv/versions/$$PYENV_VERSION/lib/python$$PYTHON_VERSION/site-packages ~/.mitogen || true ) && \
 	printf "\n ---- MAKE INIT COMPLETE: PLEASE EXIT YOUR TERMINAL AND OPEN A NEW SESSION ----\n"
 
 test:

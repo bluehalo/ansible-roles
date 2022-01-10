@@ -1,0 +1,7 @@
+---
+- name: restart xrdp
+  service:
+    name: xrdp
+    state: restarted
+  become: yes
+  become_method: sudo
