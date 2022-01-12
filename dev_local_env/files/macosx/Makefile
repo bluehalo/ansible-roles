@@ -1,7 +1,7 @@
 SHELL:=/bin/bash
-export PROJECT_NAME=TODO ------Insert Project Name Here------
-export PYTHON_VERSION=2.7
-export PYENV_VERSION=2.7.16
+export PROJECT_NAME=dev
+export PYTHON_VERSION=3.7
+export PYENV_VERSION=3.7.10
 
 define PYENV_INIT
 #### Begin ${PROJECT_NAME} Makefile Changes ####
@@ -9,6 +9,7 @@ alias ll='ls -la'
 eval "$$(pyenv init --path)"
 eval "$$(pyenv init -)"
 eval "$$(pyenv virtualenv-init -)"
+export DEV_FOLDER="$$HOME/team_repos"
 export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 pyenv activate ${PROJECT_NAME}
 ##### End ${PROJECT_NAME} Makefile Changes ####
@@ -29,7 +30,7 @@ init:
 	source ~/.bash_profile && \
 	pip install --upgrade pip && \
 	( pip install -r ./requirements.txt || true ) && \
-	( ln -s ~/.pyenv/versions/$$PYENV_VERSION/envs/$$PROJECT_NAME/lib/python$$PYTHON_VERSION/site-packages/ansible_mitogen ~/.mitogen/ansible_mitogen || true ) && \
+	( ln -s ~/.pyenv/versions/$$PYENV_VERSION/envs/$$PROJECT_NAME/lib/python$$PYTHON_VERSION/site-packages ~/.mitogen || true ) && \
 	printf "\n ---- MAKE INIT COMPLETE: PLEASE EXIT YOUR TERMINAL AND OPEN A NEW SESSION ----\n"
 
 test:

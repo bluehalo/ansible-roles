@@ -50,13 +50,14 @@ To deactivate a virtual environment, run the following
 ### Variables that can be configured as part of this role
 
 ## Makefile
+    DEV_FOLDER: The location of the team repos folder.  This should match the ansible variable git_repo_dest
     PROJECT_NAME: The project/team name for the group
     PYTHON_VERSION: The version of python to install
     PYENV_VERSION: The version of python virtual environment to install
     requirements.txt: This file can be updated to include specific pip based software/versions
 
 ## Ansible
-    project_name: The project/team name for the group
+    project_name: The project/team name for the group.  Should be configured in local group_vars
 
     install_openjdk: True/False to install OpenJDK software.  Default is true.
     install_mongodb: True/False to install MongoDB software.  Default is true.
@@ -92,8 +93,13 @@ To deactivate a virtual environment, run the following
     additional_dev_packages: Additional Homebrew development packages to install
 
     git_repo_dest: Path to store locally cloned repos
-    git_repo_sources: Remote repos to clone locally
+    git_repo_sources: Remote repos to clone locally.  Should be configured in local group_vars
 
     nifi_nars_repo: Team repository used to store nifi-nars configs
     nexus_password: Used for nifi-nars configuration.  It is recommended that this variable be encrypted within the ansible vault.
     nexus_username: Used for nifi-nars configuration.  It is recommended that this variable be encrypted within the ansible vault.
+
+    install_xrdp: For Amazon Linux 2 installations offers the option to install and configure xrdp for Remote Desktop Connections.  Default is true
+
+    install_pyenv: True/False to install custom pyenv environments outside of Makefile.  Default is true
+    pyenv_versions: Custom pyenv versions used on each team.  Should be configured in local group_vars with {{ versions.pyenv }}

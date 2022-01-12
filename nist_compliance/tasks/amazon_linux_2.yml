@@ -1,4 +1,8 @@
 ---
+- name: Compliance task OS
+  debug:
+    msg: "Amazon Linux 2, version {{ hostvars[inventory_hostname].ansible_distribution_version }}"
+
 - name: Remove packages for compliance
   yum:
     name: ['acpid', 'ntp', 'ntpdate', 'portreserve', 'rpcbind', 'sysstat']
@@ -37,7 +41,8 @@
 
 - name: Check for gpgcheck=0 in yum repos
   find:
-    paths: /etc/yum.repos.d
+    paths: 
+      - /etc/yum.repos.d
     contains: 'gpgcheck\s+=\s+0'
     excludes: "{{ compliance_team_repo_name }}"
   register: repofiles
@@ -266,6 +271,16 @@
     regexp: 'PASS_MIN_DAYS'
     line: 'PASS_MIN_DAYS 7'
   tags: [ compliance, login, password ]
+
+- name: running chage for MIN days
+  shell: 'chage --mindays 7 {{ item.username }}'
+  with_items: "{{ compliance_users }}"
+  tags: [ compliance, password ]
+    
+- name: running chage for MAX days
+  shell: 'chage --maxdays 90 {{ item.username }}'
+  with_items: "{{ compliance_users }}"
+  tags: [ compliance, password ]
 
 - name: Changing /etc/default/useradd chage setting
   lineinfile:
@@ -506,6 +521,17 @@
   when: kernel_status.stdout == "0"
   tags: [ compliance, selinux ]
 
+- name: Restore default SELinux security contexts
+  shell: "restorecon -irv {{ item }}"
+  with_items:
+    - /etc/audit
+    - /home
+    - /var
+    - /var/log
+  changed_when: false
+  when: compliance_selinux_restorecon | default(true)
+  tags: [ compliance, selinux ]
+
 # If there is an error with psacct, need to run `/sbin/restorecon -Rv  /var`,
 # which is normally run in the mounts playbook (run with 'selinux' tag)
 - name: Enable certain services on boot
@@ -591,11 +617,6 @@
     - '/etc/motd'
   tags: [ compliance, sshd, banner ]
 
-- name: Restore default SELinux security contexts
-  shell: restorecon -r -v /var/log && restorecon -r -v /etc/audit
-  changed_when: false
-  tags: [ compliance, selinux ]
-
 - name: Updates to /etc/security/limits.conf
   lineinfile:
     path: /etc/security/limits.conf
@@ -653,7 +674,8 @@
 
 - name: Gather /var/log/ file list
   find:
-    paths: /var/log/
+    paths: 
+      - /var/log/
     recurse: yes
   register: var_log_files
   tags: [ compliance, umask, varlog ]
@@ -751,160 +773,175 @@
   notify:
     - restart crond
 
+# Too many applications (i.e. Elasticsearch, Airflow) depend on access to this directory
+# Operational risk outweighs any Nessus finding and this should be 777'ed
+- name: Open up permissions for tmp directory
+  file:
+    path: /tmp
+    state: directory
+    owner: root
+    group: root
+    mode: 0777
+  when: compliance_tmp_world | default(true)
+  tags: [ compliance, tmp ]
 
 # Items found specific to Customer Env Compliance
 #################################################
 
-- name: Set watches for the following audit rules
-  lineinfile:
-    path: /etc/audit/audit.rules
-    regexp: '^-w\\s+{{ item }}\\s+-p\\s+wa'
-    line: "-w {{ item }} -p wa"
-    state: present
-  with_items:
-    - /etc/group
-    - /etc/passwd
-    - /etc/gshadow
-    - /etc/shadow
-    - /etc/security/opasswd
-    - /etc/hosts
-    - /etc/issue
-    - /etc/issue.net
-    - /etc/sysconfig/network
-    - /etc/selinux
-    - /etc/audit/auditd.conf
-  tags: [ compliance, audit ]
+- name: Execute customer environment compliance findings
+  block:
+    - name: Set watches for the following audit rules
+      lineinfile:
+        path: /etc/audit/audit.rules
+        regexp: '^-w\\s+{{ item }}\\s+-p\\s+wa'
+        line: "-w {{ item }} -p wa"
+        state: present
+      with_items:
+        - /etc/group
+        - /etc/passwd
+        - /etc/gshadow
+        - /etc/shadow
+        - /etc/security/opasswd
+        - /etc/hosts
+        - /etc/issue
+        - /etc/issue.net
+        - /etc/sysconfig/network
+        - /etc/selinux
+        - /etc/audit/auditd.conf
+      tags: [ compliance, audit ]
 
-- name: Add checks for 64-bit syscall mounts
-  lineinfile:
-    path: /etc/audit/audit.rules
-    regexp: '^-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+mount'
-    line: '-a always,exit -F arch=b64 -S mount -S umount2 -k SYS_mount'
-    state: present
-  tags: [ compliance, audit ]
+    - name: Add checks for 64-bit syscall mounts
+      lineinfile:
+        path: /etc/audit/audit.rules
+        regexp: '^-a\s+always,exit\s+-F\s+arch=b64\s+-S\s+mount'
+        line: '-a always,exit -F arch=b64 -S mount -S umount2 -k SYS_mount'
+        state: present
+      tags: [ compliance, audit ]
 
-- name: Ensure audit rules are locked after adding all audit rules
-  lineinfile:
-    path: /etc/audit/audit.rules
-    regexp: '^-e\s+2'
-    line: '-e 2'
-    state: present
-  tags: [ compliance, audit ]
+    - name: Ensure audit rules are locked after adding all audit rules
+      lineinfile:
+        path: /etc/audit/audit.rules
+        regexp: '^-e\s+2'
+        line: '-e 2'
+        state: present
+      tags: [ compliance, audit ]
 
-- name: Ensure cron for logwatch does not exists since no server is central log server
-  file:
-    path: /etc/cron.daily/0logwatch
-    state: absent
-  tags: [ compliance, logwatch ]
+    - name: Ensure cron for logwatch does not exists since no server is central log server
+      file:
+        path: /etc/cron.daily/0logwatch
+        state: absent
+      tags: [ compliance, logwatch ]
 
-- name: Set password retry at 3
-  lineinfile:
-    path: /etc/pam.d/passwd
-    regexp: '^password\s+pam_pwquality'
-    line: 'password   pam_pwquality retry=3'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password retry at 3
+      lineinfile:
+        path: /etc/pam.d/passwd
+        regexp: '^password\s+pam_pwquality'
+        line: 'password   pam_pwquality retry=3'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password minlen
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^minlen'
-    line: 'minlen = 14'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password minlen
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minlen'
+        line: 'minlen = 14'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password minclass
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^minclass'
-    line: 'minclass = 4'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password minclass
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^minclass'
+        line: 'minclass = 4'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password maxrepeat
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^maxrepeat'
-    line: 'maxrepeat = 3'
-    state: present
-  tags: [ compliance, ia-5_1, login, password ]
+    - name: Set password maxrepeat
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^maxrepeat'
+        line: 'maxrepeat = 3'
+        state: present
+      tags: [ compliance, ia-5_1, login, password ]
 
-- name: Set password maxclassrepeat
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^maxclassrepeat'
-    line: 'maxclassrepeat = 3'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password maxclassrepeat
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^maxclassrepeat'
+        line: 'maxclassrepeat = 3'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password dcredit
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^dcredit'
-    line: 'dcredit = -1'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password dcredit
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^dcredit'
+        line: 'dcredit = -1'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password ucredit
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^ucredit'
-    line: 'ucredit = -1'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password ucredit
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^ucredit'
+        line: 'ucredit = -1'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password ocredit
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^ocredit'
-    line: 'ocredit = -1'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password ocredit
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^ocredit'
+        line: 'ocredit = -1'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password lcredit
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^lcredit'
-    line: 'lcredit = -1'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password lcredit
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^lcredit'
+        line: 'lcredit = -1'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set password difok
-  lineinfile:
-    path: /etc/security/pwquality.conf
-    regexp: '^difok'
-    line: 'difok = 4'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set password difok
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^difok'
+        line: 'difok = 4'
+        state: present
+      tags: [ compliance, login, password ]
 
-- name: Set default=die action for authfail
-  lineinfile:
-    path: "/etc/pam.d/{{ item }}-auth"
-    regexp: '^auth\s+[default=die]\s+pam_faillock.so\s+authfail'
-    line: 'auth        [default=die] pam_faillock.so authfail audit deny=3 unlock_time=900 fail_interval=900'
-    state: present
-  with_items:
-    - system
-    - password
-  tags: [ compliance, login, password ]
+    - name: Set default=die action for authfail
+      lineinfile:
+        path: "/etc/pam.d/{{ item }}-auth"
+        regexp: '^auth\s+[default=die]\s+pam_faillock.so\s+authfail'
+        line: 'auth        [default=die] pam_faillock.so authfail audit deny=3 unlock_time=900 fail_interval=900'
+        state: present
+      with_items:
+        - system
+        - password
+      tags: [ compliance, login, password ]
 
-- name: Set sufficient action for authsucc
-  lineinfile:
-    path: "/etc/pam.d/{{ item }}-auth"
-    regexp: '^auth\s+sufficient\s+pam_faillock.so\s+authsucc'
-    line: 'auth        sufficient    pam_faillock.so authsucc audit deny=3 unlock_time=900 fail_interval=900'
-    state: present
-  with_items:
-    - system
-    - password
-  tags: [ compliance, login, password ]
+    - name: Set sufficient action for authsucc
+      lineinfile:
+        path: "/etc/pam.d/{{ item }}-auth"
+        regexp: '^auth\s+sufficient\s+pam_faillock.so\s+authsucc'
+        line: 'auth        sufficient    pam_faillock.so authsucc audit deny=3 unlock_time=900 fail_interval=900'
+        state: present
+      with_items:
+        - system
+        - password
+      tags: [ compliance, login, password ]
 
-- name: Set remember=10 for passwords in system-auth
-  lineinfile:
-    path: /etc/pam.d/system-auth
-    regexp: '^password\s+sufficient\s+pam_unix.so '
-    line: 'password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=10'
-    state: present
-  tags: [ compliance, login, password ]
+    - name: Set remember=10 for passwords in system-auth
+      lineinfile:
+        path: /etc/pam.d/system-auth
+        regexp: '^password\s+sufficient\s+pam_unix.so '
+        line: 'password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=10'
+        state: present
+      tags: [ compliance, login, password ]
+  when: compliance_customer_env_findings | default(false)
+  tags: [ compliance, customer_env_findings ]
 
   #######################################

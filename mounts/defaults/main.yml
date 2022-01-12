@@ -9,6 +9,7 @@ mounts_devices: []
 mounts_mounted: []
 
 mounts_log_directory: /var/log
+mounts_tmp_directory: /ansible_backup
 
 # these defaults are used if not specified in mounts_devices
 mounts_default_opts: defaults
@@ -16,3 +17,6 @@ mounts_default_state: mounted
 mounts_default_dump: 0
 mounts_default_passno: 0
 mounts_default_fstab: /etc/fstab
+
+# Directories to preserve files
+mounts_preserved_files: ['/home', '/var']

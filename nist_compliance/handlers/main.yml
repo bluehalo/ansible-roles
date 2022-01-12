@@ -4,21 +4,10 @@
     name: crond 
     state: restarted
 
-- name: reload auditd for CentOS
+- name: reload auditd
   service: 
     name:  auditd 
-    state: restarted
-    use: service
-  when: ansible_distribution is regex('^CentOS.*')
-  listen: "reload auditd"
-
-- name: reload auditd for Amazon Linux
-  systemd:
-    name: auditd.service
     state: reloaded
-  when: ansible_distribution == "Amazon"
-  become: yes
-  listen: "reload auditd"
 
 - name: restart sshd
   service: 

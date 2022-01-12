@@ -18,7 +18,14 @@
     path: "{{ elasticsearch_install_dir }}/elasticsearch-{{ elasticsearch_version }}"
   register: elasticsearch_path_check
   when: install_elasticsearch | default(true)
-  tags: [ dev_local_env, macosx, elasticsearch ]
+  tags: [ dev_local_env, macosx, elasticsearch, log4j ]
+
+- name: Check if Insomnia is installed
+  stat:
+    path: /usr/local/Caskroom/insomnia
+  register: insomnia_path_check
+  when: install_insomnia | default(true)
+  tags: [ dev_local_env, macosx, insomnia ]
 
 - name: Check if nvm is installed
   stat:
@@ -33,6 +40,20 @@
   register: asdf_path_check
   when: install_asdf | default(true)
   tags: [ dev_local_env, macosx, asdf ]
+
+- name: Check if nifi-nars is installed
+  stat:
+    path: ~/.m2/
+  register: nifi_nars_path_check
+  when: install_nifi_nars | default(true)
+  tags: [ dev_local_env, macosx, nifi_nars ]
+
+- name: Check if pyenv is installed
+  stat:
+    path: ~/.pyenv
+  register: pyenv_path_check
+  when: install_pyenv | default(true)
+  tags: [ dev_local_env, macosx, pyenv ]
 
 - name: Configure local OpenJDK environment
   block:
@@ -56,6 +77,13 @@
     name: "{{ additional_dev_packages }}"
     state: present
   tags: [ dev_local_env, macosx ]
+
+- name: Install Insomnia 
+  shell: brew install --cask insomnia
+  when: 
+    - not insomnia_path_check.stat.exists
+    - install_insomnia | default(true)
+  tags: [ dev_local_env, macosx, insomnia ]
 
 - name: Configure local MongoDB environment
   block:
@@ -162,7 +190,7 @@
   when: 
     - not elasticsearch_path_check.stat.exists
     - install_elasticsearch | default(true)
-  tags: [ dev_local_env, macosx, elasticsearch ]
+  tags: [ dev_local_env, macosx, elasticsearch, log4j ]
 
 - name: Configure team repos locally
   include: create_repos.yml
@@ -327,6 +355,72 @@
     - install_nifi_nars | default(true)
     - not nifi_nars_path_check.stat.exists
   tags: [ dev_local_env, macosx, nifi_nars ]
+
+- name: Configure Python environment
+  block:
+    - name: Install pyenv
+      homebrew:
+        name: 
+          - pyenv
+          - pyenv-virtualenv
+        state: present
+
+    - name: Add pyenv source to bashrc
+      blockinfile:
+        path: "{{ bashrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK pyenv"
+        block: |
+          eval "$(pyenv virtualenv-init -)"
+      tags: [ bashrc ]
+
+    - name: Add pyenv source to zshrc
+      blockinfile:
+        path: "{{ zshrc_location }}"
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK pyenv"
+        block: |
+          eval "$(pyenv virtualenv-init -)"
+      tags: [ zshrc ]
+
+    - name: Install Pyenv versions
+      shell: |
+        pyenv install {{ item.version }}
+        pyenv virtualenv {{ item.name }} {{ item.version }}
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+      with_items: "{{ pyenv_versions }}"
+  when:
+    - install_pyenv | default(true)
+    - not pyenv_path_check.stat.exists
+  tags: [ dev_local_env, macosx, pyenv ]
+
+- name: log4j mitigations
+  block:
+    - name: Ensure sbt is using compliant version
+      homebrew:
+        name: sbt
+        state: latest
+
+    - name: Install asdf sbt plugins
+      shell: asdf plugin-add sbt
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+
+    - name: Install asdf sbt packages
+      shell: |
+        asdf install sbt 1.5.8
+        asdf global sbt 1.5.8
+      args:
+        executable: /bin/bash
+        chdir: "$HOME"
+        creates: "$HOME/.asdf/sbt"
+  ignore_errors: yes
+  when: log4j_mitigations | default(true)
+  tags: [ log4j ]
 
 - name: Display completion message
   debug:

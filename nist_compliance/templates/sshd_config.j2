@@ -122,7 +122,9 @@ X11Forwarding yes
 #ChrootDirectory none
 
 #### Settings found AWAY
+{% if compliance_show_ssh_banner %}
 Banner /etc/issue.net
+{% endif %}
 #AddressFamily inet
 ClientAliveInterval 300
 ClientAliveCountMax 120
