@@ -281,7 +281,7 @@
     - name: running chage for MAX days
       shell: 'chage --maxdays 90 {{ item.username }}'
       with_items: "{{ compliance_users }}"
-  when: run_chage_on_users | default(false)
+  when: compliance_run_chage_on_users | default(false)
   tags: [ compliance, password ]
 
 - name: Changing /etc/default/useradd chage setting
