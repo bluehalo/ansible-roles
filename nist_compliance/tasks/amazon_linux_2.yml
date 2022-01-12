@@ -272,14 +272,16 @@
     line: 'PASS_MIN_DAYS 7'
   tags: [ compliance, login, password ]
 
-- name: running chage for MIN days
-  shell: 'chage --mindays 7 {{ item.username }}'
-  with_items: "{{ compliance_users }}"
-  tags: [ compliance, password ]
-    
-- name: running chage for MAX days
-  shell: 'chage --maxdays 90 {{ item.username }}'
-  with_items: "{{ compliance_users }}"
+- name: Running chage on user accounts
+  block:
+    - name: running chage for MIN days
+      shell: 'chage --mindays 7 {{ item.username }}'
+      with_items: "{{ compliance_users }}"
+        
+    - name: running chage for MAX days
+      shell: 'chage --maxdays 90 {{ item.username }}'
+      with_items: "{{ compliance_users }}"
+  when: compliance_run_chage_on_users | default(false)
   tags: [ compliance, password ]
 
 - name: Changing /etc/default/useradd chage setting
