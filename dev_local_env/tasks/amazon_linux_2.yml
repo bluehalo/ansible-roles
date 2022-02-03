@@ -66,6 +66,9 @@
 - name: Import rpm key.
   rpm_key:
     key: https://yum.corretto.aws/corretto.key
+  become: yes
+  become_method: sudo
+  when: install_openjdk | default(true)
   tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdk ]
 
 - name: Add corretto repository.
@@ -73,6 +76,9 @@
     name: corretto
     description: "Amazon Corretto repository"
     baseurl: https://yum.corretto.aws/$basearch
+  become: yes
+  become_method: sudo
+  when: install_openjdk | default(true)
   tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdk ]
 
 - name: Install Amazon Corretto 8.
@@ -80,6 +86,9 @@
     name: "{{ openjdk_package }}"
     state: present
     enablerepo: corretto
+  become: yes
+  become_method: sudo
+  when: install_openjdk | default(true)
   tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdks ]
 
 - name: Check if gradle is installed
