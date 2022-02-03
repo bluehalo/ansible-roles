@@ -412,8 +412,8 @@
 
     - name: Install asdf sbt packages
       shell: |
-        asdf install sbt 1.5.8
-        asdf global sbt 1.5.8
+        asdf install sbt 1.6.1
+        asdf global sbt 1.6.1
       args:
         executable: /bin/bash
         chdir: "$HOME"
