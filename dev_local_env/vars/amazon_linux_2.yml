@@ -1,5 +1,5 @@
 ---
-openjdk_package: "java-1.8.0-openjdk-headless-1.8.0.282.b08-1.amzn2.0.1.x86_64"
+openjdk_package: "java-1.8.0-amazon-corretto-devel"
 mongodb_package: "mongodb-org"
 mongodb_version: "4.2"
 elasticsearch_install_dir: /usr/share/elasticsearch

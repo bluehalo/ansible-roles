@@ -63,15 +63,24 @@
   when: install_vscode | default(true)
   tags: [ dev_local_env, amazon_linux_2, vscode ]
 
-- name: Install base developer rpms
+- name: Import rpm key.
+  rpm_key:
+    key: https://yum.corretto.aws/corretto.key
+  tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdk ]
+
+- name: Add corretto repository.
+  yum_repository:
+    name: corretto
+    description: "Amazon Corretto repository"
+    baseurl: https://yum.corretto.aws/$basearch
+  tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdk ]
+
+- name: Install Amazon Corretto 8.
   yum:
-    name:
-      - "{{ openjdk_package }}"
+    name: "{{ openjdk_package }}"
     state: present
-  become: yes
-  become_method: sudo
-  when: install_openjdk | default(true)
-  tags: [ dev_local_env, amazon_linux_2, mongodb, openjdk ]
+    enablerepo: corretto
+  tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdks ]
 
 - name: Check if gradle is installed
   stat:
