@@ -89,7 +89,7 @@
   become: yes
   become_method: sudo
   when: install_openjdk | default(true)
-  tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdks ]
+  tags: [ dev_local_env, amazon_linux_2, java, jdk, openjdk ]
 
 - name: Check if gradle is installed
   stat:
