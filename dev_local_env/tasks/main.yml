@@ -1,5 +1,6 @@
 ---
 - name: Display ansible_distribution
+  setup:
   debug:
     msg: OS detected as "{{ ansible_distribution }}"
 
