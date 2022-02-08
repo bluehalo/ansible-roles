@@ -15,4 +15,5 @@ ssh_config/
 
 *.swp
 
-
+# VSCode plugin
+.history
