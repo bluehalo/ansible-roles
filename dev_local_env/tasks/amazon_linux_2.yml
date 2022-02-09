@@ -134,6 +134,13 @@
   when: install_nifi_nars | default(true)
   tags: [ dev_local_env, amazon_linux_2, nifi_nars ]
 
+- name: Ensure that the Desktop folder exists
+  file:
+    path: "~/Desktop"
+    state: directory
+    mode: '0755'
+  tags: [ dev_local_env, amazon_linux_2, desktop ]
+
 - name: Install additional required dev packages
   yum:
     name: "{{ additional_dev_packages }}"
@@ -255,36 +262,6 @@
     - install_insomnia | default(true)
   tags: [ dev_local_env, amazon_linux_2, insomnia ]
 
-- name: Stage bash_rc
-  block:
-    - name: Set JAVA_HOME environment variable in bashrc
-      lineinfile: 
-        path: "{{ bashrc_location }}"
-        state: present
-        regexp: 'export JAVA_HOME=.*'
-        line: 'export JAVA_HOME=/usr/lib/jvm/java'
-        insertbefore: 'export PATH=.*'
-        firstmatch: yes
-      when: install_openjdk | default(true)
-
-    - name: Set MONGO_PATH environment variable in bashrc
-      lineinfile: 
-        path: "{{ bashrc_location }}"
-        state: present
-        regexp: 'export MONGO_PATH=.*'
-        line: 'export MONGO_PATH=/var/lib/mongo/bin'
-        insertbefore: 'export PATH=.*'
-        firstmatch: yes
-      when: install_mongodb | default(true)
-
-    - name: Set PATH environment variable in bashrc
-      lineinfile: 
-        path: "{{ bashrc_location }}"
-        state: present
-        regexp: 'export PATH=.*'
-        line: 'export PATH={{ path_value }}'
-  tags: [ dev_local_env, amazon_linux_2, bashrc ]
-
 - name: Stage bashrc
   block:
     - name: Set JAVA_HOME environment variable in bashrc
@@ -303,8 +280,10 @@
         state: present
         regexp: 'export MONGO_PATH=.*'
         line: 'export MONGO_PATH=/var/lib/mongo/bin'
+        insertbefore: 'export PATH=.*'
+        firstmatch: yes
       when: install_mongodb | default(true)
- 
+
     - name: Set PATH environment variable in bashrc
       lineinfile: 
         path: "{{ bashrc_location }}"
