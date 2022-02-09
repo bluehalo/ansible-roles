@@ -5,17 +5,17 @@ export PYTHON_VERSION=3.7
 
 # Setup yum dependencies and clone pyenv repos
 sudo mount -o remount,exec /tmp && \
-sudo yum install -y @development git zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils \
+sudo yum install -y @development git zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils && \
 ls ~/.pyenv || git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
 ls ~/.pyenv/plugins/pyenv-virtualenv || git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
 
 # Setup the user files
 if ! grep -Fxq "PYENV_ROOT" ~/.bash_profile; then
     sed -Ei -e '/^([^#]|$)/ {a \
-    export PYENV_ROOT="$HOME/.pyenv"
-    a \
-    export PATH="$PYENV_ROOT/bin:$PATH"
-    a \
+export PYENV_ROOT="$HOME/.pyenv"
+a \
+export PATH="$PYENV_ROOT/bin:$PATH"
+a \
     ' -e ':a' -e '$!{n;ba};}' ~/.bash_profile && \
     echo 'eval "$(pyenv init --path)"' >> ~/.bash_profile
 fi
