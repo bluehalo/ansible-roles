@@ -17,7 +17,7 @@
   include_vars:
     dir: vars
     files_matching: amazon_linux_2.yml
-  when: ansible_distribution == "Amazon" and ansible_distribution_version == "(Karoo)"
+  when: ansible_distribution == "Amazon" and ansible_distribution_version == "2"
 
 - include: amazon_linux_2.yml
-  when: ansible_distribution == "Amazon" and ansible_distribution_version == "(Karoo)"
+  when: ansible_distribution == "Amazon" and ansible_distribution_version == "2"

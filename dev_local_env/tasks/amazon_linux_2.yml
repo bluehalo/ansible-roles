@@ -1,9 +1,4 @@
 ---
-- name: Retrieve the package manager facts
-  package_facts:
-    manager: "auto"
-  tags: [ dev_local_env, amazon_linux_2 ]
-
 - name: Ensure MongoDB repo file is staged
   template: 
     src: "{{ mongodb_package }}.repo.j2"
@@ -182,9 +177,9 @@
     - not mongo_path_check.stat.exists
   tags: [ dev_local_env, amazon_linux_2, mongodb ]
 
-- name: Configure gradle locally
+- name: Configure Gradle locally
   block:
-    - name: Create gradle directory
+    - name: Create Gradle directory
       file: 
         path: /opt/gradle 
         state: directory 
@@ -208,9 +203,9 @@
         insertbefore: 'export PATH=.*'
         firstmatch: yes
 
-    - name: Set GRADLE_HOME environment variable in zshrc
+    - name: Set GRADLE_HOME environment variable in bashrc
       lineinfile: 
-        path: "{{ zshrc_location }}"
+        path: "{{ bashrc_location }}"
         state: present
         regexp: 'export GRADLE_HOME=.*'
         line: "export GRADLE_HOME=/opt/gradle/{{ gradle_install_file }}/bin"
@@ -290,11 +285,11 @@
         line: 'export PATH={{ path_value }}'
   tags: [ dev_local_env, amazon_linux_2, bashrc ]
 
-- name: Stage zshrc
+- name: Stage bashrc
   block:
-    - name: Set JAVA_HOME environment variable in zshrc
+    - name: Set JAVA_HOME environment variable in bashrc
       lineinfile: 
-        path: "{{ zshrc_location }}"
+        path: "{{ bashrc_location }}"
         state: present
         regexp: 'export JAVA_HOME=.*'
         line: 'export JAVA_HOME=/usr/lib/jvm/java'
@@ -302,21 +297,21 @@
         firstmatch: yes
       when: install_openjdk | default(true)
 
-    - name: Set MONGO_PATH environment variable in zshrc
+    - name: Set MONGO_PATH environment variable in bashrc
       lineinfile: 
-        path: "{{ zshrc_location }}"
+        path: "{{ bashrc_location }}"
         state: present
         regexp: 'export MONGO_PATH=.*'
         line: 'export MONGO_PATH=/var/lib/mongo/bin'
       when: install_mongodb | default(true)
  
-    - name: Set PATH environment variable in zshrc
+    - name: Set PATH environment variable in bashrc
       lineinfile: 
-        path: "{{ zshrc_location }}"
+        path: "{{ bashrc_location }}"
         state: present
         regexp: 'export PATH=.*'
         line: 'export PATH={{ path_value }}'
-  tags: [ dev_local_env, amazon_linux_2, zshrc ]
+  tags: [ dev_local_env, amazon_linux_2, bashrc ]
 
 - name: Configure Elasticsearch
   block:
@@ -371,16 +366,16 @@
       args:
         warn: false
   
-    - name: Add nvm source to zshrc
+    - name: Add nvm source to bashrc
       blockinfile:
-        path: "{{ zshrc_location }}"
+        path: "{{ bashrc_location }}"
         state: present
         marker: "# {mark} ANSIBLE MANAGED BLOCK nvm"
         block: |
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
           [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-      tags: [ zshrc ]
+      tags: [ bashrc ]
 
     - name: Install node
       shell: source {{ bashrc_location }} && nvm install {{ item }} 
@@ -432,15 +427,15 @@
           . $HOME/.asdf/completions/asdf.bash
       tags: [ bashrc ]
 
-    - name: Add asdf source to zshrc
+    - name: Add asdf source to bashrc
       blockinfile:
-        path: "{{ zshrc_location }}"
+        path: "{{ bashrc_location }}"
         state: present
         marker: "# {mark} ANSIBLE MANAGED BLOCK asdf"
         block: |
           . $HOME/.asdf/asdf.sh
           . $HOME/.asdf/completions/asdf.bash
-      tags: [ zshrc ]
+      tags: [ bashrc ]
 
     - name: Install asdf plugins
       shell: source {{ bashrc_location }} && asdf plugin-add {{ item }} 
@@ -502,15 +497,15 @@
           export NEXUS_PSW='{{ nexus_password }}'
       tags: [ bashrc ]
 
-    - name: Add nexus username and password to zshrc
+    - name: Add nexus username and password to bashrc
       blockinfile:
-        path: "{{ zshrc_location }}"
+        path: "{{ bashrc_location }}"
         state: present
         marker: "# {mark} ANSIBLE MANAGED BLOCK nifi-nars"
         block: |
           export NEXUS_USR='{{ nexus_username }}'
           export NEXUS_PSW='{{ nexus_password }}'
-      tags: [ zshrc ]
+      tags: [ bashrc ]
   when:
     - install_nifi_nars | default(true)
     - not nifi_nars_path_check.stat.exists
