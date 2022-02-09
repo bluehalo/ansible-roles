@@ -1,5 +1,14 @@
 #!/bin/bash
-export PROJECT_NAME=dev
+
+# Ask user for desired Python virtualenv name and Ansible password
+read -p "Enter the Ansible Vault password: " ansible_vault_pass
+if [[ -z "$ansible_vault_pass" ]]; then
+   printf '%s\n' "Ansible vault password is required"
+   exit 1
+fi
+read -p "Enter the desired Python virtualenv name [dev]: " PROJECT_NAME
+PROJECT_NAME=${PROJECT_NAME:-dev}
+
 export PYENV_VERSION=3.7.10
 export PYTHON_VERSION=3.7
 
@@ -22,9 +31,13 @@ pyenv install $PYENV_VERSION || true && \
 pyenv virtualenv $PYENV_VERSION $PROJECT_NAME || true
 
 # Install Python dependencies
+# Mitogen 0.3.2 is broken on any yum steps. Use 0.3.0cf1 until https://github.com/mitogen-hq/mitogen/issues/849 is fixed
+# TODO Add mitogen back to requirements once Github issue fixed
 pyenv activate $PROJECT_NAME && \
 python -m pip install --upgrade --force-reinstall pip virtualenv && \
 python -m pip install -r ./requirements.txt && \
+aws codeartifact login --region us-east-1 --tool pip --repository crossfire --domain redwood-app --domain-owner 460985121638 && \
+python -m pip install --use-deprecated=legacy-resolver mitogen==0.3.0cf1 && \
 ln -sf ~/.pyenv/versions/$PYENV_VERSION/lib/python$PYTHON_VERSION/site-packages ~/.mitogen && \
 cd ~/.pyenv && src/configure && make -C src  # Optimize pyenv 
 
