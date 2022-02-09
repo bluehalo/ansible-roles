@@ -9,32 +9,35 @@ sudo yum install -y @development git zlib-devel bzip2 bzip2-devel readline-devel
 ls ~/.pyenv || git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
 ls ~/.pyenv/plugins/pyenv-virtualenv || git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
 
-# Setup the user files
-if ! grep -Fxq "PYENV_ROOT" ~/.bash_profile; then
-    sed -Ei -e '/^([^#]|$)/ {a \
-export PYENV_ROOT="$HOME/.pyenv"
-a \
-export PATH="$PYENV_ROOT/bin:$PATH"
-a \
-    ' -e ':a' -e '$!{n;ba};}' ~/.bash_profile && \
-    echo 'eval "$(pyenv init --path)"' >> ~/.bash_profile
-fi
-if ! grep -Fxq "PYENV_ROOT" ~/.profile; then
-    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile && \
-    echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile && \
-    echo 'eval "$(pyenv init --path)"' >> ~/.profile
-fi
-if ! grep -Fxq "pyenv init" ~/.bashrc; then
-    echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-fi
-source ~/.bash_profile  # Turn on pyenv
+# Activate Pyenv manually (adding to bashrc and then sourcing does not work)
+export PYENV_ROOT=$HOME/.pyenv
+export PATH=$PYENV_ROOT/bin:$PATH
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
-# Pyenv tasks
+# Create Python virtualenv
 pyenv install $PYENV_VERSION || true && \
-pyenv virtualenv $PYENV_VERSION $PROJECT_NAME || true && \
-pip install --upgrade pip && \
-pip install -r ./requirements.txt && \
+pyenv virtualenv $PYENV_VERSION $PROJECT_NAME || true
+
+# Install Python dependencies
+pyenv activate $PROJECT_NAME && \
+python -m pip install --upgrade --force-reinstall pip virtualenv && \
+python -m pip install -r ./requirements.txt && \
 ln -sf ~/.pyenv/versions/$PYENV_VERSION/lib/python$PYTHON_VERSION/site-packages ~/.mitogen && \
-cd ~/.pyenv && src/configure && make -C src  # Optimize pyenv
+cd ~/.pyenv && src/configure && make -C src  # Optimize pyenv 
+
+# Add Pyenv to the bashrc
+if ! grep -Fq "PYENV_ROOT" ~/.bashrc; then
+    printf "\n" >> ~/.bashrc && \
+    echo '# Setup pyenv and pyenv-virtualenv"' >> ~/.bashrc && \
+    echo 'export PYENV_ROOT=$HOME/.pyenv' >> ~/.bashrc && \
+    echo 'export PATH=$PYENV_ROOT/bin:$PATH' >> ~/.bashrc && \
+    echo 'eval "$(pyenv init --path)"' >> ~/.bashrc && \
+    echo 'eval "$(pyenv init -)"' >> ~/.bashrc && \
+    echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc && \
+    echo 'export PYENV_VIRTUALENV_DISABLE_PROMPT=1' >> ~/.bashrc
+fi
 
 printf "\n---- DEV SETUP COMPLETE ----\n"
