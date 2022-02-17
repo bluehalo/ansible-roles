@@ -684,10 +684,9 @@
 
 - name: Ensure permissions on all log files are configured
   file:
-    path: "{{ item.path }}"
+    path: "/var/log"
     mode: "g-wx,o-rwx"
-  when: var_log_files.matched > 0
-  with_items: "{{ var_log_files.files }}"
+    recurse: yes
   tags: [ compliance, umask, varlog ]
 
 - name: Set default user acl permissions for log file directories
