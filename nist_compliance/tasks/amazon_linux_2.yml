@@ -674,19 +674,12 @@
     mode: 0600
   tags: [ compliance, grub, umask ]
 
-- name: Gather /var/log/ file list
-  find:
-    paths: 
-      - /var/log/
-    recurse: yes
-  register: var_log_files
-  tags: [ compliance, umask, varlog ]
-
 - name: Ensure permissions on all log files are configured
   file:
     path: "/var/log"
     mode: "g-wx,o-rwx"
     recurse: yes
+  ignore_errors: True
   tags: [ compliance, umask, varlog ]
 
 - name: Set default user acl permissions for log file directories
