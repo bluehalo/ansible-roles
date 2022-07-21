@@ -555,7 +555,7 @@
     mode: 0600
   notify:
     - restart sshd
-  tags: [ compliance, sshd ]
+  tags: [ compliance, sshd, sshd_config ]
 
 - name: Change sulogin for rescue and emergency services
   lineinfile:
