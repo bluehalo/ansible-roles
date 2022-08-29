@@ -3,7 +3,7 @@ project_name: "dev"
 elasticsearch_version: 7.16.2
 
 nodejs_versions:
-  - 12.22.3
+  - 16.17.0
 
 asdf_version: "v0.8.1"
 
