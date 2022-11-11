@@ -7,6 +7,6 @@ cryptography==35.0.0
 lxml==4.6.5
 mitogen==0.2.9
 pip==21.3.1
-pyspark==3.0.3     
+pyspark==3.2.2     
 six==1.16.0
 terrafile==0.3.3
